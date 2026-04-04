@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Payatas Ledger | Civic Management</title>
+<title>Payatas Ledger | Civic Management System (Demo)</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -37,7 +37,8 @@
       <button class="login-btn" onclick="login()">Sign In</button>
     </div>
     <div class="login-footer">
-      <p>Barangay Payatas Administration &copy; 2026</p>
+      <p>Payatas Ledger Demo Project &copy; 2026</p>
+      <p style="font-size:10px;color:#94a3b8;margin-top:4px">This is a demo project for educational purposes</p>
     </div>
   </div>
 </div>
@@ -53,43 +54,43 @@
     </div>
     <div class="brand-name">
       <h1>Payatas Ledger</h1>
-      <p>Civic Management</p>
+      <p>Demo Project</p>
     </div>
   </div>
   <nav class="nav-section">
-    <button class="nav-item active" onclick="showPage('dashboard')">
+    <button class="nav-item active" onclick="showPage('dashboard'); return false;">
       <span class="material-symbols-outlined">dashboard</span>
       <span class="label">Dashboard</span>
     </button>
-    <button class="nav-item" onclick="showPage('residents')">
+    <button class="nav-item" onclick="showPage('residents'); return false;">
       <span class="material-symbols-outlined">groups</span>
       <span class="label">Residents</span>
     </button>
-    <button class="nav-item" onclick="showPage('documents')">
+    <button class="nav-item" onclick="showPage('documents'); return false;">
       <span class="material-symbols-outlined">description</span>
       <span class="label">Document Requests</span>
     </button>
-    <button class="nav-item" onclick="showPage('complaints')">
+    <button class="nav-item" onclick="showPage('complaints'); return false;">
       <span class="material-symbols-outlined">gavel</span>
       <span class="label">Complaints</span>
     </button>
-    <button class="nav-item" onclick="showPage('projects')">
+    <button class="nav-item" onclick="showPage('projects'); return false;">
       <span class="material-symbols-outlined">account_tree</span>
       <span class="label">Projects</span>
     </button>
-    <button class="nav-item" onclick="showPage('announcements')">
+    <button class="nav-item" onclick="showPage('announcements'); return false;">
       <span class="material-symbols-outlined">campaign</span>
       <span class="label">Announcements</span>
     </button>
-    <button class="nav-item" onclick="showPage('reports')">
+    <button class="nav-item" onclick="showPage('reports'); return false;">
       <span class="material-symbols-outlined">analytics</span>
       <span class="label">Reports</span>
     </button>
-    <button class="nav-item admin-only" onclick="showPage('users')">
+    <button class="nav-item admin-only" onclick="showPage('users'); return false;">
       <span class="material-symbols-outlined">supervised_user_circle</span>
       <span class="label">Users</span>
     </button>
-    <button class="nav-item" onclick="showPage('settings')">
+    <button class="nav-item" onclick="showPage('settings'); return false;">
       <span class="material-symbols-outlined">settings</span>
       <span class="label">Settings</span>
     </button>
@@ -937,7 +938,7 @@
 <div id="page-settings" class="page">
   <div class="pg-header">
     <div><h2>Settings</h2><p>Configure system preferences, user access, and barangay information.</p></div>
-    <button class="btn-primary">Save Changes</button>
+    <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
   </div>
   <div class="two-col">
     <div class="card"><div class="card-body">

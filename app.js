@@ -685,13 +685,26 @@ function closeModal() {
 // ─── PAGE NAVIGATION ────────────────────────────────────────
 
 function showPage(pageId) {
+  // Remove active class from all pages
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  // Remove active class from all nav items
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  
+  // Activate the selected page
   var page = document.getElementById('page-'+pageId);
-  if (page) page.classList.add('active');
+  if (page) {
+    page.classList.add('active');
+    console.log('Page activated: page-' + pageId);
+  } else {
+    console.error('Page not found: page-' + pageId);
+  }
+  
   var navMap = { 'dashboard':0,'residents':1,'documents':2,'complaints':3,'projects':4,'announcements':5,'reports':6,'users':7,'settings':8 };
   var navItems = document.querySelectorAll('.nav-item');
-  if (navMap[pageId] !== undefined) navItems[navMap[pageId]].classList.add('active');
+  if (navMap[pageId] !== undefined && navItems[navMap[pageId]]) {
+    navItems[navMap[pageId]].classList.add('active');
+  }
+  
   var placeholders = {
     'dashboard':'Search residents, documents, or records...',
     'residents':'Search residents, records, or files...',
@@ -706,6 +719,27 @@ function showPage(pageId) {
   if (si && placeholders[pageId]) si.placeholder = placeholders[pageId];
   window.scrollTo(0,0);
 }
+  
+  var navMap = { 'dashboard':0,'residents':1,'documents':2,'complaints':3,'projects':4,'announcements':5,'reports':6,'users':7,'settings':8 };
+  var navItems = document.querySelectorAll('.nav-item');
+  if (navMap[pageId] !== undefined && navItems[navMap[pageId]]) {
+    navItems[navMap[pageId]].classList.add('active');
+  }
+  
+  var placeholders = {
+    'dashboard':'Search residents, documents, or records...',
+    'residents':'Search residents, records, or files...',
+    'documents':'Search requests...',
+    'complaints':'Search complaints, residents, or case IDs...',
+    'projects':'Search projects...',
+    'announcements':'Search announcements...',
+    'reports':'Search analytics...',
+    'settings':'Search settings...'
+  };
+  var si = document.getElementById('searchInput');
+  if (si && placeholders[pageId]) si.placeholder = placeholders[pageId];
+  window.scrollTo(0,0);
+
 
 // ─── GLOBAL SEARCH ──────────────────────────────────────────
 
@@ -1656,8 +1690,9 @@ function renderAnnouncements(){
 
 // ─── System Manual & Support ───────────────────────────────────
 function showSystemManual(){
-  openModal('System Manual - Payatas Ledger',
+  openModal('System Manual - Payatas Ledger (Demo)',
     '<div style="display:flex;flex-direction:column;gap:16px;font-size:13.5px;color:var(--on-surface-variant);line-height:1.7;">'+
+      '<div style="background:#fef3c7;border-radius:10px;padding:14px 16px;font-size:13px;font-weight:600;color:#92400e;">⚠️ Demo Project - For Educational Purposes Only</div>'+
       '<div style="background:#dbeafe;border-radius:10px;padding:14px 16px;font-size:13px;font-weight:600;color:#1e3a8a;">📖 User Guide v2.4</div>'+
       '<div><strong>1. Login</strong><br>Use your username and password to access the system. Default admin: admin / admin123</div>'+
       '<div><strong>2. Residents</strong><br>Manage resident records, add new residents, filter by purok or status.</div>'+
@@ -1667,7 +1702,7 @@ function showSystemManual(){
       '<div><strong>6. Announcements</strong><br>Post important notices for the community.</div>'+
       '<div><strong>7. Reports</strong><br>Export reports with date range filtering.</div>'+
       '<div><strong>8. Users (Admin)</strong><br>Add, edit, or remove system users. Only visible to Administrators.</div>'+
-      '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(195,198,215,0.2)"><strong>Need Help?</strong><br>Contact the system administrator or email support@payatas.gov.ph</div>'+
+      '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(195,198,215,0.2)"><strong>Disclaimer</strong><br>This is a fictional demo project. Not affiliated with any government agency.</div>'+
     '</div>',
     btnSec('Close','closeModal()')
   );
@@ -1715,22 +1750,133 @@ style.textContent='@keyframes slideUp{from{opacity:0;transform:translateY(14px)}
   '#toast-container>div{animation:slideUp 0.22s ease;}';
 document.head.appendChild(style);
 
-// Check authentication on page load
-checkAuth();
+// ══════════════════════════════════════════════════════════════
+// INITIALIZATION - Run when DOM is ready
+// ══════════════════════════════════════════════════════════════
 
-// Initialize tables if user is already logged in
-if (currentUser) {
-  renderResidentTable();
-  renderDocumentsTable();
-  if (isAdmin()) {
-    renderUsersTable();
-    updateUserStats();
+function initializeApp() {
+  console.log('Initializing Payatas Ledger Demo...');
+
+  try {
+    checkAuth();
+    console.log('Auth check complete');
+  } catch(e) {
+    console.error('Error in checkAuth:', e);
+  }
+
+  try {
+    if (currentUser) {
+      console.log('User logged in, initializing tables...');
+      renderResidentTable();
+      renderDocumentsTable();
+      if (typeof renderComplaintsTable === 'function') renderComplaintsTable();
+      if (typeof renderProjectsTable === 'function') renderProjectsTable();
+      renderAnnouncements();
+      if (isAdmin()) {
+        renderUsersTable();
+        updateUserStats();
+      }
+    } else {
+      console.log('No user logged in, using fallback data');
+      if (typeof residents !== 'undefined' && residents.length > 0) renderResidentTable();
+      if (typeof documents !== 'undefined' && documents.length > 0) renderDocumentsTable();
+      if (typeof complaints !== 'undefined' && complaints.length > 0 && typeof renderComplaintsTable === 'function') renderComplaintsTable();
+      if (typeof projects !== 'undefined' && projects.length > 0 && typeof renderProjectsTable === 'function') renderProjectsTable();
+      if (typeof announcements !== 'undefined' && announcements.length > 0) renderAnnouncements();
+    }
+  } catch(e) {
+    console.error('Error initializing tables:', e);
+  }
+
+  try {
+    var pwField = document.getElementById('login-password');
+    if (pwField) {
+      pwField.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') login();
+      });
+    }
+  } catch(e) {
+    console.error('Error setting up login listener:', e);
+  }
+
+  try {
+    var toggles = document.querySelectorAll('[data-notif-label]');
+    toggles.forEach(function(toggle) {
+      toggle.addEventListener('click', function() {
+        var label = this.getAttribute('data-notif-label');
+        notifToggles[label] = !notifToggles[label];
+        this.style.background = notifToggles[label] ? 'var(--primary)' : 'var(--surface-container-highest)';
+        var dot = this.querySelector('div');
+        if (dot) dot.style.left = notifToggles[label] ? '21px' : '3px';
+        showToast(label + ' notifications ' + (notifToggles[label] ? 'enabled' : 'disabled'), 'info');
+      });
+    });
+  } catch(e) {
+    console.error('Error setting up toggle listeners:', e);
+  }
+
+  loadSettings();
+  console.log('Initialization complete');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SETTINGS FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+
+function loadSettings() {
+  var settings = JSON.parse(localStorage.getItem('barangay_settings')) || {};
+  if (settings.name) {
+    var nameInput = document.querySelector('#page-settings input[value="Barangay Payatas"]');
+    if (nameInput) nameInput.value = settings.name;
+  }
+  if (settings.district) {
+    var districtInput = document.querySelector('#page-settings input[value*="Quezon City"]');
+    if (districtInput) districtInput.value = settings.district;
+  }
+  if (settings.contact) {
+    var contactInput = document.querySelector('#page-settings input[value*="8123"]');
+    if (contactInput) contactInput.value = settings.contact;
+  }
+  if (settings.email) {
+    var emailInput = document.querySelector('#page-settings input[type="email"]');
+    if (emailInput) emailInput.value = settings.email;
+  }
+  if (settings.notifications) {
+    notifToggles = settings.notifications;
+    Object.keys(notifToggles).forEach(function(key) {
+      var toggle = document.querySelector('[data-notif-label="' + key + '"]');
+      if (toggle) {
+        toggle.style.background = notifToggles[key] ? 'var(--primary)' : 'var(--surface-container-highest)';
+        var dot = toggle.querySelector('div');
+        if (dot) dot.style.left = notifToggles[key] ? '21px' : '3px';
+      }
+    });
   }
 }
 
-// Add Enter key listener for login form
-document.getElementById('login-password').addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') {
-    login();
-  }
-});
+function saveSettings() {
+  var barangayName = document.querySelector('#page-settings input[value="Barangay Payatas"]').value;
+  var district = document.querySelector('#page-settings input[value*="Quezon City"]').value;
+  var contact = document.querySelector('#page-settings input[value*="8123"]').value;
+  var email = document.querySelector('#page-settings input[type="email"]').value;
+
+  localStorage.setItem('barangay_settings', JSON.stringify({
+    name: barangayName,
+    district: district,
+    contact: contact,
+    email: email,
+    notifications: notifToggles
+  }));
+
+  showToast('Settings saved successfully!', 'success');
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
