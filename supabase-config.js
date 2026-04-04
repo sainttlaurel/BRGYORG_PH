@@ -1,23 +1,8 @@
-// ============================================================
-// SUPABASE CONFIGURATION
-// Payatas Ledger - Civic Management System
-// ============================================================
-
-// Supabase Configuration
-// IMPORTANT: Replace with your actual Supabase credentials from Dashboard -> Settings -> API
-// The anon key is a JWT token that starts with "eyJ..."
-
-// Option 1: Direct values (replace with your actual credentials)
 const SUPABASE_CONFIG = {
-  url: 'https://xyaqigazszqhvvglqint.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5YXFpZ2F6c3pxaHF2Z2xxaW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMyOTI5NDcsImV4cCI6MjA1ODg2ODk0N30.1sM3YnH3_qE8vZ8gLkXvJvX0yL0tE0nO5tL0d4N8Yc'
+  url: '',
+  anonKey: ''
 };
 
-// Option 2: If you have proper env variables (for production builds only)
-// const SUPABASE_CONFIG = {
-//   url: window.ENV?.SUPABASE_URL || 'https://xyaqigazszqhvvglqint.supabase.co',
-//   anonKey: window.ENV?.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-// };
 
 // Initialize Supabase Client
 let supabaseClient = null;
