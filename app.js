@@ -189,12 +189,17 @@ function initApp() {
 function renderResidentsTable() {
   var tbody = document.getElementById('residents-table');
   if (!tbody) return;
-  tbody.innerHTML = residents.map(function(r) {
+  
+  // Color palette for avatars
+  var avatarColors = ['#dbeafe,#1e3a8a', '#dcfce7,#14532d', '#fef9c3,#92400e', '#fee2e2,#991b1b', '#fce7f3,#9d174d', '#e0e7ff,#4338ca', '#fed7aa,#c2410c'];
+  
+  tbody.innerHTML = residents.map(function(r, i) {
+    var colors = avatarColors[i % avatarColors.length].split(',');
     return '<tr>' +
-      '<td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">' + r.initials + '</div><div><div class="font-bold">' + r.name + '</div><div class="text-xs text-muted">' + r.id + '</div></div></div></td>' +
+      '<td><div class="tbl-user"><div class="av" style="background:linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')">' + r.initials + '</div><div class="tbl-user-info"><span class="tbl-user-name">' + r.name + '</span><span class="tbl-user-sub">' + r.id + '</span></div></div></td>' +
       '<td><div class="font-bold text-sm">' + r.address + '</div><div class="text-xs text-muted">' + r.purok + '</div></td>' +
       '<td><div class="text-sm">' + r.phone + '</div><div class="text-xs text-muted">' + r.email + '</div></td>' +
-      '<td><span class="badge ' + (r.status === 'Active' ? 'badge-approved' : 'badge-pending') + '">' + r.status + '</span></td>' +
+      '<td><div class="status-row"><span class="status-indicator ' + (r.status === 'Active' ? 'status-active' : 'status-inactive') + '"></span><span class="badge ' + (r.status === 'Active' ? 'badge-approved' : 'badge-pending') + '">' + r.status + '</span></div></td>' +
       '<td><button class="tbl-action-btn" onclick="editResident(\'' + r.id + '\')"><span class="material-symbols-outlined">edit</span></button>' +
       '<button class="tbl-action-btn danger" onclick="deleteResident(\'' + r.id + '\')"><span class="material-symbols-outlined">delete</span></button></td></tr>';
   }).join('');
@@ -203,14 +208,19 @@ function renderResidentsTable() {
 function renderDocumentsTable() {
   var tbody = document.getElementById('documents-table');
   if (!tbody) return;
-  tbody.innerHTML = documents.map(function(d) {
-    var badgeClass = d.status === 'Approved' ? 'badge-approved' : (d.status === 'Rejected' ? 'badge-rejected' : 'badge-pending');
+  
+  var avatarColors = ['#dbeafe,#1e3a8a', '#dcfce7,#14532d', '#fef9c3,#92400e', '#fee2e2,#991b1b', '#fce7f3,#9d174d'];
+  
+  tbody.innerHTML = documents.map(function(d, i) {
+    var badgeClass = d.status === 'Approved' ? 'badge-approved' : (d.status === 'Rejected' ? 'badge-rejected' : (d.status === 'Ready for Pickup' ? 'badge-pickup' : 'badge-pending'));
+    var statusIndicator = d.status === 'Approved' ? 'status-active' : (d.status === 'Rejected' ? 'status-inactive' : 'status-pending');
     var initials = d.name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+    var colors = avatarColors[i % avatarColors.length].split(',');
     return '<tr>' +
-      '<td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">' + initials + '</div><span class="font-bold">' + d.name + '</span></div></td>' +
+      '<td><div class="tbl-user"><div class="av" style="background:linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')">' + initials + '</div><span class="font-bold">' + d.name + '</span></div></td>' +
       '<td class="text-muted">' + d.type + '</td>' +
       '<td class="text-muted text-sm">' + d.date + '</td>' +
-      '<td><span class="badge ' + badgeClass + '">' + d.status + '</span></td>' +
+      '<td><div class="status-row"><span class="status-indicator ' + statusIndicator + '"></span><span class="badge ' + badgeClass + '">' + d.status + '</span></div></td>' +
       '<td><button class="tbl-action-btn" onclick="viewDoc(\'' + d.id + '\')"><span class="material-symbols-outlined">visibility</span></button>' +
       (d.status === 'Pending' ? '<button class="tbl-action-btn" style="color:#16a34a" onclick="approveDoc(\'' + d.id + '\')"><span class="material-symbols-outlined">check</span></button><button class="tbl-action-btn danger" onclick="rejectDoc(\'' + d.id + '\')"><span class="material-symbols-outlined">close</span></button>' : '') + '</td></tr>';
   }).join('');
@@ -220,7 +230,8 @@ function renderDocumentsTable() {
   if (dashTbody) {
     dashTbody.innerHTML = documents.slice(0, 5).map(function(d) {
       var badgeClass = d.status === 'Approved' ? 'badge-approved' : (d.status === 'Rejected' ? 'badge-rejected' : 'badge-pending');
-      return '<tr><td>' + d.name + '</td><td class="text-muted">' + d.type + '</td><td class="text-muted text-sm">' + d.date + '</td><td><span class="badge ' + badgeClass + '">' + d.status + '</span></td></tr>';
+      var statusIndicator = d.status === 'Approved' ? 'status-active' : (d.status === 'Rejected' ? 'status-inactive' : 'status-pending');
+      return '<tr><td>' + d.name + '</td><td class="text-muted">' + d.type + '</td><td class="text-muted text-sm">' + d.date + '</td><td><div class="status-row"><span class="status-indicator ' + statusIndicator + '"></span><span class="badge ' + badgeClass + '">' + d.status + '</span></div></td></tr>';
     }).join('');
   }
 }
@@ -230,10 +241,11 @@ function renderComplaintsTable() {
   if (!tbody) return;
   tbody.innerHTML = complaints.map(function(c) {
     var priorityColor = c.priority === 'Urgent' ? '#dc2626' : (c.priority === 'Standard' ? '#3b82f6' : '#10b981');
-    var statusClass = c.status === 'Resolved' ? 'badge-approved' : (c.status === 'In Progress' ? 'badge-inprogress' : 'badge-pending');
+    var statusClass = c.status === 'Resolved' ? 'badge-resolved' : (c.status === 'In Progress' ? 'badge-inprogress' : 'badge-pending');
+    var statusIndicator = c.status === 'Resolved' ? 'status-active' : (c.status === 'In Progress' ? 'status-pending' : 'status-urgent');
     return '<tr>' +
-      '<td><div class="flex-center gap-2"><div style="width:8px;height:8px;border-radius:50%;background:' + priorityColor + '"></div><span class="font-bold">' + c.category + '</span></div></td>' +
-      '<td><span class="badge ' + statusClass + '">' + c.status + '</span></td>' +
+      '<td><div class="flex-center gap-2"><div style="width:8px;height:8px;border-radius:50%;background:' + priorityColor + ';box-shadow: 0 0 8px ' + priorityColor + '80"></div><span class="font-bold">' + c.category + '</span></div></td>' +
+      '<td><div class="status-row"><span class="status-indicator ' + statusIndicator + '"></span><span class="badge ' + statusClass + '">' + c.status + '</span></div></td>' +
       '<td class="text-muted">' + c.submitter + '</td>' +
       '<td class="text-muted text-sm">' + c.date + '</td>' +
       '<td><button class="tbl-action-btn" onclick="viewComplaint(\'' + c.id + '\')"><span class="material-symbols-outlined">visibility</span></button></td></tr>';
@@ -273,13 +285,18 @@ function renderAnnouncementsGrid() {
 function renderUsersTable() {
   var tbody = document.getElementById('users-table');
   if (!tbody) return;
-  tbody.innerHTML = users.map(function(u) {
-    var roleBadge = u.role === 'Super Administrator' || u.role === 'Administrator' ? '<span style="background:#dbeafe;color:#1e3a8a;padding:3px 8px;border-radius:6px;font-size:10px;">' + u.role + '</span>' : '<span style="background:#f1f5f9;color:#475569;padding:3px 8px;border-radius:6px;font-size:10px;">' + u.role + '</span>';
+  
+  var roleColors = ['#dbeafe,#1e3a8a', '#dcfce7,#14532d', '#fef9c3,#92400e', '#fee2e2,#991b1b'];
+  
+  tbody.innerHTML = users.map(function(u, i) {
+    var colors = roleColors[i % roleColors.length].split(',');
+    var isAdmin = u.role === 'Super Administrator' || u.role === 'Administrator';
+    var roleClass = isAdmin ? 'badge-ongoing' : 'badge-standard';
     return '<tr>' +
-      '<td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">' + getInitials(u.name) + '</div><div><div class="font-bold">' + u.name + '</div><div class="text-xs text-muted">' + u.username + '</div></div></div></td>' +
-      '<td>' + roleBadge + '</td>' +
+      '<td><div class="tbl-user"><div class="av" style="background:linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')">' + getInitials(u.name) + '</div><div class="tbl-user-info"><span class="tbl-user-name">' + u.name + '</span><span class="tbl-user-sub">' + u.username + '</span></div></div></td>' +
+      '<td><span class="badge ' + roleClass + '">' + u.role + '</span></td>' +
       '<td class="text-muted">' + u.email + '</td>' +
-      '<td><span class="badge ' + (u.status === 'Active' ? 'badge-approved' : 'badge-pending') + '">' + u.status + '</span></td>' +
+      '<td><div class="status-row"><span class="status-indicator ' + (u.status === 'Active' ? 'status-active' : 'status-inactive') + '"></span><span class="badge ' + (u.status === 'Active' ? 'badge-approved' : 'badge-pending') + '">' + u.status + '</span></div></td>' +
       '<td><button class="tbl-action-btn" onclick="editUser(\'' + u.id + '\')"><span class="material-symbols-outlined">edit</span></button><button class="tbl-action-btn danger" onclick="deleteUser(\'' + u.id + '\')"><span class="material-symbols-outlined">delete</span></button></td></tr>';
   }).join('');
 }
