@@ -1,11 +1,574 @@
-/* ============================================================
-   PAYATAS LEDGER — app.js
-   Full interactive functionality for all buttons and features
-   ============================================================ */
+// ══════════════════════════════════════════════════════════════
+// DATA LOADING FROM SUPABASE
+// ══════════════════════════════════════════════════════════════
 
-// ─── DATA STORES ────────────────────────────────────────────
+// Global data stores (loaded from Supabase)
+let residents = [];
+let documents = [];
+let complaints = [];
+let projects = [];
+let announcements = [];
 
-let residents = [
+// Load all data from Supabase
+async function loadAllData() {
+  try {
+    // Load residents
+    const residentsData = await getResidents();
+    if (residentsData && residentsData.length > 0) {
+      residents = residentsData.map(function(r) {
+        return {
+          id: r.resident_id || r.id,
+          initials: r.initials || getInitials(r.name),
+          color: '#dbeafe',
+          tcolor: '#1e3a8a',
+          name: r.name,
+          address: r.address,
+          purok: r.purok,
+          phone: r.phone,
+          email: r.email,
+          status: r.status
+        };
+      });
+    } else {
+      // Use fallback data if empty
+      residents = fallbackResidents;
+    }
+    
+    // Load documents
+    const documentsData = await getDocuments();
+    if (documentsData && documentsData.length > 0) {
+      documents = documentsData.map(function(d) {
+        return {
+          id: d.doc_id || d.id,
+          initials: d.resident_name ? getInitials(d.resident_name) : '??',
+          color: '#dbeafe',
+          tcolor: '#1e3a8a',
+          name: d.resident_name,
+          type: d.document_type,
+          date: d.requested_date ? new Date(d.requested_date).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : 'N/A',
+          status: d.status
+        };
+      });
+    } else {
+      // Use fallback data if empty
+      documents = fallbackDocuments;
+    }
+    
+    console.log('✅ Data loaded from Supabase');
+    return true;
+  } catch (error) {
+    console.error('Error loading data, using fallback:', error);
+    // Use fallback data on error
+    residents = fallbackResidents;
+    documents = fallbackDocuments;
+    return false;
+  }
+}
+
+// Update login to use Supabase authentication
+async function login() {
+  var username = document.getElementById('login-username').value.trim();
+  var password = document.getElementById('login-password').value;
+  var errorEl = document.getElementById('login-error');
+  
+  if (!username || !password) {
+    errorEl.textContent = 'Please enter username and password.';
+    return;
+  }
+  
+  try {
+    // Try to authenticate with Supabase
+    const user = await authenticateUser(username, password);
+    
+    if (user) {
+      if (user.status !== 'Active') {
+        errorEl.textContent = 'Your account is deactivated. Contact administrator.';
+        return;
+      }
+      
+      // Update last login
+      await updateUser(user.id, { last_login: new Date().toISOString() });
+      
+      // Set current user
+      currentUser = {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        lastLogin: user.last_login || 'Now'
+      };
+      
+      sessionStorage.setItem('payatas_current_user', JSON.stringify(currentUser));
+      
+      errorEl.textContent = '';
+      
+      // Load data from Supabase
+      await loadAllData();
+      
+      showMainApp();
+      updateUserInfo();
+      renderResidentTable();
+      renderDocumentsTable();
+      renderUsersTable();
+      updateUserStats();
+      updateAdminUI();
+      showToast('Welcome back, ' + user.name + '!', 'success');
+    }
+  } catch (error) {
+    console.log('Supabase auth failed, using fallback:', error.message);
+    
+    // Fallback to localStorage for offline/demo mode
+    var localUsers = JSON.parse(localStorage.getItem('payatas_users')) || defaultUsers;
+    var user = localUsers.find(function(u) { return u.username === username && u.password === password; });
+    
+    if (user) {
+      if (user.status !== 'Active') {
+        errorEl.textContent = 'Your account is deactivated. Contact administrator.';
+        return;
+      }
+      
+      user.lastLogin = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+      localStorage.setItem('payatas_users', JSON.stringify(localUsers));
+      
+      currentUser = user;
+      sessionStorage.setItem('payatas_current_user', JSON.stringify(user));
+      
+      errorEl.textContent = '';
+      showMainApp();
+      updateUserInfo();
+      renderResidentTable();
+      renderDocumentsTable();
+      updateAdminUI();
+      showToast('Welcome back, ' + user.name + '! (Offline Mode)', 'info');
+    } else {
+      errorEl.textContent = 'Invalid username or password.';
+    }
+  }
+}
+
+// Fallback default users for offline mode
+var defaultUsers = [
+  { id: 'USR-001', username: 'admin', password: 'admin123', name: 'Admin Payatas', email: 'admin@payatas.gov.ph', role: 'Super Administrator', status: 'Active', lastLogin: 'April 5, 2026 - 8:14 AM' },
+  { id: 'USR-002', username: 'staff1', password: 'staff123', name: 'Maria Santos', email: 'maria.santos@payatas.gov.ph', role: 'Staff', status: 'Active', lastLogin: 'April 4, 2026 - 3:45 PM' },
+  { id: 'USR-003', username: 'staff2', password: 'staff123', name: 'Juan Dela Cruz', email: 'juan.delacruz@payatas.gov.ph', role: 'Staff', status: 'Active', lastLogin: 'April 3, 2026 - 9:20 AM' }
+];
+
+var users = JSON.parse(localStorage.getItem('payatas_users')) || defaultUsers;
+if (!localStorage.getItem('payatas_users')) {
+  localStorage.setItem('payatas_users', JSON.stringify(defaultUsers));
+}
+
+var currentUser = JSON.parse(sessionStorage.getItem('payatas_current_user')) || null;
+
+// Check if user is logged in on page load
+function checkAuth() {
+  if (currentUser) {
+    showMainApp();
+    updateUserInfo();
+    loadAllData().then(function() {
+      renderResidentTable();
+      renderDocumentsTable();
+      updateAdminUI();
+    });
+    // Also load users for admin
+    if (isAdmin()) {
+      loadUsersFromSupabase();
+    }
+  }
+}
+
+async function loadUsersFromSupabase() {
+  try {
+    const usersData = await getUsers();
+    if (usersData) {
+      users = usersData.map(function(u) {
+        return {
+          id: u.id,
+          username: u.username,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          status: u.status,
+          lastLogin: u.last_login || 'Never'
+        };
+      });
+    }
+  } catch (error) {
+    console.log('Using local users (offline mode)');
+  }
+  renderUsersTable();
+  updateUserStats();
+}
+
+function logout() {
+  openModal('Confirm Logout',
+    '<div style="text-align:center;padding:16px 0;"><div style="width:56px;height:56px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">'+
+      '<span class="material-symbols-outlined" style="font-size:28px;color:#d97706">logout</span></div>'+
+      '<p style="font-size:14px;color:var(--on-surface-variant);line-height:1.6;">Are you sure you want to log out?</p></div>',
+    btnSec('Cancel','closeModal()')+' <button onclick="confirmLogout()" style="'+btnPrimStyle()+'background:linear-gradient(135deg,#dc2626,#ef4444);">Log Out</button>'
+  );
+}
+
+function confirmLogout() {
+  sessionStorage.removeItem('payatas_current_user');
+  currentUser = null;
+  residents = [];
+  documents = [];
+  closeModal();
+  hideMainApp();
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').textContent = '';
+  showToast('You have been logged out.', 'info');
+}
+
+function showMainApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+}
+
+function hideMainApp() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+}
+
+function updateUserInfo() {
+  if (!currentUser) return;
+  
+  var avatar = document.querySelector('.avatar');
+  var nameEl = document.querySelector('.user-info .name');
+  var roleEl = document.querySelector('.user-info .role');
+  
+  if (avatar) avatar.textContent = getInitials(currentUser.name);
+  if (nameEl) nameEl.textContent = currentUser.name;
+  if (roleEl) roleEl.textContent = currentUser.role;
+}
+
+function getInitials(name) {
+  return name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+}
+
+function togglePassword() {
+  var passwordInput = document.getElementById('login-password');
+  var icon = document.querySelector('.toggle-password .material-symbols-outlined');
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    icon.textContent = 'visibility_off';
+  } else {
+    passwordInput.type = 'password';
+    icon.textContent = 'visibility';
+  }
+}
+
+function isAdmin() {
+  return currentUser && (currentUser.role === 'Super Administrator' || currentUser.role === 'Administrator');
+}
+
+function updateAdminUI() {
+  var adminElements = document.querySelectorAll('.admin-only');
+  adminElements.forEach(function(el) {
+    el.style.display = isAdmin() ? '' : 'none';
+  });
+}
+  var printWindow = window.open('', '_blank', 'width=800,height=600');
+  printWindow.document.write('<!DOCTYPE html><html><head><title>' + title + '</title>');
+  printWindow.document.write('<style>@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap");');
+  printWindow.document.write('body{font-family:"Inter",sans-serif;padding:40px;max-width:800px;margin:0 auto;color:#191c1d;}');
+  printWindow.document.write('h1{font-size:24px;font-weight:800;margin-bottom:8px;}');
+  printWindow.document.write('h2{font-size:18px;font-weight:700;margin:20px 0 10px;}');
+  printWindow.document.write('p{font-size:14px;color:#434655;line-height:1.6;}');
+  printWindow.document.write('.meta{font-size:12px;color:#64748b;margin-bottom:20px;}');
+  printWindow.document.write('.section{border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:16px;}');
+  printWindow.document.write('.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;}');
+  printWindow.document.write('.label{font-size:12px;font-weight:600;color:#64748b;}');
+  printWindow.document.write('.value{font-size:13px;font-weight:600;}');
+  printWindow.document.write('.badge{display:inline-block;padding:4px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;}');
+  printWindow.document.write('.badge-pending{background:#fef9c3;color:#92400e;}');
+  printWindow.document.write('.badge-approved{background:#dcfce7;color:#14532d;}');
+  printWindow.document.write('.badge-rejected{background:#fee2e2;color:#991b1b;}');
+  printWindow.document.write('.footer{margin-top:30px;padding-top:20px;border-top:2px solid #004ac6;text-align:center;font-size:12px;color:#64748b;}');
+  printWindow.document.write('@media print{@page{margin:20mm;}}</style></head><body>');
+  printWindow.document.write(content);
+  printWindow.document.write('<div class="footer">Barangay Payatas Civic Management System<br>Printed on ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}) + '</div>');
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(function(){ printWindow.print(); },500);
+
+function printDocumentRequest(id) {
+  var d = documents.find(function(x){ return x.id===id; });
+  if (!d) return;
+  var badgeClass = d.status === 'Approved' ? 'badge-approved' : (d.status === 'Rejected' ? 'badge-rejected' : 'badge-pending');
+  var content = '<h1>Barangay Payatas</h1><p class="meta">Document Request Certificate</p>';
+  content += '<div class="section"><div class="row"><span class="label">Request ID</span><span class="value">' + d.id + '</span></div>';
+  content += '<div class="row"><span class="label">Resident Name</span><span class="value">' + d.name + '</span></div>';
+  content += '<div class="row"><span class="label">Document Type</span><span class="value">' + d.type + '</span></div>';
+  content += '<div class="row"><span class="label">Request Date</span><span class="value">' + d.date + '</span></div>';
+  content += '<div class="row"><span class="label">Status</span><span class="value"><span class="badge ' + badgeClass + '">' + d.status + '</span></span></div></div>';
+  content += '<div style="margin-top:20px;"><h2>Certification</h2><p>This certifies that the above document request has been processed by the Barangay Payatas Administration. For verification, please contact the barangay office.</p></div>';
+  printContent(content, 'Document Request - ' + d.id);
+  showToast('Printing document request for ' + d.name, 'info');
+}
+
+function printResidentRecord(id) {
+  var r = residents.find(function(x){ return x.id===id; });
+  if (!r) return;
+  var statusClass = r.status === 'Active' ? 'badge-approved' : 'badge-pending';
+  var content = '<h1>Barangay Payatas</h1><p class="meta">Resident Identification Record</p>';
+  content += '<div class="section"><div class="row"><span class="label">Resident ID</span><span class="value">' + r.id + '</span></div>';
+  content += '<div class="row"><span class="label">Full Name</span><span class="value">' + r.name + '</span></div>';
+  content += '<div class="row"><span class="label">Address</span><span class="value">' + r.address + '</span></div>';
+  content += '<div class="row"><span class="label">Purok</span><span class="value">' + r.purok + '</span></div>';
+  content += '<div class="row"><span class="label">Phone</span><span class="value">' + r.phone + '</span></div>';
+  content += '<div class="row"><span class="label">Email</span><span class="value">' + r.email + '</span></div>';
+  content += '<div class="row"><span class="label">Status</span><span class="value"><span class="badge ' + statusClass + '">' + r.status + '</span></span></div></div>';
+  content += '<div style="margin-top:20px;"><p>This is an official record from the Barangay Payatas Resident Database.</p></div>';
+  printContent(content, 'Resident Record - ' + r.id);
+  showToast('Printing resident record for ' + r.name, 'info');
+}
+
+function printComplaintRecord(id) {
+  var content = '<h1>Barangay Payatas</h1><p class="meta">Complaint Acknowledgment</p>';
+  content += '<div class="section"><div class="row"><span class="label">Case ID</span><span class="value">#CP-' + Math.floor(Math.random()*9000+1000) + '</span></div>';
+  content += '<div class="row"><span class="label">Date Filed</span><span class="value">' + new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) + '</span></div>';
+  content += '<div class="row"><span class="label">Status</span><span class="value"><span class="badge badge-pending">Processing</span></span></div></div>';
+  content += '<div style="margin-top:20px;"><p>Your complaint has been received and is being processed. Reference case number for follow-ups.</p></div>';
+  printContent(content, 'Complaint Acknowledgment');
+  showToast('Printing complaint acknowledgment', 'info');
+}
+
+function printProjectReport() {
+  var content = '<h1>Barangay Payatas</h1><p class="meta">Community Projects Report - ' + new Date().toLocaleDateString('en-US', {month:'long',year:'numeric'}) + '</p>';
+  content += '<div class="section"><h2>Project Summary</h2>';
+  content += '<div class="row"><span class="label">Total Budget</span><span class="value">₱4,200,000</span></div>';
+  content += '<div class="row"><span class="label">Ongoing Projects</span><span class="value">12</span></div>';
+  content += '<div class="row"><span class="label">Completed</span><span class="value">24</span></div>';
+  content += '<div class="row"><span class="label">Planned</span><span class="value">8</span></div></div>';
+  content += '<div style="margin-top:20px;"><p>Generated from Payatas Ledger Community Projects Module.</p></div>';
+  printContent(content, 'Projects Report');
+  showToast('Printing projects report', 'info');
+}
+
+function printAnnouncement(id) {
+  var content = '<h1>Barangay Payatas</h1><p class="meta">Official Announcement</p>';
+  content += '<div class="section"><h2>Community Notice</h2><p>This announcement has been posted by the Barangay Administration for community awareness.</p></div>';
+  content += '<div style="margin-top:20px;"><p>For inquiries, please contact the Barangay Hall.</p></div>';
+  printContent(content, 'Announcement');
+  showToast('Printing announcement', 'info');
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPORT FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+
+function exportToCSV(data, filename, headers) {
+  var csv = headers.join(',') + '\n';
+  data.forEach(function(row) {
+    csv += row.join(',') + '\n';
+  });
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function exportResidentsCSV() {
+  var headers = ['ID', 'Name', 'Address', 'Purok', 'Phone', 'Email', 'Status'];
+  var data = residents.map(function(r) {
+    return [r.id, '"' + r.name + '"', '"' + r.address + '"', r.purok, r.phone, r.email, r.status];
+  });
+  exportToCSV(data, 'payatas_residents', headers);
+  showToast('Residents data exported to CSV!', 'success');
+}
+
+function exportDocumentsCSV() {
+  var headers = ['ID', 'Resident Name', 'Document Type', 'Date', 'Status'];
+  var data = documents.map(function(d) {
+    return [d.id, '"' + d.name + '"', d.type, d.date, d.status];
+  });
+  exportToCSV(data, 'payatas_documents', headers);
+  showToast('Documents data exported to CSV!', 'success');
+}
+
+function exportComplaintsCSV() {
+  var headers = ['Case ID', 'Category', 'Priority', 'Status', 'Date Submitted'];
+  var data = [
+    ['CP-8842', 'Health & Sanitation', 'Urgent', 'Pending Assessment', 'Oct 22, 2023'],
+    ['CP-8841', 'Infrastructure', 'Standard', 'In Progress', 'Oct 23, 2023'],
+    ['CP-8839', 'Noise Disturbance', 'Low Urgency', 'Resolved', 'Oct 20, 2023'],
+    ['CP-8843', 'Infrastructure', 'Urgent', 'Awaiting Dispatch', 'Oct 24, 2023']
+  ];
+  exportToCSV(data, 'payatas_complaints', headers);
+  showToast('Complaints data exported to CSV!', 'success');
+}
+
+function exportProjectsCSV() {
+  var headers = ['Project Name', 'Status', 'Budget', 'Timeline', 'Progress'];
+  var data = [
+    ['Phase 4 Main Road Rehabilitation', 'Ongoing', '₱1,250,000', 'Dec 2023', '65%'],
+    ['Solar-Powered Lighting Initiative', 'Completed', '₱450,000', 'Sep 2023', '100%'],
+    ['Multipurpose Hall Expansion', 'Planned', '₱2,800,000', 'Jan 2024', '0%'],
+    ['Central Payatas Drainage Upgrade', 'Ongoing', '₱3,200,000', 'March 2024', '28%']
+  ];
+  exportToCSV(data, 'payatas_projects', headers);
+  showToast('Projects data exported to CSV!', 'success');
+}
+
+function exportToPDF(content, title) {
+  var printWindow = window.open('', '_blank', 'width=800,height=600');
+  printWindow.document.write('<!DOCTYPE html><html><head><title>' + title + '</title>');
+  printWindow.document.write('<style>@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap");');
+  printWindow.document.write('body{font-family:"Inter",sans-serif;padding:40px;max-width:800px;margin:0 auto;color:#191c1d;}');
+  printWindow.document.write('h1{font-size:24px;font-weight:800;margin-bottom:8px;}');
+  printWindow.document.write('.meta{font-size:12px;color:#64748b;margin-bottom:20px;}');
+  printWindow.document.write('.section{border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:16px;}');
+  printWindow.document.write('.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;}');
+  printWindow.document.write('.label{font-size:12px;font-weight:600;color:#64748b;}');
+  printWindow.document.write('.value{font-size:13px;font-weight:600;}');
+  printWindow.document.write('.footer{margin-top:30px;padding-top:20px;border-top:2px solid #004ac6;text-align:center;font-size:12px;color:#64748b;}');
+  printWindow.document.write('@media print{@page{margin:20mm;}}</style></head><body>');
+  printWindow.document.write(content);
+  printWindow.document.write('<div class="footer">Barangay Payatas Civic Management System<br>Generated on ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}) + '</div>');
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(function(){ printWindow.print(); },500);
+}
+
+function exportDashboardReport() {
+  var content = '<h1>Barangay Payatas</h1><p class="meta">Dashboard Overview Report - ' + new Date().toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'}) + '</p>';
+  content += '<div class="section"><h2>Statistics</h2>';
+  content += '<div class="row"><span class="label">Total Residents</span><span class="value">42,305</span></div>';
+  content += '<div class="row"><span class="label">Pending Requests</span><span class="value">18</span></div>';
+  content += '<div class="row"><span class="label">Active Complaints</span><span class="value">5</span></div>';
+  content += '<div class="row"><span class="label">Ongoing Projects</span><span class="value">3</span></div></div>';
+  exportToPDF(content, 'Dashboard Report');
+  showToast('Dashboard report exported!', 'success');
+}
+
+function generateResidentPDF(id) {
+  var r = residents.find(function(x){ return x.id===id; });
+  if (!r) return;
+  var content = '<h1>Barangay Payatas</h1><p class="meta">Resident Certificate</p>';
+  content += '<div class="section"><div class="row"><span class="label">Resident ID</span><span class="value">' + r.id + '</span></div>';
+  content += '<div class="row"><span class="label">Name</span><span class="value">' + r.name + '</span></div>';
+  content += '<div class="row"><span class="label">Address</span><span class="value">' + r.address + '</span></div>';
+  content += '<div class="row"><span class="label">Purok</span><span class="value">' + r.purok + '</span></div>';
+  content += '<div class="row"><span class="label">Status</span><span class="value">' + r.status + '</span></div></div>';
+  content += '<div style="margin-top:20px;"><p style="font-size:14px;">This is to certify that the above individual is a registered resident of Barangay Payatas.</p>';
+  content += '<p style="font-size:12px;color:#64748b;margin-top:10px;">Document ID: CERT-' + Math.floor(Math.random()*90000+10000) + '</p></div>';
+  exportToPDF(content, 'Resident Certificate - ' + r.name);
+  showToast('Generating resident certificate for ' + r.name, 'success');
+}
+
+// ══════════════════════════════════════════════════════════════
+// NEW REQUEST FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+
+function openNewRequestModal() {
+  openModal('New Document Request',
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      '<div style="background:#dbeafe;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:4px;">'+
+        '<span class="material-symbols-outlined" style="color:#1e3a8a;font-size:20px;">description</span>'+
+        '<span style="font-size:12px;font-weight:700;color:#1e3a8a;">New Document Request</span></div>'+
+      field('Resident Name','doc-name','text','Full name of resident')+
+      field('Document Type','doc-type','select','',['Barangay Clearance','Certificate of Indigency','Business Permit','Residency Certificate','Good Moral Certificate'])+
+      field('Purpose','doc-purpose','text','Reason for request')+
+      field('Priority','doc-prio','select','',['Standard','Urgent'])+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Submit Request','saveDocRequest()')
+  );
+}
+
+function openNewComplaintModal() {
+  openModal('File New Complaint',
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      '<div style="background:#fee2e2;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:4px;">'+
+        '<span class="material-symbols-outlined" style="color:#991b1b;font-size:20px;">gavel</span>'+
+        '<span style="font-size:12px;font-weight:700;color:#991b1b;">Submit New Complaint</span></div>'+
+      field('Complainant Name','cmp-name','text','Full name')+
+      field('Category','cmp-cat','select','',['Health & Sanitation','Infrastructure','Security','Waste Management','Noise Disturbance','Public Safety'])+
+      field('Priority','cmp-prio','select','',['Urgent','Standard','Low Urgency'])+
+      field('Location / Purok','cmp-loc','text','Street or Purok')+
+      field('Description','cmp-desc','textarea','Describe the complaint in detail...')+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Submit Complaint','saveNewComplaint()')
+  );
+}
+
+function saveNewComplaint() {
+  var name = val('cmp-name');
+  var category = val('cmp-cat');
+  if (!name) { showToast('Please enter complainant name.', 'error'); return; }
+  var caseId = 'CP-' + Math.floor(Math.random()*9000+1000);
+  closeModal();
+  showToast('Complaint filed with Case ID #' + caseId + '!', 'success');
+}
+
+function openNewProjectModal() {
+  openModal('Create New Project',
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      '<div style="background:#ede9fe;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:4px;">'+
+        '<span class="material-symbols-outlined" style="color:#7c3aed;font-size:20px;">account_tree</span>'+
+        '<span style="font-size:12px;font-weight:700;color:#7c3aed;">New Community Project</span></div>'+
+      field('Project Title','prj-title','text','e.g. Phase 5 Drainage Upgrade')+
+      field('Status','prj-status','select','',['Planned','Ongoing','Completed'])+
+      field('Budget (₱)','prj-budget','text','e.g. 1,500,000')+
+      field('Target Date','prj-date','text','e.g. March 2024')+
+      field('Contractor','prj-contractor','text','Company name')+
+      field('Description','prj-desc','textarea','Brief description...')+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Create Project','saveNewProject()')
+  );
+}
+
+function saveNewProject() {
+  var title = val('prj-title');
+  if (!title) { showToast('Please enter project title.', 'error'); return; }
+  closeModal();
+  showToast('New project "' + title + '" created successfully!', 'success');
+}
+
+function openNewAnnouncementModal() {
+  openModal('Post New Announcement',
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      '<div style="background:#dcfce7;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:4px;">'+
+        '<span class="material-symbols-outlined" style="color:#065f46;font-size:20px;">campaign</span>'+
+        '<span style="font-size:12px;font-weight:700;color:#065f46;">New Community Announcement</span></div>'+
+      field('Title','ann-title-i','text','Announcement headline')+
+      field('Category','ann-cat-i','select','',['Advisory','Events','Governance','Schedule','Sports','Health','General'])+
+      field('Content','ann-content-i','textarea','Write the full announcement here...')+
+      field('Valid Until','ann-date-i','text','e.g. November 30, 2023')+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Post Announcement','saveAnnouncement()')
+  );
+}
+
+function openNewResidentModal() {
+  openModal('Add New Resident',
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      '<div style="background:#dbeafe;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:4px;">'+
+        '<span class="material-symbols-outlined" style="color:#1e3a8a;font-size:20px;">person_add</span>'+
+        '<span style="font-size:12px;font-weight:700;color:#1e3a8a;">Register New Resident</span></div>'+
+      field('Full Name','res-name','text','e.g. Juan dela Cruz')+
+      field('Address','res-address','text','Street, Block, Lot')+
+      field('Purok','res-purok','select','',['Purok 1','Purok 2','Purok 3','Purok 4','Purok 5','Purok 6','Purok 7','Purok 8','Purok 9'])+
+      field('Phone','res-phone','tel','+63 9XX XXX XXXX')+
+      field('Email','res-email','email','email@example.com')+
+      field('Status','res-status','select','',['Active','Inactive'])+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Save Resident','saveResident()')
+  );
+}
+
+// ─── DATA STORES (fallback data when offline or Supabase unavailable) ────
+
+// Fallback data when offline or Supabase unavailable
+var fallbackResidents = [
   { id:'PAY-2023-0842', initials:'MS', color:'#dbeafe', tcolor:'#1e3a8a', name:'Mateo Santos',      address:'124 Orchid St. Phase 2', purok:'Purok 4', phone:'+63 917 555 0192', email:'mateo@payatas.ph',     status:'Active'   },
   { id:'PAY-2023-1129', initials:'ER', color:'#dbeafe', tcolor:'#1e3a8a', name:'Elena Reyes',       address:'Blk 5 Lot 12, Area C',   purok:'Purok 1', phone:'+63 920 123 4567', email:'elena@payatas.ph',     status:'Active'   },
   { id:'PAY-2022-0450', initials:'JR', color:'#e2e8f0', tcolor:'#475569', name:'Juan Rivera',       address:'45 Molave Street',        purok:'Purok 2', phone:'+63 945 987 6543', email:'juan@payatas.ph',      status:'Inactive' },
@@ -13,7 +576,7 @@ let residents = [
   { id:'PAY-2023-2041', initials:'BR', color:'#dcfce7', tcolor:'#065f46', name:'Bernadette Ramos',  address:'33 Kalayaan Ave.',        purok:'Purok 5', phone:'+63 932 441 8800', email:'berna@payatas.ph',     status:'Active'   },
 ];
 
-let documents = [
+var fallbackDocuments = [
   { id:'DOC-001', initials:'MA', color:'#dbeafe', tcolor:'#1e3a8a', name:'Maria Alicia Dela Cruz', type:'Barangay Clearance',       date:'Oct 23, 2023', status:'Pending',          rejectReason:'' },
   { id:'DOC-002', initials:'RS', color:'#dbeafe', tcolor:'#1e3a8a', name:'Ricardo Santos',         type:'Business Permit',          date:'Oct 22, 2023', status:'Approved',         rejectReason:'' },
   { id:'DOC-003', initials:'JP', color:'#fef3c7', tcolor:'#92400e', name:'Juanito Pineda',         type:'Certificate of Indigency', date:'Oct 21, 2023', status:'Ready for Pickup', rejectReason:'' },
@@ -21,7 +584,7 @@ let documents = [
   { id:'DOC-005', initials:'FB', color:'#dbeafe', tcolor:'#1e3a8a', name:'Fernando Bautista',      type:'Business Permit',          date:'Oct 19, 2023', status:'Approved',         rejectReason:'' },
 ];
 
-let notifToggles = { 'Urgent Complaints': true, 'New Document Requests': true, 'Project Updates': false, 'Weekly Reports': true };
+var notifToggles = { 'Urgent Complaints': true, 'New Document Requests': true, 'Project Updates': false, 'Weekly Reports': true };
 
 // ─── TOAST ──────────────────────────────────────────────────
 
@@ -700,15 +1263,20 @@ document.querySelectorAll('.fab').forEach(function(fab){
 // ─── AVATAR / PROFILE ────────────────────────────────────────
 
 document.querySelector('.avatar').addEventListener('click', function(){
-  openModal('Admin Profile',
+  if (!currentUser) return;
+  var initials = getInitials(currentUser.name);
+  openModal('My Profile',
     '<div style="text-align:center;padding-bottom:20px;border-bottom:1px solid rgba(195,198,215,0.15);margin-bottom:20px;">'+
-      '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-container));display:flex;align-items:center;justify-content:center;color:white;font-size:20px;font-weight:800;margin:0 auto 12px;">AP</div>'+
-      '<div style="font-size:17px;font-weight:800;">Admin Payatas</div>'+
-      '<div style="font-size:12px;color:#94a3b8;margin-top:3px;">Super Administrator</div></div>'+
+      '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-container));display:flex;align-items:center;justify-content:center;color:white;font-size:20px;font-weight:800;margin:0 auto 12px;">'+initials+'</div>'+
+      '<div style="font-size:17px;font-weight:800;">'+currentUser.name+'</div>'+
+      '<div style="font-size:12px;color:#94a3b8;margin-top:3px;">'+currentUser.role+'</div></div>'+
     '<div style="display:flex;flex-direction:column;gap:12px;font-size:13.5px;">'+
-      kv('Email','admin@payatas.gov.ph')+kv('Role','Super Administrator')+kv('Last Login','October 24, 2023 – 8:14 AM')+
+      kv('Email', currentUser.email)+
+      kv('Role', currentUser.role)+
+      kv('Last Login', currentUser.lastLogin)+
+      kv('User ID', currentUser.id)+
     '</div>',
-    btnSec('Close','closeModal()')+' <button onclick="closeModal();showToast(\'Logged out.\',\'info\');" style="'+btnPrimStyle()+'background:linear-gradient(135deg,#dc2626,#ef4444);">Log Out</button>'
+    btnSec('Close','closeModal()')+' <button onclick="closeModal();logout();" style="'+btnPrimStyle()+'background:linear-gradient(135deg,#dc2626,#ef4444);">Log Out</button>'
   );
 });
 
@@ -750,7 +1318,9 @@ function btnSec(label, onclick){
   return '<button onclick="'+onclick+'" style="padding:9px 18px;background:#f1f5f9;color:#191c1d;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">'+label+'</button>';
 }
 
-// ─── KEYFRAME STYLES ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ══════════════════════════════════════════════════════════════
 
 var style=document.createElement('style');
 style.textContent='@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}'+
@@ -758,7 +1328,12 @@ style.textContent='@keyframes slideUp{from{opacity:0;transform:translateY(14px)}
   '#toast-container>div{animation:slideUp 0.22s ease;}';
 document.head.appendChild(style);
 
-// ─── INIT ────────────────────────────────────────────────────
+// Check authentication on page load
+checkAuth();
 
-renderResidentTable();
-renderDocumentsTable();
+// Add Enter key listener for login form
+document.getElementById('login-password').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    login();
+  }
+});

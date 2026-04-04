@@ -9,6 +9,41 @@
 <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
+
+<!-- ======================== LOGIN SCREEN ======================== -->
+<div id="login-screen" class="login-screen">
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="login-logo">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;font-size:48px;color:var(--primary)">account_balance</span>
+      </div>
+      <h1>Payatas Ledger</h1>
+      <p>Civic Management System</p>
+    </div>
+    <div class="login-form">
+      <div class="login-input-group">
+        <span class="material-symbols-outlined">person</span>
+        <input type="text" id="login-username" placeholder="Username" autocomplete="username"/>
+      </div>
+      <div class="login-input-group">
+        <span class="material-symbols-outlined">lock</span>
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password"/>
+        <button type="button" class="toggle-password" onclick="togglePassword()">
+          <span class="material-symbols-outlined">visibility</span>
+        </button>
+      </div>
+      <div id="login-error" class="login-error"></div>
+      <button class="login-btn" onclick="login()">Sign In</button>
+    </div>
+    <div class="login-footer">
+      <p>Barangay Payatas Administration &copy; 2026</p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== MAIN APP (hidden until login) ======================== -->
+<div id="main-app" class="main-app" style="display:none">
+
 <!-- ======================== SIDEBAR ======================== -->
 <aside class="sidebar">
   <div class="sidebar-brand">
@@ -48,6 +83,10 @@
     <button class="nav-item" onclick="showPage('reports')">
       <span class="material-symbols-outlined">analytics</span>
       <span class="label">Reports</span>
+    </button>
+    <button class="nav-item admin-only" onclick="showPage('users')">
+      <span class="material-symbols-outlined">supervised_user_circle</span>
+      <span class="label">Users</span>
     </button>
     <button class="nav-item" onclick="showPage('settings')">
       <span class="material-symbols-outlined">settings</span>
@@ -99,8 +138,8 @@
       <p>Welcome back. Here is what's happening in Barangay Payatas today.</p>
     </div>
     <div class="pg-actions">
-      <button class="btn-secondary"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export Report</button>
-      <button class="btn-primary"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
+      <button class="btn-secondary" onclick="exportDashboardReport()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export Report</button>
+      <button class="btn-primary" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
     </div>
   </div>
 
@@ -272,8 +311,8 @@
       <p>Manage and monitor the status of Payatas residents.</p>
     </div>
     <div class="pg-actions">
-      <button class="btn-secondary"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export CSV</button>
-      <button class="btn-primary"><span class="material-symbols-outlined" style="font-size:16px">person_add</span> Add Resident</button>
+      <button class="btn-secondary" onclick="exportResidentsCSV()"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export CSV</button>
+      <button class="btn-primary" onclick="openNewResidentModal()"><span class="material-symbols-outlined" style="font-size:16px">person_add</span> Add Resident</button>
     </div>
   </div>
 
@@ -367,7 +406,11 @@
       <h2>Document Requests</h2>
       <p>Manage and process official document certifications for the residents of Barangay Payatas. Priority handling is suggested for urgent medical indigency requests.</p>
     </div>
-    <div style="display:flex;gap:16px;align-items:flex-end">
+    <div class="pg-actions">
+      <button class="btn-secondary" onclick="exportDocumentsCSV()"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export CSV</button>
+      <button class="btn-primary" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
+    </div>
+  </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="stat-card" style="padding:14px 18px">
           <div class="sc-label" style="color:var(--tertiary)">Queue Status</div>
@@ -378,7 +421,6 @@
           <div style="display:flex;align-items:baseline;gap:6px"><span class="sc-value" style="font-size:24px;color:var(--tertiary)">4.2</span><span class="text-xs text-muted">Hours / Request</span></div>
         </div>
       </div>
-    </div>
   </div>
 
   <div class="filter-bar">
@@ -389,8 +431,8 @@
     <span class="filter-label">Date:</span>
     <select class="filter-select"><option>Last 7 Days</option><option>This Month</option><option>Last 3 Months</option></select>
     <div class="ml-auto" style="display:flex;gap:8px">
-      <button class="btn-secondary" style="padding:7px 14px;font-size:12px">Clear Filters</button>
-      <button class="btn-primary" style="padding:7px 16px;font-size:12px">Apply View</button>
+      <button class="btn-secondary" style="padding:7px 14px;font-size:12px" onclick="renderDocumentsTable(); showToast('Filters cleared.', 'info');">Clear Filters</button>
+      <button class="btn-primary" style="padding:7px 16px;font-size:12px" onclick="renderDocumentsTable(); showToast('View updated.', 'info');">Apply View</button>
     </div>
   </div>
 
@@ -456,7 +498,7 @@
     </div>
     <div style="display:flex;gap:20px;font-size:12px;font-weight:600">
       <a href="#" style="color:var(--on-surface-variant);text-decoration:none">System Manual</a>
-      <a href="#" style="color:var(--on-surface-variant);text-decoration:none">Export Log (CSV)</a>
+      <a href="#" style="color:var(--on-surface-variant);text-decoration:none" onclick="exportDocumentsCSV(); return false;">Export Log (CSV)</a>
       <a href="#" style="color:var(--tertiary);text-decoration:none">Support Escalation</a>
     </div>
   </div>
@@ -470,8 +512,9 @@
       <p>Review and manage reported issues within the community. Prioritize urgent matters and track resolution progress.</p>
     </div>
     <div class="pg-actions">
-      <button class="btn-secondary"><span class="material-symbols-outlined" style="font-size:16px">tune</span> Filters</button>
-      <button class="btn-primary"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Entry</button>
+      <button class="btn-secondary" onclick="exportComplaintsCSV()">Export CSV</button>
+      <button class="btn-secondary" onclick="printComplaintRecord()"><span class="material-symbols-outlined" style="font-size:16px">print</span> Print Report</button>
+      <button class="btn-primary" onclick="openNewComplaintModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Entry</button>
     </div>
   </div>
 
@@ -567,7 +610,7 @@
     </div>
   </div>
 
-  <button class="fab"><span class="material-symbols-outlined">add</span></button>
+  <button class="fab" onclick="openNewComplaintModal()"><span class="material-symbols-outlined">add</span></button>
 </div>
 
 <!-- ======= PROJECTS ======= -->
@@ -578,8 +621,8 @@
       <p>Managing infrastructure and social initiatives for a better Payatas.</p>
     </div>
     <div class="pg-actions">
-      <button class="btn-secondary">Export Report</button>
-      <button class="btn-primary"><span class="material-symbols-outlined" style="font-size:16px">add</span> Create Project</button>
+      <button class="btn-secondary" onclick="printProjectReport()">Export Report</button>
+      <button class="btn-primary" onclick="openNewProjectModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> Create Project</button>
     </div>
   </div>
 
@@ -683,7 +726,7 @@
     </div>
   </div>
 
-  <button class="fab"><span class="material-symbols-outlined">add</span></button>
+  <button class="fab" onclick="openNewProjectModal()"><span class="material-symbols-outlined">add</span></button>
 </div>
 
 <!-- ======= ANNOUNCEMENTS ======= -->
@@ -694,7 +737,7 @@
       <p>Official updates and public notices for the residents of Payatas.</p>
     </div>
     <div class="pg-actions">
-      <button class="btn-secondary">Filter Categories</button>
+      <button class="btn-secondary" onclick="showFilterAnnouncementsModal()">Filter Categories</button>
     </div>
   </div>
 
@@ -791,7 +834,7 @@
     </div>
   </div>
 
-  <button class="fab"><span class="material-symbols-outlined">add</span></button>
+  <button class="fab" onclick="openNewAnnouncementModal()"><span class="material-symbols-outlined">add</span></button>
 </div>
 
 <!-- ======= REPORTS ======= -->
@@ -802,12 +845,12 @@
       <p>Real-time performance metrics and civic intelligence overview.</p>
     </div>
     <div class="pg-actions">
-      <button class="date-range-btn">
+      <button class="date-range-btn" onclick="openDateRangeModal()">
         <span class="material-symbols-outlined cal">calendar_today</span>
         <div><span class="drb-label">Date Range</span><span class="drb-val">Oct 1, 2023 – Oct 31, 2023</span></div>
         <span class="material-symbols-outlined chev">expand_more</span>
       </button>
-      <button class="btn-primary"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export All</button>
+      <button class="btn-primary" onclick="exportAllReports()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export All</button>
     </div>
   </div>
 
@@ -891,7 +934,7 @@
   <div class="col-3-1">
     <div class="card">
       <div class="monthly-table">
-        <div class="mt-head"><h4>Monthly Performance Summary</h4><a href="#">View Historical Data</a></div>
+        <div class="mt-head"><h4>Monthly Performance Summary</h4><a href="#" onclick="showHistoricalData(); return false;">View Historical Data</a></div>
         <table>
           <thead><tr><th>Month</th><th>Total Requests</th><th>Total Revenue</th><th>Complaints Filed</th><th>Resolution Rate</th></tr></thead>
           <tbody>
@@ -961,8 +1004,78 @@
   </div>
 </div>
 
+<!-- ======= USERS (Admin Only) ======= -->
+<div id="page-users" class="page">
+  <div class="pg-header">
+    <div>
+      <h2>User Management</h2>
+      <p>Manage system users, roles, and access permissions.</p>
+    </div>
+    <div class="pg-actions">
+      <button class="btn-secondary" onclick="exportUsersCSV()"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export Users</button>
+      <button class="btn-primary" onclick="openAddUserModal()"><span class="material-symbols-outlined" style="font-size:16px">person_add</span> Add User</button>
+    </div>
+  </div>
+
+  <!-- User Stats -->
+  <div class="stats-grid-4 mb-6">
+    <div class="stat-card">
+      <div class="sc-header">
+        <div class="sc-icon" style="background:#dbeafe"><span class="material-symbols-outlined" style="color:#1d4ed8;font-size:20px">people</span></div>
+      </div>
+      <div class="sc-label">Total Users</div>
+      <div class="sc-value" id="total-users">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-header">
+        <div class="sc-icon" style="background:#dcfce7"><span class="material-symbols-outlined" style="color:#16a34a;font-size:20px">admin_panel_settings</span></div>
+      </div>
+      <div class="sc-label">Administrators</div>
+      <div class="sc-value" id="admin-count">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-header">
+        <div class="sc-icon" style="background:#fef3c7"><span class="material-symbols-outlined" style="color:#d97706;font-size:20px">support_agent</span></div>
+      </div>
+      <div class="sc-label">Staff</div>
+      <div class="sc-value" id="staff-count">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-header">
+        <div class="sc-icon" style="background:#ede9fe"><span class="material-symbols-outlined" style="color:#7c3aed;font-size:20px">active_users</span></div>
+      </div>
+      <div class="sc-label">Active Now</div>
+      <div class="sc-value" id="active-count">1</div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>User</th><th>Role</th><th>Email</th><th>Last Login</th><th>Status</th><th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="users-table-body">
+      </tbody>
+    </table>
+    <div class="pagination">
+      <span class="pg-info">Showing users</span>
+      <div class="pg-btns">
+        <button class="pg-btn"><span class="material-symbols-outlined">chevron_left</span></button>
+        <button class="pg-btn active-pg">1</button>
+        <button class="pg-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
 
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
