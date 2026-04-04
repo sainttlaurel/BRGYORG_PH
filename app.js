@@ -744,6 +744,18 @@ function filterDocuments() {
   });
 }
 
+function showDocFilters() {
+  // Toggle the filter bar visibility on documents page
+  var filterBar = document.querySelector('#page-documents .filter-bar');
+  if (filterBar) {
+    if (filterBar.style.display === 'none') {
+      filterBar.style.display = 'flex';
+    } else {
+      filterBar.style.display = 'none';
+    }
+  }
+}
+
 function filterComplaints(filter, btn) {
   document.querySelectorAll('#page-complaints .filter-chip').forEach(function(c) { c.className = 'filter-chip chip-inactive'; });
   btn.className = 'filter-chip chip-active';
