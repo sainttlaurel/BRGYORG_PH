@@ -20,26 +20,32 @@ const SUPABASE_CONFIG = {
 // };
 
 // Initialize Supabase Client
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+let supabaseClient = null;
 
-// Test connection
-supabaseClient.from('users').select('count').limit(1)
-  .then(({ data, error }) => {
-    if (error) {
-      console.error('⚠️ Supabase connection issue:', error.message);
-      console.log('Error code:', error.code);
-      console.log('Error details:', error.details);
-      // Show a visual alert on the page
-      document.body.insertAdjacentHTML('beforeend', 
-        '<div id="supabase-error" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fee2e2;border:1px solid #dc2626;color:#991b1b;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9999;">'+
-          '⚠️ Database not connected. Please run supabase-schema.sql in Supabase SQL Editor.'+
-        '</div>'
-      );
-    } else {
-      console.log('Supabase connected successfully!');
-    }
-  });
+try {
+  if (typeof supabase !== 'undefined' && supabase.createClient && SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey) {
+    const { createClient } = supabase;
+    supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+
+    // Test connection
+    supabaseClient.from('users').select('count').limit(1)
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn('Supabase connection issue:', error.message);
+        } else {
+          console.log('Supabase connected successfully!');
+        }
+      })
+      .catch((err) => {
+        console.warn('Supabase test query failed:', err.message);
+      });
+  } else {
+    console.warn('Supabase SDK not loaded or config missing. Running in offline mode.');
+  }
+} catch (err) {
+  console.warn('Supabase initialization failed:', err.message, '- Running in offline mode.');
+  supabaseClient = null;
+}
 
 // Database Tables Schema
 const DB_TABLES = {
@@ -58,6 +64,7 @@ const DB_TABLES = {
 
 // Generic fetch function
 async function fetchFromSupabase(table, select = '*', filters = {}) {
+  if (!supabaseClient) throw new Error('Supabase not initialized (offline mode)');
   let query = supabaseClient.from(table).select(select);
   
   // Apply filters
@@ -72,6 +79,7 @@ async function fetchFromSupabase(table, select = '*', filters = {}) {
 
 // Generic insert function
 async function insertToSupabase(table, data) {
+  if (!supabaseClient) throw new Error('Supabase not initialized (offline mode)');
   const { data: result, error } = await supabaseClient
     .from(table)
     .insert(data)
@@ -83,6 +91,7 @@ async function insertToSupabase(table, data) {
 
 // Generic update function
 async function updateInSupabase(table, id, data) {
+  if (!supabaseClient) throw new Error('Supabase not initialized (offline mode)');
   const { data: result, error } = await supabaseClient
     .from(table)
     .update(data)
@@ -95,6 +104,7 @@ async function updateInSupabase(table, id, data) {
 
 // Generic delete function
 async function deleteFromSupabase(table, id) {
+  if (!supabaseClient) throw new Error('Supabase not initialized (offline mode)');
   const { error } = await supabaseClient
     .from(table)
     .delete()
@@ -125,6 +135,7 @@ async function deleteUser(id) {
 }
 
 async function authenticateUser(username, password) {
+  if (!supabaseClient) throw new Error('Supabase not initialized (offline mode)');
   const { data, error } = await supabaseClient
     .from(DB_TABLES.users)
     .select('*')
@@ -242,6 +253,7 @@ async function deleteAnnouncement(id) {
 
 // Subscribe to changes in a table
 function subscribeToTable(table, callback) {
+  if (!supabaseClient) { console.warn('Supabase not initialized, skipping subscription'); return null; }
   return supabaseClient
     .channel(`${table}_changes`)
     .on('postgres_changes', { event: '*', schema: 'public', table }, callback)
@@ -253,6 +265,7 @@ function subscribeToTable(table, callback) {
 // ============================================================
 
 async function uploadFile(bucket, path, file) {
+  if (!supabaseClient) throw new Error('Supabase not initialized (offline mode)');
   const { data, error } = await supabaseClient
     .storage
     .from(bucket)
@@ -263,6 +276,7 @@ async function uploadFile(bucket, path, file) {
 }
 
 async function getFileUrl(bucket, path) {
+  if (!supabaseClient) throw new Error('Supabase not initialized (offline mode)');
   const { data } = supabaseClient
     .storage
     .from(bucket)
@@ -272,6 +286,7 @@ async function getFileUrl(bucket, path) {
 }
 
 async function deleteFile(bucket, path) {
+  if (!supabaseClient) throw new Error('Supabase not initialized (offline mode)');
   const { error } = await supabaseClient
     .storage
     .from(bucket)

@@ -272,7 +272,10 @@ function updateAdminUI() {
     el.style.display = isAdmin() ? '' : 'none';
   });
 }
+
+function printContent(content, title) {
   var printWindow = window.open('', '_blank', 'width=800,height=600');
+  if (!printWindow) { showToast('Pop-up blocked. Please allow pop-ups for this site.', 'error'); return; }
   printWindow.document.write('<!DOCTYPE html><html><head><title>' + title + '</title>');
   printWindow.document.write('<style>@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap");');
   printWindow.document.write('body{font-family:"Inter",sans-serif;padding:40px;max-width:800px;margin:0 auto;color:#191c1d;}');
@@ -296,6 +299,7 @@ function updateAdminUI() {
   printWindow.document.close();
   printWindow.focus();
   setTimeout(function(){ printWindow.print(); },500);
+}
 
 function printDocumentRequest(id) {
   var d = documents.find(function(x){ return x.id===id; });
