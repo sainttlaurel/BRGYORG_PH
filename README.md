@@ -225,9 +225,3 @@ brgyorg-ph/
 ├── README.md               # This file
 └── .env                    # Environment variables
 ```
-
----
-
-## License
-
-Barangay Payatas Civic Administration
