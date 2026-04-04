@@ -442,42 +442,8 @@
       <thead>
         <tr><th>Resident Name</th><th>Document Type</th><th>Requested Date</th><th>Status</th><th style="text-align:right">Actions</th></tr>
       </thead>
-      <tbody>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">MA</div><span class="font-bold">Maria Alicia Dela Cruz</span></div></td>
-          <td class="text-muted">Barangay Clearance</td>
-          <td class="text-muted text-sm">Oct 23, 2023 · 09:15 AM</td>
-          <td><span class="badge badge-pending"><span class="badge-dot"></span>Pending</span></td>
-          <td><div class="tbl-actions" style="opacity:1"><button class="tbl-action-btn"><span class="material-symbols-outlined">visibility</span></button><button class="tbl-action-btn" style="color:#16a34a" title="Approve"><span class="material-symbols-outlined">check_circle</span></button><button class="tbl-action-btn danger"><span class="material-symbols-outlined">cancel</span></button></div></td>
-        </tr>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">RS</div><span class="font-bold">Ricardo Santos</span></div></td>
-          <td class="text-muted">Business Permit</td>
-          <td class="text-muted text-sm">Oct 22, 2023 · 02:40 PM</td>
-          <td><span class="badge badge-approved"><span class="badge-dot"></span>Approved</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn" style="display:flex;align-items:center;gap:5px;padding:6px 10px;color:var(--primary);background:rgba(0,74,198,0.08);border-radius:8px;font-size:11.5px;font-weight:700"><span class="material-symbols-outlined" style="font-size:15px">picture_as_pdf</span>Generate</button></div></td>
-        </tr>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#fef3c7;color:#92400e">JP</div><span class="font-bold">Juanito Pineda</span></div></td>
-          <td class="text-muted">Certificate of Indigency</td>
-          <td class="text-muted text-sm">Oct 21, 2023 · 11:05 AM</td>
-          <td><span class="badge badge-pickup"><span class="badge-dot"></span>Ready for Pickup</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn"><span class="material-symbols-outlined">visibility</span></button><button class="tbl-action-btn"><span class="material-symbols-outlined">print</span></button></div></td>
-        </tr>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#fee2e2;color:#991b1b">EL</div><span class="font-bold">Elena Ledesma</span></div></td>
-          <td class="text-muted">Barangay Clearance</td>
-          <td class="text-muted text-sm">Oct 20, 2023 · 04:55 PM</td>
-          <td><span class="badge badge-rejected"><span class="badge-dot"></span>Rejected</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn" style="font-size:11.5px;font-weight:700;padding:6px 10px">View Reason</button></div></td>
-        </tr>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">FB</div><span class="font-bold">Fernando Bautista</span></div></td>
-          <td class="text-muted">Business Permit</td>
-          <td class="text-muted text-sm">Oct 19, 2023 · 10:30 AM</td>
-          <td><span class="badge badge-approved"><span class="badge-dot"></span>Approved</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn" style="display:flex;align-items:center;gap:5px;padding:6px 10px;color:var(--primary);background:rgba(0,74,198,0.08);border-radius:8px;font-size:11.5px;font-weight:700"><span class="material-symbols-outlined" style="font-size:15px">picture_as_pdf</span>Generate</button></div></td>
-        </tr>
+      <tbody id="documents-table-body">
+        <!-- Populated by JavaScript -->
       </tbody>
     </table>
     <div class="pagination">
@@ -498,9 +464,9 @@
       <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--on-surface-variant)"><span class="material-symbols-outlined" style="font-size:15px">sync</span>Last synced 2m ago</span>
     </div>
     <div style="display:flex;gap:20px;font-size:12px;font-weight:600">
-      <a href="#" style="color:var(--on-surface-variant);text-decoration:none">System Manual</a>
+      <a href="#" style="color:var(--on-surface-variant);text-decoration:none" onclick="showSystemManual(); return false;">System Manual</a>
       <a href="#" style="color:var(--on-surface-variant);text-decoration:none" onclick="exportDocumentsCSV(); return false;">Export Log (CSV)</a>
-      <a href="#" style="color:var(--tertiary);text-decoration:none">Support Escalation</a>
+      <a href="#" style="color:var(--tertiary);text-decoration:none" onclick="showSupportEscalation(); return false;">Support Escalation</a>
     </div>
   </div>
 </div>

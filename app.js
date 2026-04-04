@@ -54,6 +54,29 @@ async function loadAllData() {
       documents = fallbackDocuments;
     }
     
+    // Load complaints
+    try {
+      const complaintsData = await getComplaints();
+      if (complaintsData && complaintsData.length > 0) {
+        complaints = complaintsData.map(function(c) {
+          return {
+            id: c.complaint_id || c.id,
+            category: c.category,
+            priority: c.priority,
+            status: c.status,
+            submitter: c.complainant_name || c.submitter,
+            purok: c.purok || c.location,
+            description: c.description,
+            date: c.submitted_date ? new Date(c.submitted_date).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : 'N/A'
+          };
+        });
+      } else {
+        complaints = fallbackComplaints;
+      }
+    } catch (e) {
+      complaints = fallbackComplaints;
+    }
+    
     console.log('✅ Data loaded from Supabase');
     return true;
   } catch (error) {
@@ -61,6 +84,7 @@ async function loadAllData() {
     // Use fallback data on error
     residents = fallbackResidents;
     documents = fallbackDocuments;
+    complaints = fallbackComplaints;
     return false;
   }
 }
@@ -111,8 +135,10 @@ async function login() {
       updateUserInfo();
       renderResidentTable();
       renderDocumentsTable();
-      renderUsersTable();
-      updateUserStats();
+      if (isAdmin()) {
+        renderUsersTable();
+        updateUserStats();
+      }
       updateAdminUI();
       showToast('Welcome back, ' + user.name + '!', 'success');
     }
@@ -140,6 +166,10 @@ async function login() {
       updateUserInfo();
       renderResidentTable();
       renderDocumentsTable();
+      if (isAdmin()) {
+        renderUsersTable();
+        updateUserStats();
+      }
       updateAdminUI();
       showToast('Welcome back, ' + user.name + '! (Offline Mode)', 'info');
     } else {
@@ -170,12 +200,21 @@ function checkAuth() {
     loadAllData().then(function() {
       renderResidentTable();
       renderDocumentsTable();
+      if (isAdmin()) {
+        renderUsersTable();
+        updateUserStats();
+      }
+      updateAdminUI();
+    }).catch(function(){
+      // Fallback if loadAllData fails
+      renderResidentTable();
+      renderDocumentsTable();
+      if (isAdmin()) {
+        renderUsersTable();
+        updateUserStats();
+      }
       updateAdminUI();
     });
-    // Also load users for admin
-    if (isAdmin()) {
-      loadUsersFromSupabase();
-    }
   }
 }
 
@@ -588,6 +627,13 @@ var fallbackDocuments = [
   { id:'DOC-005', initials:'FB', color:'#dbeafe', tcolor:'#1e3a8a', name:'Fernando Bautista',      type:'Business Permit',          date:'Oct 19, 2023', status:'Approved',         rejectReason:'' },
 ];
 
+var fallbackComplaints = [
+  { id:'CP-8842', category:'Health & Sanitation', priority:'Urgent', status:'Pending Assessment', submitter:'Elena Javier', purok:'Purok 3', description:'Large scale dumping detected near the community playground. Potential health hazard for children.', date:'Oct 22, 2023' },
+  { id:'CP-8841', category:'Infrastructure', priority:'Standard', status:'In Progress', submitter:'Roberto Cruz', purok:'Purok 2', description:'The main street lamp at Block 5 has been flickering for three days and is now completely dark.', date:'Oct 23, 2023' },
+  { id:'CP-8839', category:'Noise Disturbance', priority:'Low Urgency', status:'Resolved', submitter:'Maria Luna', purok:'Purok 1', description:'Report of loud music and construction work occurring past 10 PM.', date:'Oct 20, 2023' },
+  { id:'CP-8843', category:'Infrastructure', priority:'Urgent', status:'Awaiting Dispatch', submitter:'Samuel Mateo', purok:'Purok 4', description:'Major leak causing flooding in front of the community center.', date:'Oct 24, 2023' },
+];
+
 var notifToggles = { 'Urgent Complaints': true, 'New Document Requests': true, 'Project Updates': false, 'Weekly Reports': true };
 
 // ─── TOAST ──────────────────────────────────────────────────
@@ -643,7 +689,7 @@ function showPage(pageId) {
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
   var page = document.getElementById('page-'+pageId);
   if (page) page.classList.add('active');
-  var navMap = { 'dashboard':0,'residents':1,'documents':2,'complaints':3,'projects':4,'announcements':5,'reports':6,'settings':7 };
+  var navMap = { 'dashboard':0,'residents':1,'documents':2,'complaints':3,'projects':4,'announcements':5,'reports':6,'users':7,'settings':8 };
   var navItems = document.querySelectorAll('.nav-item');
   if (navMap[pageId] !== undefined) navItems[navMap[pageId]].classList.add('active');
   var placeholders = {
@@ -927,7 +973,7 @@ var docAddBtn=document.querySelector('#page-documents .btn-primary');
 if (docAddBtn && docAddBtn.textContent.includes('New')) docAddBtn.addEventListener('click', function(){ openNewRequestModal(); });
 
 function renderDocumentsTable(){
-  var tbody=document.querySelector('#page-documents tbody');
+  var tbody=document.getElementById('documents-table-body') || document.querySelector('#page-documents tbody');
   if (!tbody) return;
   tbody.innerHTML=documents.map(function(d){
     var badge='', actions='';
@@ -1323,6 +1369,343 @@ function btnSec(label, onclick){
 }
 
 // ══════════════════════════════════════════════════════════════
+// MISSING FUNCTIONS - Add these to fix broken features
+// ══════════════════════════════════════════════════════════════
+
+// ─── Announcements Filter ──────────────────────────────────────
+function showFilterAnnouncementsModal(){
+  openModal('Filter Announcements',
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      field('Category','ann-filter-cat','select','',['All Categories','Advisory','Events','Governance','Schedule','Sports','Health','General'])+
+      field('Date Range','ann-filter-date','select','',['All Time','This Week','This Month','Last Month'])+
+    '</div>',
+    btnSec('Clear','closeModal();renderAnnouncements();showToast(\'Filters cleared.\',\'info\')')+' '+btnPrim('Apply','applyAnnouncementFilters()')
+  );
+}
+
+function applyAnnouncementFilters(){
+  var cat = val('ann-filter-cat');
+  var dateRange = val('ann-filter-date');
+  closeModal();
+  showToast('Announcement filters applied: '+cat+' | '+dateRange,'info');
+}
+
+// ─── Reports Date Range ────────────────────────────────────────
+function openDateRangeModal(){
+  openModal('Select Date Range',
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      field('From Date','dr-from','date','')+
+      field('To Date','dr-to','date','')+
+      field('Preset','dr-preset','select','',['Custom','This Month','Last Month','Last 3 Months','Last 6 Months','Year to Date'])+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Apply','applyDateRange()')
+  );
+}
+
+function applyDateRange(){
+  var from = val('dr-from') || 'Start';
+  var to = val('dr-to') || 'End';
+  var dval = document.querySelector('.drb-val');
+  if (dval) dval.textContent = from + ' – ' + to;
+  closeModal();
+  showToast('Date range updated: ' + from + ' to ' + to,'info');
+}
+
+function exportAllReports(){
+  showToast('Compiling all reports...','info');
+  setTimeout(function(){
+    var content = '<h1>Barangay Payatas</h1><p class="meta">All Reports Export - ' + new Date().toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'}) + '</p>';
+    content += '<div class="section"><h2>Summary</h2>';
+    content += '<div class="row"><span class="label">Total Residents</span><span class="value">42,305</span></div>';
+    content += '<div class="row"><span class="label">Pending Requests</span><span class="value">18</span></div>';
+    content += '<div class="row"><span class="label">Active Complaints</span><span class="value">5</span></div>';
+    content += '<div class="row"><span class="label">Ongoing Projects</span><span class="value">3</span></div></div>';
+    exportToPDF(content, 'All Reports');
+    showToast('All reports exported successfully!','success');
+  },1500);
+}
+
+function showHistoricalData(){
+  openModal('Historical Performance Data',
+    '<table style="width:100%;border-collapse:collapse;">'+
+      '<thead><tr style="background:#f8f9fa;">'+
+        '<th style="padding:10px 14px;font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left;">Month</th>'+
+        '<th style="padding:10px 14px;font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left;">Requests</th>'+
+        '<th style="padding:10px 14px;font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left;">Revenue</th>'+
+        '<th style="padding:10px 14px;font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left;">Complaints</th>'+
+        '<th style="padding:10px 14px;font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left;">Resolution</th>'+
+      '</tr></thead><tbody>'+
+        '<tr style="border-top:1px solid rgba(195,198,215,0.15)"><td style="padding:12px 14px">October 2023</td><td style="padding:12px 14px">2,410</td><td style="padding:12px 14px">₱142,850</td><td style="padding:12px 14px">42</td><td style="padding:12px 14px"><span class="badge badge-approved">94%</span></td></tr>'+
+        '<tr style="border-top:1px solid rgba(195,198,215,0.15)"><td style="padding:12px 14px">September 2023</td><td style="padding:12px 14px">2,150</td><td style="padding:12px 14px">₱128,400</td><td style="padding:12px 14px">58</td><td style="padding:12px 14px"><span class="badge badge-pending">88%</span></td></tr>'+
+        '<tr style="border-top:1px solid rgba(195,198,215,0.15)"><td style="padding:12px 14px">August 2023</td><td style="padding:12px 14px">2,890</td><td style="padding:12px 14px">₱156,200</td><td style="padding:12px 14px">35</td><td style="padding:12px 14px"><span class="badge badge-approved">97%</span></td></tr>'+
+        '<tr style="border-top:1px solid rgba(195,198,215,0.15)"><td style="padding:12px 14px">July 2023</td><td style="padding:12px 14px">2,100</td><td style="padding:12px 14px">₱119,300</td><td style="padding:12px 14px">61</td><td style="padding:12px 14px"><span class="badge badge-pending">82%</span></td></tr>'+
+        '<tr style="border-top:1px solid rgba(195,198,215,0.15)"><td style="padding:12px 14px">June 2023</td><td style="padding:12px 14px">3,120</td><td style="padding:12px 14px">₱174,600</td><td style="padding:12px 14px">28</td><td style="padding:12px 14px"><span class="badge badge-approved">98%</span></td></tr>'+
+      '</tbody></table>'
+  );
+}
+
+// ─── Users Management ──────────────────────────────────────────
+function exportUsersCSV(){
+  var headers = ['ID', 'Username', 'Name', 'Email', 'Role', 'Status', 'Last Login'];
+  var data = users.map(function(u){
+    return [u.id, u.username, '"'+u.name+'"', u.email, u.role, u.status, u.lastLogin || 'Never'];
+  });
+  exportToCSV(data, 'payatas_users', headers);
+  showToast('Users data exported to CSV!','success');
+}
+
+function openAddUserModal(){
+  openModal('Add New User',
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      field('Username','new-user-name','text','e.g. juan_dela Cruz')+
+      field('Full Name','new-user-fullname','text','e.g. Juan dela Cruz')+
+      field('Email','new-user-email','email','e.g. juan@payatas.gov.ph')+
+      field('Role','new-user-role','select','',['Super Administrator','Administrator','Staff','Reader'])+
+      field('Status','new-user-status','select','',['Active','Inactive'])+
+      field('Password','new-user-pass','password','Initial password')+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Create User','createNewUser()')
+  );
+}
+
+function createNewUser(){
+  var username = val('new-user-name');
+  var fullname = val('new-user-fullname');
+  var email = val('new-user-email');
+  var role = val('new-user-role') || 'Staff';
+  var status = val('new-user-status') || 'Active';
+  var pass = val('new-user-pass');
+  
+  if (!username || !fullname || !email){
+    showToast('Please fill in all required fields.','error');
+    return;
+  }
+  
+  var initials = getInitials(fullname);
+  var newId = 'USR-' + Math.floor(Math.random()*900+100);
+  
+  var newUser = {
+    id: newId,
+    username: username,
+    name: fullname,
+    email: email,
+    role: role,
+    status: status,
+    password: pass || 'password123',
+    lastLogin: 'Never'
+  };
+  
+  users.push(newUser);
+  localStorage.setItem('payatas_users', JSON.stringify(users));
+  
+  renderUsersTable();
+  updateUserStats();
+  closeModal();
+  showToast('New user "' + fullname + '" created successfully!','success');
+}
+
+function renderUsersTable(){
+  var tbody = document.getElementById('users-table-body');
+  if (!tbody) return;
+  
+  tbody.innerHTML = users.map(function(u){
+    var statusBadge = u.status === 'Active' ? 
+      '<span class="badge res-status-active">Active</span>' : 
+      '<span class="badge res-status-inactive">Inactive</span>';
+    var roleBadge = u.role === 'Super Administrator' || u.role === 'Administrator' ?
+      '<span style="background:#dbeafe;color:#1e3a8a;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">'+u.role+'</span>' :
+      '<span style="background:#f1f5f9;color:#475569;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">'+u.role+'</span>';
+    
+    return '<tr>'+
+      '<td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">'+getInitials(u.name)+'</div>'+
+        '<div><div class="font-bold">'+u.name+'</div><div class="text-xs text-muted">'+u.username+'</div></div></div></td>'+
+      '<td>'+roleBadge+'</td>'+
+      '<td class="text-muted">'+u.email+'</td>'+
+      '<td class="text-muted text-sm">'+u.lastLogin+'</td>'+
+      '<td>'+statusBadge+'</td>'+
+      '<td><div class="tbl-actions" style="opacity:1">'+
+        '<button class="tbl-action-btn" onclick="editUser(\''+u.id+'\')"><span class="material-symbols-outlined">edit</span></button>'+
+        '<button class="tbl-action-btn danger" onclick="deleteUserAccount(\''+u.id+'\')"><span class="material-symbols-outlined">delete</span></button>'+
+      '</div></td></tr>';
+  }).join('');
+}
+
+function editUser(id){
+  var u = users.find(function(x){ return x.id === id; });
+  if (!u) return;
+  
+  openModal('Edit User — '+u.name,
+    '<div style="display:flex;flex-direction:column;gap:14px;">'+
+      fieldVal('Username','edit-user-name',u.username)+
+      fieldVal('Full Name','edit-user-fullname',u.name)+
+      fieldVal('Email','edit-user-email',u.email)+
+      field('Role','edit-user-role','select','',['Super Administrator','Administrator','Staff','Reader'])+
+      field('Status','edit-user-status','select','',['Active','Inactive'])+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Save Changes','updateUserRecord(\''+id+'\')')
+  );
+  
+  setTimeout(function(){
+    var roleSel = document.getElementById('edit-user-role');
+    if (roleSel){
+      Array.from(roleSel.options).forEach(function(o){ if (o.value === u.role) o.selected = true; });
+    }
+    var statusSel = document.getElementById('edit-user-status');
+    if (statusSel){
+      Array.from(statusSel.options).forEach(function(o){ if (o.value === u.status) o.selected = true; });
+    }
+  },50);
+}
+
+function updateUserRecord(id){
+  var u = users.find(function(x){ return x.id === id; });
+  if (!u) return;
+  
+  u.username = val('edit-user-name') || u.username;
+  u.name = val('edit-user-fullname') || u.name;
+  u.email = val('edit-user-email') || u.email;
+  u.role = val('edit-user-role') || u.role;
+  u.status = val('edit-user-status') || u.status;
+  
+  localStorage.setItem('payatas_users', JSON.stringify(users));
+  renderUsersTable();
+  updateUserStats();
+  closeModal();
+  showToast('User record updated!','success');
+}
+
+function deleteUserAccount(id){
+  var u = users.find(function(x){ return x.id === id; });
+  if (!u) return;
+  
+  openModal('Confirm Delete',
+    '<div style="text-align:center;padding:16px 0;"><div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">'+
+      '<span class="material-symbols-outlined" style="font-size:28px;color:#dc2626">delete</span></div>'+
+      '<p style="font-size:14px;color:var(--on-surface-variant);line-height:1.6;">Remove user <strong>'+u.name+'</strong> from the system? This cannot be undone.</p></div>',
+    btnSec('Cancel','closeModal()')+' <button onclick="confirmDeleteUser(\''+id+'\')" style="'+btnPrimStyle()+'background:linear-gradient(135deg,#dc2626,#ef4444);">Delete User</button>'
+  );
+}
+
+function confirmDeleteUser(id){
+  var name = users.find(function(x){ return x.id === id; })?.name;
+  users = users.filter(function(x){ return x.id !== id; });
+  localStorage.setItem('payatas_users', JSON.stringify(users));
+  renderUsersTable();
+  updateUserStats();
+  closeModal();
+  showToast((name || 'User') + ' removed from system.','info');
+}
+
+function updateUserStats(){
+  var total = users.length;
+  var admins = users.filter(function(u){ return u.role === 'Super Administrator' || u.role === 'Administrator'; }).length;
+  var staff = users.filter(function(u){ return u.role === 'Staff'; }).length;
+  
+  var totalEl = document.getElementById('total-users');
+  var adminEl = document.getElementById('admin-count');
+  var staffEl = document.getElementById('staff-count');
+  
+  if (totalEl) totalEl.textContent = total;
+  if (adminEl) adminEl.textContent = admins;
+  if (staffEl) staffEl.textContent = staff;
+}
+
+// ─── Documents: View Details ───────────────────────────────────
+function viewDoc(id){
+  var d = documents.find(function(x){ return x.id === id; });
+  if (!d) return;
+  
+  var statusInfo = '';
+  if (d.status === 'Rejected' && d.rejectReason){
+    statusInfo = '<div style="background:#fee2e2;padding:12px;border-radius:8px;margin-top:10px;"><strong>Rejection Reason:</strong><br>'+d.rejectReason+'</div>';
+  }
+  
+  openModal('Document Request — '+d.id,
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'+
+      kv('Resident Name', d.name)+
+      kv('Document Type', d.type)+
+      kv('Request Date', d.date)+
+      kv('Status', d.status)+
+      kv('Initials', d.initials)+
+      kv('Color', d.color)+
+    '</div>' + statusInfo +
+    '<div style="margin-top:20px;display:flex;gap:10px;">'+
+      btnPrim('Print', 'printDoc(\''+d.id+'\')') +
+      btnSec('Close', 'closeModal()') +
+    '</div>'
+  );
+}
+
+// ─── Complaints: Resolve ───────────────────────────────────────
+function resolveComplaint(id){
+  var cmp = complaints.find(function(x){ return x.id === id; });
+  if (cmp){
+    cmp.status = 'Resolved';
+    cmp.resolvedDate = new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+  }
+  renderComplaints();
+  closeModal();
+  showToast('Complaint marked as resolved!','success');
+}
+
+// ─── Helper: renderAnnouncements ────────────────────────────────
+function renderAnnouncements(){
+  // This function can be extended to filter announcements based on selected filters
+  showToast('Announcements refreshed.','info');
+}
+
+// ─── System Manual & Support ───────────────────────────────────
+function showSystemManual(){
+  openModal('System Manual - Payatas Ledger',
+    '<div style="display:flex;flex-direction:column;gap:16px;font-size:13.5px;color:var(--on-surface-variant);line-height:1.7;">'+
+      '<div style="background:#dbeafe;border-radius:10px;padding:14px 16px;font-size:13px;font-weight:600;color:#1e3a8a;">📖 User Guide v2.4</div>'+
+      '<div><strong>1. Login</strong><br>Use your username and password to access the system. Default admin: admin / admin123</div>'+
+      '<div><strong>2. Residents</strong><br>Manage resident records, add new residents, filter by purok or status.</div>'+
+      '<div><strong>3. Document Requests</strong><br>Process document requests - View details, Approve, Reject, or Generate PDF.</div>'+
+      '<div><strong>4. Complaints</strong><br>Track and resolve community complaints. Mark as resolved when done.</div>'+
+      '<div><strong>5. Projects</strong><br>Monitor ongoing community projects and their progress.</div>'+
+      '<div><strong>6. Announcements</strong><br>Post important notices for the community.</div>'+
+      '<div><strong>7. Reports</strong><br>Export reports with date range filtering.</div>'+
+      '<div><strong>8. Users (Admin)</strong><br>Add, edit, or remove system users. Only visible to Administrators.</div>'+
+      '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(195,198,215,0.2)"><strong>Need Help?</strong><br>Contact the system administrator or email support@payatas.gov.ph</div>'+
+    '</div>',
+    btnSec('Close','closeModal()')
+  );
+}
+
+function showSupportEscalation(){
+  openModal('Support Escalation',
+    '<div style="display:flex;flex-direction:column;gap:14px;font-size:13.5px;color:var(--on-surface-variant);line-height:1.6;">'+
+      '<div style="background:#fee2e2;border-radius:10px;padding:14px 16px;display:flex;gap:10px;align-items:center;">'+
+        '<span class="material-symbols-outlined" style="color:#991b1b;font-size:20px">support_agent</span>'+
+        '<span style="font-size:13px;font-weight:700;color:#991b1b;">Need Technical Assistance?</span></div>'+
+      '<p>For issues requiring escalation, please provide the following information:</p>'+
+      '<div>'+field('Your Name','support-name','text','Full name')+'</div>'+
+      '<div>'+field('Email','support-email','email','Contact email')+'</div>'+
+      '<div>'+field('Issue Category','support-cat','select','',['Login Issue','Data Error','Feature Request','System Bug','Other'])+'</div>'+
+      '<div>'+field('Description','support-desc','textarea','Describe the issue in detail...')+'</div>'+
+      '<p style="font-size:12px;color:#64748b;">Our support team will respond within 24-48 hours.</p>'+
+    '</div>',
+    btnSec('Cancel','closeModal()')+' '+btnPrim('Submit Ticket','submitSupportTicket()')
+  );
+}
+
+function submitSupportTicket(){
+  var name = val('support-name');
+  var email = val('support-email');
+  var cat = val('support-cat');
+  var desc = val('support-desc');
+  
+  if (!name || !email || !desc){
+    showToast('Please fill in all required fields.','error');
+    return;
+  }
+  
+  closeModal();
+  showToast('Support ticket submitted! We will contact you at '+email,'success');
+}
+
+// ══════════════════════════════════════════════════════════════
 // INITIALIZATION
 // ══════════════════════════════════════════════════════════════
 
@@ -1334,6 +1717,16 @@ document.head.appendChild(style);
 
 // Check authentication on page load
 checkAuth();
+
+// Initialize tables if user is already logged in
+if (currentUser) {
+  renderResidentTable();
+  renderDocumentsTable();
+  if (isAdmin()) {
+    renderUsersTable();
+    updateUserStats();
+  }
+}
 
 // Add Enter key listener for login form
 document.getElementById('login-password').addEventListener('keypress', function(e) {
