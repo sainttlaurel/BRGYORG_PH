@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="styles.css"/>
+<link href="css/styles.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -43,1007 +43,372 @@
   </div>
 </div>
 
-<!-- ======================== MAIN APP (hidden until login) ======================== -->
+<!-- ======================== MAIN APP ======================== -->
 <div id="main-app" class="main-app" style="display:none">
 
-<!-- ======================== SIDEBAR ======================== -->
-<aside class="sidebar">
-  <div class="sidebar-brand">
-    <div class="brand-icon">
-      <span class="material-symbols-outlined ms" style="font-variation-settings:'FILL' 1;">account_balance</span>
-    </div>
-    <div class="brand-name">
-      <h1>Payatas Ledger</h1>
-      <p>Demo Project</p>
-    </div>
-  </div>
-  <nav class="nav-section">
-    <button class="nav-item active" onclick="showPage('dashboard'); return false;">
-      <span class="material-symbols-outlined">dashboard</span>
-      <span class="label">Dashboard</span>
-    </button>
-    <button class="nav-item" onclick="showPage('residents'); return false;">
-      <span class="material-symbols-outlined">groups</span>
-      <span class="label">Residents</span>
-    </button>
-    <button class="nav-item" onclick="showPage('documents'); return false;">
-      <span class="material-symbols-outlined">description</span>
-      <span class="label">Document Requests</span>
-    </button>
-    <button class="nav-item" onclick="showPage('complaints'); return false;">
-      <span class="material-symbols-outlined">gavel</span>
-      <span class="label">Complaints</span>
-    </button>
-    <button class="nav-item" onclick="showPage('projects'); return false;">
-      <span class="material-symbols-outlined">account_tree</span>
-      <span class="label">Projects</span>
-    </button>
-    <button class="nav-item" onclick="showPage('announcements'); return false;">
-      <span class="material-symbols-outlined">campaign</span>
-      <span class="label">Announcements</span>
-    </button>
-    <button class="nav-item" onclick="showPage('reports'); return false;">
-      <span class="material-symbols-outlined">analytics</span>
-      <span class="label">Reports</span>
-    </button>
-    <button class="nav-item admin-only" onclick="showPage('users'); return false;">
-      <span class="material-symbols-outlined">supervised_user_circle</span>
-      <span class="label">Users</span>
-    </button>
-    <button class="nav-item" onclick="showPage('settings'); return false;">
-      <span class="material-symbols-outlined">settings</span>
-      <span class="label">Settings</span>
-    </button>
-  </nav>
-  <div class="sidebar-footer">
-    <button class="sidebar-cta-btn">
-      <span class="material-symbols-outlined" style="font-size:16px">add</span>
-      New Announcement
-    </button>
-  </div>
-</aside>
-
-<!-- ======================== TOPBAR ======================== -->
-<header class="topbar">
-  <div class="search-wrap">
-    <span class="material-symbols-outlined">search</span>
-    <input type="text" id="searchInput" placeholder="Search residents, documents, or records..."/>
-  </div>
-  <div class="topbar-end">
-    <div class="topbar-date">
-      <span class="material-symbols-outlined" style="font-size:16px;color:var(--primary)">calendar_today</span>
-      October 24, 2023
-    </div>
-    <div class="topbar-divider"></div>
-    <button class="notif-btn">
-      <span class="material-symbols-outlined">notifications</span>
-      <span class="notif-dot"></span>
-    </button>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="user-info">
-        <div class="name">Admin Payatas</div>
-        <div class="role">Super Administrator</div>
+  <!-- ======================== SIDEBAR ======================== -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <span class="material-symbols-outlined ms" style="font-variation-settings:'FILL' 1;">account_balance</span>
       </div>
-      <div class="avatar">AP</div>
-    </div>
-  </div>
-</header>
-
-<!-- ======================== MAIN ======================== -->
-<main class="main-content">
-
-<!-- ======= DASHBOARD ======= -->
-<div id="page-dashboard" class="page active">
-  <div class="pg-header">
-    <div>
-      <h2>Overview</h2>
-      <p>Welcome back. Here is what's happening in Barangay Payatas today.</p>
-    </div>
-    <div class="pg-actions">
-      <button class="btn-secondary" onclick="exportDashboardReport()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export Report</button>
-      <button class="btn-primary" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
-    </div>
-  </div>
-
-  <!-- Stats -->
-  <div class="stats-grid-4 mb-6">
-    <div class="stat-card">
-      <div class="sc-header">
-        <div class="sc-icon" style="background:#dbeafe"><span class="material-symbols-outlined" style="color:#1d4ed8;font-size:20px">groups</span></div>
-        <span class="sc-badge" style="background:#dcfce7;color:#14532d">+2.4%</span>
-      </div>
-      <div class="sc-label">Total Residents</div>
-      <div class="sc-value">42,305</div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-header">
-        <div class="sc-icon" style="background:#fef3c7"><span class="material-symbols-outlined" style="color:#d97706;font-size:20px">description</span></div>
-        <span class="sc-badge" style="background:#fef3c7;color:#92400e">Active</span>
-      </div>
-      <div class="sc-label">Pending Requests</div>
-      <div class="sc-value">18</div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-header">
-        <div class="sc-icon" style="background:#fee2e2"><span class="material-symbols-outlined" style="color:#dc2626;font-size:20px">gavel</span></div>
-        <span class="sc-badge" style="background:#fee2e2;color:#991b1b">Immediate</span>
-      </div>
-      <div class="sc-label">Active Complaints</div>
-      <div class="sc-value">5</div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-header">
-        <div class="sc-icon" style="background:#ede9fe"><span class="material-symbols-outlined" style="color:#7c3aed;font-size:20px">account_tree</span></div>
-        <span class="sc-badge" style="background:#ede9fe;color:#5b21b6">In Progress</span>
-      </div>
-      <div class="sc-label">Ongoing Projects</div>
-      <div class="sc-value">3</div>
-    </div>
-  </div>
-
-  <!-- Charts row -->
-  <div class="col-2-1 mb-6">
-    <div class="chart-card">
-      <div class="chart-card-header">
-        <div>
-          <div class="card-title">Monthly Document Requests</div>
-          <div class="card-subtitle">Volume over the last 6 months</div>
-        </div>
-        <select class="filter-select" style="font-size:12px;padding:5px 10px">
-          <option>Last 6 Months</option>
-          <option>Last Year</option>
-        </select>
-      </div>
-      <div class="chart-container">
-        <div class="chart-bar-group"><div class="chart-bar" style="height:40%"></div><span class="chart-label">MAY</span></div>
-        <div class="chart-bar-group"><div class="chart-bar" style="height:65%"></div><span class="chart-label">JUN</span></div>
-        <div class="chart-bar-group"><div class="chart-bar" style="height:52%"></div><span class="chart-label">JUL</span></div>
-        <div class="chart-bar-group"><div class="chart-bar" style="height:80%"></div><span class="chart-label">AUG</span></div>
-        <div class="chart-bar-group"><div class="chart-bar highlighted" style="height:72%"></div><span class="chart-label active">SEP</span></div>
-        <div class="chart-bar-group"><div class="chart-bar" style="height:90%"></div><span class="chart-label">OCT</span></div>
+      <div class="brand-name">
+        <h1>Payatas Ledger</h1>
+        <p>Demo Project</p>
       </div>
     </div>
-    <div class="chart-card">
-      <div class="card-title mb-4">Complaint Categories</div>
-      <div class="donut-wrap">
-        <div class="donut">
-          <svg viewBox="0 0 100 100" width="140" height="140">
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" stroke-width="14"/>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#1d4ed8" stroke-width="14" stroke-dasharray="100 151" stroke-linecap="round"/>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" stroke-width="14" stroke-dasharray="50 201" stroke-dashoffset="-100" stroke-linecap="round"/>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" stroke-width="14" stroke-dasharray="35 216" stroke-dashoffset="-150" stroke-linecap="round"/>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#f43f5e" stroke-width="14" stroke-dasharray="66 185" stroke-dashoffset="-185" stroke-linecap="round"/>
-          </svg>
-          <div class="donut-center"><div class="dc-val">100%</div><div class="dc-label">Total</div></div>
-        </div>
-      </div>
-      <div class="legend-list">
-        <div class="legend-item"><div class="legend-dot" style="background:#1d4ed8"></div>Infrastructure</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Security</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Health</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f43f5e"></div>Social Svc</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tables row -->
-  <div class="two-col mb-6">
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div class="card-title">Recent Document Requests</div>
-        <a href="#" style="font-size:12px;font-weight:700;color:var(--primary);text-decoration:none" onclick="showPage('documents');return false">View All</a>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Name</th><th>Document Type</th><th>Status</th><th>Date</th></tr></thead>
-          <tbody>
-            <tr><td class="font-bold">Maria Clara Santos</td><td class="text-muted">Barangay Clearance</td><td><span class="badge badge-pending"><span class="badge-dot"></span>Pending</span></td><td class="text-muted text-sm">Oct 24, 2023</td></tr>
-            <tr><td class="font-bold">Juan Dela Cruz</td><td class="text-muted">Indigency Certificate</td><td><span class="badge badge-approved"><span class="badge-dot"></span>Approved</span></td><td class="text-muted text-sm">Oct 23, 2023</td></tr>
-            <tr><td class="font-bold">Elena Roxas</td><td class="text-muted">Business Permit</td><td><span class="badge badge-pickup"><span class="badge-dot"></span>In Review</span></td><td class="text-muted text-sm">Oct 23, 2023</td></tr>
-            <tr><td class="font-bold">Antonio Luna</td><td class="text-muted">Residency Cert.</td><td><span class="badge badge-approved"><span class="badge-dot"></span>Approved</span></td><td class="text-muted text-sm">Oct 22, 2023</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div class="card-title">Latest Complaints</div>
-        <a href="#" style="font-size:12px;font-weight:700;color:var(--primary);text-decoration:none" onclick="showPage('complaints');return false">View All</a>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Type</th><th>Status</th><th>Submitted by</th><th>Date</th></tr></thead>
-          <tbody>
-            <tr><td><div class="flex-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#dc2626;flex-shrink:0"></span><span class="font-bold">Health &amp; Sanitation</span></div></td><td><span class="badge badge-urgent">Urgent</span></td><td class="text-muted">R. Gomez</td><td class="text-muted text-sm">2h ago</td></tr>
-            <tr><td><div class="flex-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0"></span><span class="font-bold">Infrastructure</span></div></td><td><span class="badge badge-pending">Processing</span></td><td class="text-muted">L. Mercado</td><td class="text-muted text-sm">5h ago</td></tr>
-            <tr><td><div class="flex-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0"></span><span class="font-bold">Security</span></div></td><td><span class="badge badge-resolved">Resolved</span></td><td class="text-muted">J. Rizal</td><td class="text-muted text-sm">Oct 23</td></tr>
-            <tr><td><div class="flex-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0"></span><span class="font-bold">Waste Management</span></div></td><td><span class="badge badge-pending">In Review</span></td><td class="text-muted">M. Pule</td><td class="text-muted text-sm">Oct 23</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Map + Emergency -->
-  <div style="display:grid;grid-template-columns:3fr 1fr;gap:20px">
-    <div class="map-card">
-      <div class="map-dots">
-        <div class="map-dot" style="top:40%;left:45%;background:#60a5fa;border-color:#60a5fa"></div>
-        <div class="map-dot" style="top:55%;left:58%;background:#34d399;border-color:#34d399;animation-delay:0.5s"></div>
-        <div class="map-dot" style="top:32%;left:62%;background:#fbbf24;border-color:#fbbf24;animation-delay:1s"></div>
-      </div>
-      <div class="map-overlay"></div>
-      <div class="map-content">
-        <h5>Community Map</h5>
-        <p>Real-time visualization of ongoing barangay projects.</p>
-      </div>
-    </div>
-    <div class="emergency-card">
-      <div>
-        <span class="material-symbols-outlined" style="font-size:32px;margin-bottom:12px;display:block;opacity:0.9">campaign</span>
-        <h5>Emergency Hub</h5>
-        <p>Instantly broadcast critical alerts to the entire community via SMS and Push.</p>
-      </div>
-      <button>Launch Alert</button>
-    </div>
-  </div>
-
-  <!-- Quick actions -->
-  <div class="quick-actions">
-    <div class="qa-item">
-      <span class="qa-tip">Approve Requests</span>
-      <button class="qa-btn" onclick="showPage('documents')"><span class="material-symbols-outlined" style="color:var(--primary)">verified</span></button>
-    </div>
-    <div class="qa-item">
-      <span class="qa-tip">Review Complaints</span>
-      <button class="qa-btn" onclick="showPage('complaints')"><span class="material-symbols-outlined" style="color:#dc2626">rate_review</span></button>
-    </div>
-    <div class="qa-item">
-      <span class="qa-tip">New Project</span>
-      <button class="qa-btn" onclick="showPage('projects')"><span class="material-symbols-outlined" style="color:#7c3aed">rocket_launch</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- ======= RESIDENTS ======= -->
-<div id="page-residents" class="page">
-  <div class="pg-header">
-    <div>
-      <h2>Resident Directory</h2>
-      <p>Manage and monitor the status of Payatas residents.</p>
-    </div>
-    <div class="pg-actions">
-      <button class="btn-secondary" onclick="exportResidentsCSV()"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export CSV</button>
-      <button class="btn-primary" onclick="openNewResidentModal()"><span class="material-symbols-outlined" style="font-size:16px">person_add</span> Add Resident</button>
-    </div>
-  </div>
-
-  <div class="res-filter-grid mb-6">
-    <div class="filter-card">
-      <div class="filter-card-icon"><span class="material-symbols-outlined">filter_alt</span></div>
-      <div class="filter-card-body">
-        <label>Quick Search</label>
-        <input type="text" placeholder="Filter by Name, Purok, or Address..."/>
-      </div>
-    </div>
-    <div class="filter-card">
-      <div class="filter-card-body">
-        <label>Status</label>
-        <select><option>All Statuses</option><option>Active</option><option>Inactive</option></select>
-      </div>
-    </div>
-    <div class="filter-card">
-      <div class="filter-card-body">
-        <label>Purok</label>
-        <select><option>All Puroks</option><option>Purok 1</option><option>Purok 2</option><option>Purok 3</option><option>Purok 4</option></select>
-      </div>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th><th>Address / Purok</th><th>Contact Details</th><th>Status</th><th style="text-align:right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">MS</div><div><div class="font-bold">Mateo Santos</div><div class="text-xs text-muted">ID: PAY-2023-0842</div></div></div></td>
-          <td><div class="font-bold text-sm">124 Orchid St. Phase 2</div><div class="text-xs text-muted">Purok 4</div></td>
-          <td><div><div class="flex-center gap-2 text-sm"><span class="material-symbols-outlined" style="font-size:14px;color:var(--on-surface-variant)">phone</span>+63 917 555 0192</div><div class="flex-center gap-2 text-xs text-muted" style="margin-top:3px"><span class="material-symbols-outlined" style="font-size:13px">mail</span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e38e8297868ccd90828d978c90a3868e828a8fcd808c8e">[email&#160;protected]</a></div></div></td>
-          <td><span class="badge res-status-active">Active</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn"><span class="material-symbols-outlined">edit</span></button><button class="tbl-action-btn danger"><span class="material-symbols-outlined">delete</span></button></div></td>
-        </tr>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#dbeafe;color:#1e3a8a">ER</div><div><div class="font-bold">Elena Reyes</div><div class="text-xs text-muted">ID: PAY-2023-1129</div></div></div></td>
-          <td><div class="font-bold text-sm">Blk 5 Lot 12, Area C</div><div class="text-xs text-muted">Purok 1</div></td>
-          <td><div><div class="flex-center gap-2 text-sm"><span class="material-symbols-outlined" style="font-size:14px;color:var(--on-surface-variant)">phone</span>+63 920 123 4567</div><div class="flex-center gap-2 text-xs text-muted" style="margin-top:3px"><span class="material-symbols-outlined" style="font-size:13px">mail</span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f7929b929996d985928e9284b7929a969e9bd994989a">[email&#160;protected]</a></div></div></td>
-          <td><span class="badge res-status-active">Active</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn"><span class="material-symbols-outlined">edit</span></button><button class="tbl-action-btn danger"><span class="material-symbols-outlined">delete</span></button></div></td>
-        </tr>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:var(--surface-container-high);color:var(--on-surface-variant)">JR</div><div><div class="font-bold">Juan Rivera</div><div class="text-xs text-muted">ID: PAY-2022-0450</div></div></div></td>
-          <td><div class="font-bold text-sm">45 Molave Street</div><div class="text-xs text-muted">Purok 2</div></td>
-          <td><div><div class="flex-center gap-2 text-sm"><span class="material-symbols-outlined" style="font-size:14px;color:var(--on-surface-variant)">phone</span>+63 945 987 6543</div><div class="flex-center gap-2 text-xs text-muted" style="margin-top:3px"><span class="material-symbols-outlined" style="font-size:13px">mail</span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="442e31252a6a362d32213625042129252d286a272b29">[email&#160;protected]</a></div></div></td>
-          <td><span class="badge res-status-inactive">Inactive</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn"><span class="material-symbols-outlined">edit</span></button><button class="tbl-action-btn danger"><span class="material-symbols-outlined">delete</span></button></div></td>
-        </tr>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#fef3c7;color:#92400e">AL</div><div><div class="font-bold">Alicia Lopez</div><div class="text-xs text-muted">ID: PAY-2023-1562</div></div></div></td>
-          <td><div class="font-bold text-sm">78 Sampaguita Ext.</div><div class="text-xs text-muted">Purok 3</div></td>
-          <td><div><div class="flex-center gap-2 text-sm"><span class="material-symbols-outlined" style="font-size:14px;color:var(--on-surface-variant)">phone</span>+63 916 222 3344</div><div class="flex-center gap-2 text-xs text-muted" style="margin-top:3px"><span class="material-symbols-outlined" style="font-size:13px">mail</span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e98885808a8088c785a98c84888085c78a8684">[email&#160;protected]</a></div></div></td>
-          <td><span class="badge res-status-active">Active</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn"><span class="material-symbols-outlined">edit</span></button><button class="tbl-action-btn danger"><span class="material-symbols-outlined">delete</span></button></div></td>
-        </tr>
-        <tr>
-          <td><div class="flex-center gap-3"><div class="av" style="background:#dcfce7;color:#065f46">BR</div><div><div class="font-bold">Bernadette Ramos</div><div class="text-xs text-muted">ID: PAY-2023-2041</div></div></div></td>
-          <td><div class="font-bold text-sm">33 Kalayaan Ave.</div><div class="text-xs text-muted">Purok 5</div></td>
-          <td><div><div class="flex-center gap-2 text-sm"><span class="material-symbols-outlined" style="font-size:14px;color:var(--on-surface-variant)">phone</span>+63 932 441 8800</div><div class="flex-center gap-2 text-xs text-muted" style="margin-top:3px"><span class="material-symbols-outlined" style="font-size:13px">mail</span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="016364736f602f73606c6e7241646c60686d2f626e6c">[email&#160;protected]</a></div></div></td>
-          <td><span class="badge res-status-active">Active</span></td>
-          <td><div class="tbl-actions"><button class="tbl-action-btn"><span class="material-symbols-outlined">edit</span></button><button class="tbl-action-btn danger"><span class="material-symbols-outlined">delete</span></button></div></td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="pagination">
-      <span class="pg-info">Showing <strong>1–5</strong> of <strong>1,248</strong> residents</span>
-      <div class="pg-btns">
-        <button class="pg-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-        <button class="pg-btn active-pg">1</button>
-        <button class="pg-btn">2</button>
-        <button class="pg-btn">3</button>
-        <button class="pg-btn" style="font-size:16px;letter-spacing:1px">···</button>
-        <button class="pg-btn">42</button>
-        <button class="pg-btn"><span class="material-symbols-outlined">chevron_right</span></button>
-      </div>
-    </div>
-  </div>
-  <div style="margin-top:40px;text-align:center;color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase">The Civic Ledger • Barangay Payatas Administration</div>
-</div>
-
-<!-- ======= DOCUMENTS ======= -->
-<div id="page-documents" class="page">
-  <div class="pg-header">
-    <div>
-      <h2>Document Requests</h2>
-      <p>Manage and process official document certifications for the residents of Barangay Payatas. Priority handling is suggested for urgent medical indigency requests.</p>
-    </div>
-    <div class="pg-actions">
-      <button class="btn-secondary" onclick="exportDocumentsCSV()"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export CSV</button>
-      <button class="btn-primary" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
-    </div>
-  </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="stat-card" style="padding:14px 18px">
-          <div class="sc-label" style="color:var(--tertiary)">Queue Status</div>
-          <div style="display:flex;align-items:baseline;gap:6px"><span class="sc-value" style="font-size:24px;color:var(--primary)">42</span><span class="text-xs text-muted">Pending Processing</span></div>
-        </div>
-        <div class="stat-card" style="padding:14px 18px">
-          <div class="sc-label" style="color:var(--tertiary)">Avg. TAT</div>
-          <div style="display:flex;align-items:baseline;gap:6px"><span class="sc-value" style="font-size:24px;color:var(--tertiary)">4.2</span><span class="text-xs text-muted">Hours / Request</span></div>
-        </div>
-      </div>
-  </div>
-
-  <div class="filter-bar">
-    <span class="filter-label">Status:</span>
-    <select class="filter-select"><option>All Statuses</option><option>Pending</option><option>Approved</option><option>Ready for Pickup</option><option>Rejected</option></select>
-    <span class="filter-label">Type:</span>
-    <select class="filter-select"><option>All Document Types</option><option>Barangay Clearance</option><option>Certificate of Indigency</option><option>Business Permit</option></select>
-    <span class="filter-label">Date:</span>
-    <select class="filter-select"><option>Last 7 Days</option><option>This Month</option><option>Last 3 Months</option></select>
-    <div class="ml-auto" style="display:flex;gap:8px">
-      <button class="btn-secondary" style="padding:7px 14px;font-size:12px" onclick="renderDocumentsTable(); showToast('Filters cleared.', 'info');">Clear Filters</button>
-      <button class="btn-primary" style="padding:7px 16px;font-size:12px" onclick="renderDocumentsTable(); showToast('View updated.', 'info');">Apply View</button>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>Resident Name</th><th>Document Type</th><th>Requested Date</th><th>Status</th><th style="text-align:right">Actions</th></tr>
-      </thead>
-      <tbody id="documents-table-body">
-        <!-- Populated by JavaScript -->
-      </tbody>
-    </table>
-    <div class="pagination">
-      <span class="pg-info">Showing 1 to 5 of <strong>128</strong> entries</span>
-      <div class="pg-btns">
-        <button class="pg-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-        <button class="pg-btn active-pg">1</button>
-        <button class="pg-btn">2</button>
-        <button class="pg-btn">3</button>
-        <button class="pg-btn" style="font-size:16px">···</button>
-        <button class="pg-btn"><span class="material-symbols-outlined">chevron_right</span></button>
-      </div>
-    </div>
-  </div>
-  <div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(195,198,215,0.15);display:flex;justify-content:space-between;align-items:center">
-    <div style="display:flex;gap:20px;align-items:center">
-      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--primary)"><span class="material-symbols-outlined" style="font-size:15px;font-variation-settings:'FILL' 1">security</span>Secure Ledger Protocol v2.4</span>
-      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--on-surface-variant)"><span class="material-symbols-outlined" style="font-size:15px">sync</span>Last synced 2m ago</span>
-    </div>
-    <div style="display:flex;gap:20px;font-size:12px;font-weight:600">
-      <a href="#" style="color:var(--on-surface-variant);text-decoration:none" onclick="showSystemManual(); return false;">System Manual</a>
-      <a href="#" style="color:var(--on-surface-variant);text-decoration:none" onclick="exportDocumentsCSV(); return false;">Export Log (CSV)</a>
-      <a href="#" style="color:var(--tertiary);text-decoration:none" onclick="showSupportEscalation(); return false;">Support Escalation</a>
-    </div>
-  </div>
-</div>
-
-<!-- ======= COMPLAINTS ======= -->
-<div id="page-complaints" class="page">
-  <div class="pg-header">
-    <div>
-      <h2>Citizen Complaints</h2>
-      <p>Review and manage reported issues within the community. Prioritize urgent matters and track resolution progress.</p>
-    </div>
-    <div class="pg-actions">
-      <button class="btn-secondary" onclick="exportComplaintsCSV()">Export CSV</button>
-      <button class="btn-secondary" onclick="printComplaintRecord()"><span class="material-symbols-outlined" style="font-size:16px">print</span> Print Report</button>
-      <button class="btn-primary" onclick="openNewComplaintModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Entry</button>
-    </div>
-  </div>
-
-  <!-- Stats row -->
-  <div class="stats-grid-3 mb-6">
-    <div class="stat-card"><div class="sc-label">Total Active</div><div style="display:flex;align-items:baseline;gap:8px"><div class="sc-value">142</div><span style="font-size:12px;font-weight:700;color:#16a34a">+12%</span></div></div>
-    <div class="stat-card" style="border-left:4px solid var(--error)"><div class="sc-label" style="color:var(--error)">Urgent Action</div><div style="display:flex;align-items:baseline;gap:8px"><div class="sc-value">18</div><span style="font-size:11px;font-weight:700;color:var(--error)">Requires Immediate</span></div></div>
-    <div class="kpi-hero" style="border-radius:14px"><span class="material-symbols-outlined bg-icon" style="font-variation-settings:'FILL' 1">analytics</span><div class="kh-label">Resolution Efficiency</div><div class="kh-value">84.2%</div><div class="kh-sub">Average turnaround: 2.4 days per case</div></div>
-  </div>
-
-  <!-- Filter tabs -->
-  <div class="filter-bar" style="margin-bottom:24px">
-    <div style="display:flex;background:white;border-radius:9px;padding:4px;gap:2px">
-      <button class="filter-chip chip-active">All Complaints</button>
-      <button class="filter-chip chip-inactive">Unassigned</button>
-      <button class="filter-chip chip-inactive">My Cases</button>
-    </div>
-    <div style="width:1px;height:24px;background:rgba(195,198,215,0.3)"></div>
-    <button class="filter-tag urgent-tag">Urgent Only</button>
-    <button class="filter-tag">Noise</button>
-    <button class="filter-tag">Sanitation</button>
-    <button class="filter-tag">Public Infrastructure</button>
-  </div>
-
-  <!-- Complaint cards grid -->
-  <div class="two-col mb-5">
-    <!-- Card 1: Urgent -->
-    <div class="complaint-card">
-      <div class="complaint-inner">
-        <div class="complaint-thumb"><span class="material-symbols-outlined" style="font-size:40px;color:#94a3b8">delete</span></div>
-        <div style="flex:1">
-          <div class="complaint-meta"><span class="badge badge-urgent">Urgent</span><span class="complaint-id">#CP-8842</span></div>
-          <div class="complaint-title">Illegal Waste Disposal at Phase 3</div>
-          <div class="complaint-desc">Large scale dumping detected near the community playground. Potential health hazard for children and residents in the immediate vicinity.</div>
-        </div>
-      </div>
-      <div class="complaint-footer">
-        <div class="complaint-submitter"><div class="av av-sm" style="background:#dbeafe;color:#1e3a8a">EJ</div><div><div class="sub-name">Elena Javier</div><div class="sub-date">Submitted Oct 22, 2023</div></div></div>
-        <div class="complaint-status"><span class="slabel">Status:</span><span class="badge badge-inprogress"><span class="badge-dot"></span>Pending Assessment</span></div>
-      </div>
-    </div>
-    <!-- Card 2: Standard -->
-    <div class="complaint-card">
-      <div class="complaint-inner">
-        <div class="complaint-thumb"><span class="material-symbols-outlined" style="font-size:40px;color:#94a3b8">light_mode</span></div>
-        <div style="flex:1">
-          <div class="complaint-meta"><span class="badge badge-standard">Standard</span><span class="complaint-id">#CP-8841</span></div>
-          <div class="complaint-title">Street Light Outage - B5 L12</div>
-          <div class="complaint-desc">The main street lamp at Block 5 has been flickering for three days and is now completely dark. Safety concern for night shift workers.</div>
-        </div>
-      </div>
-      <div class="complaint-footer">
-        <div class="complaint-submitter"><div class="av av-sm" style="background:#dbeafe;color:#1e3a8a">RC</div><div><div class="sub-name">Roberto Cruz</div><div class="sub-date">Submitted Oct 23, 2023</div></div></div>
-        <div class="complaint-status"><span class="slabel">Status:</span><span class="badge badge-inprogress"><span class="badge-dot"></span>In Progress</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Wide card: Resolved -->
-  <div class="complaint-card mb-5" style="margin-bottom:20px">
-    <div class="complaint-wide">
-      <div class="cw-left">
-        <div class="complaint-meta"><span class="badge badge-pickup" style="background:rgba(0,74,198,0.08);color:var(--primary)">Low Urgency</span><span class="complaint-id">#CP-8839</span></div>
-        <div class="complaint-title" style="font-size:20px;margin-bottom:10px">Excessive Noise Complaint - San Jose St.</div>
-        <div style="font-size:13.5px;color:var(--on-surface-variant);line-height:1.6;margin-bottom:20px">Report of loud music and construction work occurring past 10 PM. Officers visited the site and issued a verbal warning to the residents at 144 San Jose.</div>
-        <div style="display:flex;align-items:center;gap:20px">
-          <div class="complaint-submitter"><div class="av" style="background:rgba(148,55,0,0.12);color:var(--tertiary)">ML</div><div><div class="sub-name">Maria Luna</div><div class="sub-date">Submitted Oct 20, 2023</div></div></div>
-          <div style="width:1px;height:36px;background:rgba(195,198,215,0.2)"></div>
-          <div class="complaint-status"><span class="slabel">Status:</span><span class="badge badge-resolved"><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">check_circle</span>Resolved</span></div>
-        </div>
-      </div>
-      <div class="cw-img"><span class="material-symbols-outlined" style="font-size:52px;color:#475569">nights_stay</span><div class="cw-img-overlay"><span>View Resolution Report</span></div></div>
-    </div>
-  </div>
-
-  <div class="two-col">
-    <!-- Card 4: Urgent -->
-    <div class="complaint-card">
-      <div class="complaint-meta"><span class="badge badge-urgent">Urgent</span><span class="complaint-id">#CP-8843</span></div>
-      <div class="complaint-title">Burst Water Pipe on Dahlia Ave</div>
-      <div class="complaint-desc">Major leak causing flooding in front of the community center. Water pressure dropped in surrounding households. Requires immediate maintenance.</div>
-      <div class="complaint-footer">
-        <div class="complaint-submitter"><div class="av av-sm" style="background:#dbeafe;color:#1e3a8a">SM</div><div><div class="sub-name">Samuel Mateo</div><div class="sub-date">Submitted 2 hours ago</div></div></div>
-        <div class="complaint-status"><span class="slabel">Status:</span><span class="badge badge-awaiting"><span class="badge-dot"></span>Awaiting Dispatch</span></div>
-      </div>
-    </div>
-    <!-- Load more state -->
-    <div style="background:var(--surface-container-low);border-radius:14px;border:2px dashed rgba(195,198,215,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
-      <span class="material-symbols-outlined" style="font-size:36px;color:var(--outline);margin-bottom:12px">hourglass_empty</span>
-      <div style="font-size:13px;font-weight:700;color:var(--on-surface-variant);margin-bottom:6px">Showing 15 of 142 Complaints</div>
-      <div style="font-size:11.5px;color:#94a3b8;margin-bottom:18px;line-height:1.5;max-width:220px">Filter your search or use pagination to see more records.</div>
-      <button style="background:none;border:none;color:var(--primary);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">Load 10 more results</button>
-    </div>
-  </div>
-
-  <button class="fab" onclick="openNewComplaintModal()"><span class="material-symbols-outlined">add</span></button>
-</div>
-
-<!-- ======= PROJECTS ======= -->
-<div id="page-projects" class="page">
-  <div class="pg-header">
-    <div>
-      <h2>Community Projects</h2>
-      <p>Managing infrastructure and social initiatives for a better Payatas.</p>
-    </div>
-    <div class="pg-actions">
-      <button class="btn-secondary" onclick="printProjectReport()">Export Report</button>
-      <button class="btn-primary" onclick="openNewProjectModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> Create Project</button>
-    </div>
-  </div>
-
-  <div class="stats-grid-4 mb-6">
-    <div class="stat-card"><div class="sc-label">Total Budget</div><div style="display:flex;align-items:baseline;gap:8px"><div class="sc-value" style="font-size:24px">₱4.2M</div><span style="font-size:11px;font-weight:700;color:#16a34a">+12% vs last year</span></div></div>
-    <div class="stat-card"><div class="sc-label">Ongoing</div><div class="sc-value">12</div></div>
-    <div class="stat-card"><div class="sc-label">Completed</div><div class="sc-value">24</div></div>
-    <div class="stat-card"><div class="sc-label">Planned</div><div class="sc-value">08</div></div>
-  </div>
-
-  <!-- 3-col project cards -->
-  <div class="proj-grid mb-5">
-    <!-- Ongoing -->
-    <div class="proj-card">
-      <div class="proj-img" style="background:linear-gradient(135deg,#1e3a8a,#2563eb)">
-        <div class="proj-img-bg" style="display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:64px;color:rgba(255,255,255,0.2)">construction</span></div>
-        <div class="proj-status-tag" style="background:rgba(0,74,198,0.9)">Ongoing</div>
-      </div>
-      <div class="proj-body">
-        <div class="proj-title">Phase 4 Main Road Rehabilitation</div>
-        <div class="proj-desc">Complete resurfacing of the main artery to improve traffic flow and drainage during rainy seasons.</div>
-        <div class="proj-footer">
-          <div class="proj-progress-label"><span>Progress</span><span>65%</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
-          <div class="proj-meta">
-            <div class="proj-meta-item"><span class="mkey">Budget</span><span class="mval">₱1,250,000</span></div>
-            <div class="proj-meta-item"><span class="mkey">Timeline</span><span class="mval">Dec 2023</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Completed -->
-    <div class="proj-card">
-      <div class="proj-img" style="background:linear-gradient(135deg,#064e3b,#10b981)">
-        <div class="proj-img-bg" style="display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:64px;color:rgba(255,255,255,0.2)">solar_power</span></div>
-        <div class="proj-status-tag" style="background:rgba(5,150,105,0.9)">Completed</div>
-      </div>
-      <div class="proj-body">
-        <div class="proj-title">Solar-Powered Lighting Initiative</div>
-        <div class="proj-desc">Installation of 50 high-efficiency solar lamps across dark corridors to increase community safety.</div>
-        <div class="proj-footer">
-          <div class="proj-success"><span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">check_circle</span>Project Delivered Successfully</div>
-          <div class="proj-meta">
-            <div class="proj-meta-item"><span class="mkey">Budget</span><span class="mval">₱450,000</span></div>
-            <div class="proj-meta-item"><span class="mkey">Completed</span><span class="mval">Sep 2023</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Planned -->
-    <div class="proj-card">
-      <div class="proj-img" style="background:linear-gradient(135deg,#7c2d12,#ea580c)">
-        <div class="proj-img-bg" style="display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:64px;color:rgba(255,255,255,0.2)">domain</span></div>
-        <div class="proj-status-tag" style="background:rgba(148,55,0,0.9)">Planned</div>
-      </div>
-      <div class="proj-body">
-        <div class="proj-title">Multipurpose Hall Expansion</div>
-        <div class="proj-desc">Expanding the local health center and hall to accommodate larger vaccine drives and workshops.</div>
-        <div class="proj-footer">
-          <div class="proj-pending-tag"><span class="material-symbols-outlined" style="font-size:16px">schedule</span>Slated for Q1 2024</div>
-          <div class="proj-meta">
-            <div class="proj-meta-item"><span class="mkey">Est. Budget</span><span class="mval">₱2,800,000</span></div>
-            <div class="proj-meta-item"><span class="mkey">Start Date</span><span class="mval">Jan 2024</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Wide + CTA row -->
-  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
-    <div class="proj-wide">
-      <div class="proj-wide-img" style="background:linear-gradient(135deg,#0f172a,#1e3a8a)">
-        <div class="proj-wide-img-bg" style="display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:80px;color:rgba(255,255,255,0.15)">water</span></div>
-        <div class="proj-status-tag" style="position:absolute;top:12px;left:12px;background:rgba(0,74,198,0.9)">Ongoing</div>
-      </div>
-      <div class="proj-wide-body">
-        <div class="proj-wide-header">
-          <div class="proj-title" style="margin-bottom:0">Central Payatas Drainage Upgrade</div>
-          <div class="proj-wide-spend"><span class="sk">Current Spend</span><span class="sv">₱842,000</span></div>
-        </div>
-        <div class="proj-wide-desc">The most significant infrastructure task of the year. Aimed at eliminating seasonal flooding for over 2,000 households.</div>
-        <div style="margin-bottom:20px">
-          <div class="proj-progress-label"><span>Completion Progress</span><span>28%</span></div>
-          <div class="progress-bar" style="height:10px"><div class="progress-fill" style="width:28%"></div></div>
-        </div>
-        <div class="proj-wide-meta">
-          <div class="proj-meta-item"><span class="mkey">Contractor</span><span class="mval" style="font-size:13.5px">BuildBase PH</span></div>
-          <div class="proj-meta-item"><span class="mkey">Total Budget</span><span class="mval" style="font-size:13.5px">₱3,200,000</span></div>
-          <div class="proj-meta-item"><span class="mkey">Target End</span><span class="mval" style="font-size:13.5px">March 2024</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="cta-card">
-      <div>
-        <span class="material-symbols-outlined cta-icon" style="font-variation-settings:'FILL' 1">volunteer_activism</span>
-        <h3>Community-Led Cleanup</h3>
-        <p>A planned social project focused on environmental awareness and volunteer-led street cleaning throughout Payatas.</p>
-      </div>
-      <button class="btn-white">View Volunteering Details</button>
-    </div>
-  </div>
-
-  <button class="fab" onclick="openNewProjectModal()"><span class="material-symbols-outlined">add</span></button>
-</div>
-
-<!-- ======= ANNOUNCEMENTS ======= -->
-<div id="page-announcements" class="page">
-  <div class="pg-header">
-    <div>
-      <h2>Community Announcements</h2>
-      <p>Official updates and public notices for the residents of Payatas.</p>
-    </div>
-    <div class="pg-actions">
-      <button class="btn-secondary" onclick="showFilterAnnouncementsModal()">Filter Categories</button>
-    </div>
-  </div>
-
-  <!-- Featured -->
-  <div class="featured-banner mb-6">
-    <div class="featured-img" style="background:linear-gradient(135deg,#0f2f6a,#1e4fd8)">
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0.08">
-        <span class="material-symbols-outlined" style="font-size:320px;color:white;font-variation-settings:'FILL' 1">medical_services</span>
-      </div>
-    </div>
-    <div class="featured-overlay"></div>
-    <div class="featured-content">
-      <span class="featured-tag">Featured Notice</span>
-      <h3 class="featured-title">Annual Barangay Vaccination Drive &amp; Medical Mission 2023</h3>
-      <p class="featured-desc">Ensuring the health of our families. Join us this Saturday at the Multi-Purpose Hall for free vaccinations, pediatric check-ups, and dental services for all residents.</p>
-      <div class="featured-actions">
-        <button class="btn-white">Read Full Guidelines</button>
-        <div class="featured-meta"><span class="material-symbols-outlined">schedule</span>Valid until Oct 31, 2023</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="ann-grid">
-    <!-- Card 1 -->
-    <div class="ann-card">
-      <div class="ann-img" style="background:linear-gradient(135deg,#1e293b,#334155)">
-        <div class="ann-img-placeholder"><span class="material-symbols-outlined" style="font-size:56px;color:rgba(255,255,255,0.2)">construction</span></div>
-        <div class="ann-cat" style="background:#943700">Advisory</div>
-      </div>
-      <div class="ann-body">
-        <div class="ann-date"><span class="material-symbols-outlined">calendar_month</span>October 22, 2023</div>
-        <div class="ann-title">Emergency Road Maintenance: IBP Road Section</div>
-        <div class="ann-excerpt">Scheduled repair works will begin this Monday. Please expect rerouting and minor delays in the North sector.</div>
-        <div class="ann-footer"><span class="ann-link">Read More</span><span class="material-symbols-outlined" style="color:var(--primary);font-size:18px">arrow_forward</span></div>
-      </div>
-    </div>
-    <!-- Card 2 -->
-    <div class="ann-card">
-      <div class="ann-img" style="background:linear-gradient(135deg,#064e3b,#10b981)">
-        <div class="ann-img-placeholder"><span class="material-symbols-outlined" style="font-size:56px;color:rgba(255,255,255,0.2)">eco</span></div>
-        <div class="ann-cat" style="background:#16a34a">Events</div>
-      </div>
-      <div class="ann-body">
-        <div class="ann-date"><span class="material-symbols-outlined">calendar_month</span>October 20, 2023</div>
-        <div class="ann-title">Community Clean-up Drive: "Payatas Green"</div>
-        <div class="ann-excerpt">Join your neighbors in our monthly initiative to keep our public parks clean and sustainable for everyone.</div>
-        <div class="ann-footer"><span class="ann-link">Join Event</span><span class="material-symbols-outlined" style="color:var(--primary);font-size:18px">arrow_forward</span></div>
-      </div>
-    </div>
-    <!-- Card 3 -->
-    <div class="ann-card">
-      <div class="ann-img" style="background:linear-gradient(135deg,#1e3a8a,#2563eb)">
-        <div class="ann-img-placeholder"><span class="material-symbols-outlined" style="font-size:56px;color:rgba(255,255,255,0.2)">account_balance</span></div>
-        <div class="ann-cat" style="background:#2563eb">Governance</div>
-      </div>
-      <div class="ann-body">
-        <div class="ann-date"><span class="material-symbols-outlined">calendar_month</span>October 18, 2023</div>
-        <div class="ann-title">Quarterly Town Hall: Budget Transparency Report</div>
-        <div class="ann-excerpt">A detailed review of the barangay's financial performance and upcoming development projects for Q4.</div>
-        <div class="ann-footer"><span class="ann-link">Download Agenda</span><span class="material-symbols-outlined" style="color:var(--primary);font-size:18px">arrow_forward</span></div>
-      </div>
-    </div>
-    <!-- Card 4 -->
-    <div class="ann-card">
-      <div class="ann-img" style="background:linear-gradient(135deg,#1e293b,#475569)">
-        <div class="ann-img-placeholder"><span class="material-symbols-outlined" style="font-size:56px;color:rgba(255,255,255,0.2)">apartment</span></div>
-        <div class="ann-cat" style="background:#475569">Schedule</div>
-      </div>
-      <div class="ann-body">
-        <div class="ann-date"><span class="material-symbols-outlined">calendar_month</span>October 15, 2023</div>
-        <div class="ann-title">Adjusted Office Hours for Upcoming Holidays</div>
-        <div class="ann-excerpt">Please be informed of the modified operating hours for the Barangay Hall during the upcoming long weekend.</div>
-        <div class="ann-footer"><span class="ann-link">View Schedule</span><span class="material-symbols-outlined" style="color:var(--primary);font-size:18px">arrow_forward</span></div>
-      </div>
-    </div>
-    <!-- Card 5 -->
-    <div class="ann-card">
-      <div class="ann-img" style="background:linear-gradient(135deg,#7c2d12,#ea580c)">
-        <div class="ann-img-placeholder"><span class="material-symbols-outlined" style="font-size:56px;color:rgba(255,255,255,0.2)">sports_basketball</span></div>
-        <div class="ann-cat" style="background:#ea580c">Sports</div>
-      </div>
-      <div class="ann-body">
-        <div class="ann-date"><span class="material-symbols-outlined">calendar_month</span>October 12, 2023</div>
-        <div class="ann-title">Inter-Barangay Sports Fest: Registration Open</div>
-        <div class="ann-excerpt">Calling all athletes! Registration for the annual basketball and volleyball tournament is now open at the youth desk.</div>
-        <div class="ann-footer"><span class="ann-link">Register Team</span><span class="material-symbols-outlined" style="color:var(--primary);font-size:18px">arrow_forward</span></div>
-      </div>
-    </div>
-    <!-- Add card -->
-    <div class="ann-add-card">
-      <div class="ann-add-icon"><span class="material-symbols-outlined">post_add</span></div>
-      <h4>Post New Update</h4>
-      <p>Create a new community notice or official announcement for residents.</p>
-    </div>
-  </div>
-
-  <button class="fab" onclick="openNewAnnouncementModal()"><span class="material-symbols-outlined">add</span></button>
-</div>
-
-<!-- ======= REPORTS ======= -->
-<div id="page-reports" class="page">
-  <div class="pg-header">
-    <div>
-      <h2>Operational Reports</h2>
-      <p>Real-time performance metrics and civic intelligence overview.</p>
-    </div>
-    <div class="pg-actions">
-      <button class="date-range-btn" onclick="openDateRangeModal()">
-        <span class="material-symbols-outlined cal">calendar_today</span>
-        <div><span class="drb-label">Date Range</span><span class="drb-val">Oct 1, 2023 – Oct 31, 2023</span></div>
-        <span class="material-symbols-outlined chev">expand_more</span>
+    <nav class="nav-section">
+      <button class="nav-item active" onclick="showPage('dashboard'); return false;">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="label">Dashboard</span>
       </button>
-      <button class="btn-primary" onclick="exportAllReports()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export All</button>
+      <button class="nav-item" onclick="showPage('residents'); return false;">
+        <span class="material-symbols-outlined">groups</span>
+        <span class="label">Residents</span>
+      </button>
+      <button class="nav-item" onclick="showPage('documents'); return false;">
+        <span class="material-symbols-outlined">description</span>
+        <span class="label">Document Requests</span>
+      </button>
+      <button class="nav-item" onclick="showPage('complaints'); return false;">
+        <span class="material-symbols-outlined">gavel</span>
+        <span class="label">Complaints</span>
+      </button>
+      <button class="nav-item" onclick="showPage('projects'); return false;">
+        <span class="material-symbols-outlined">account_tree</span>
+        <span class="label">Projects</span>
+      </button>
+      <button class="nav-item" onclick="showPage('announcements'); return false;">
+        <span class="material-symbols-outlined">campaign</span>
+        <span class="label">Announcements</span>
+      </button>
+      <button class="nav-item" onclick="showPage('reports'); return false;">
+        <span class="material-symbols-outlined">analytics</span>
+        <span class="label">Reports</span>
+      </button>
+      <button class="nav-item admin-only" onclick="showPage('users'); return false;">
+        <span class="material-symbols-outlined">supervised_user_circle</span>
+        <span class="label">Users</span>
+      </button>
+      <button class="nav-item" onclick="showPage('settings'); return false;">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="label">Settings</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-cta-btn">
+        <span class="material-symbols-outlined" style="font-size:16px">add</span>
+        New Announcement
+      </button>
     </div>
-  </div>
+  </aside>
 
-  <!-- KPI cards -->
-  <div class="stats-grid-4 mb-6">
-    <div class="stat-card">
-      <div class="sc-header"><div class="sc-icon" style="background:rgba(0,74,198,0.1)"><span class="material-symbols-outlined" style="color:var(--primary);font-size:20px">payments</span></div><span class="sc-badge" style="background:#dcfce7;color:#14532d;display:flex;align-items:center;gap:3px"><span class="material-symbols-outlined" style="font-size:11px">trending_up</span>+12.5%</span></div>
-      <div class="sc-label">Total Revenue</div>
-      <div class="sc-value" style="font-size:22px">₱142,850.00</div>
-      <div class="sc-sub">v.s. previous month</div>
+  <!-- ======================== TOPBAR ======================== -->
+  <header class="topbar">
+    <div class="search-wrap">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" id="searchInput" placeholder="Search residents, documents, or records..."/>
     </div>
-    <div class="stat-card">
-      <div class="sc-header"><div class="sc-icon" style="background:rgba(148,55,0,0.1)"><span class="material-symbols-outlined" style="color:var(--tertiary);font-size:20px">timer</span></div><span class="sc-badge" style="background:#dbeafe;color:#1e3a8a;display:flex;align-items:center;gap:3px"><span class="material-symbols-outlined" style="font-size:11px">speed</span>Fast</span></div>
-      <div class="sc-label">Avg. Processing Time</div>
-      <div class="sc-value" style="font-size:22px">18.5 mins</div>
-      <div class="sc-sub">-4 mins from last week</div>
+    <div class="topbar-end">
+      <div class="topbar-date">
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--primary)">calendar_today</span>
+        October 24, 2023
+      </div>
+      <div class="topbar-divider"></div>
+      <button class="notif-btn">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="notif-dot"></span>
+      </button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="user-info">
+          <div class="name">Admin Payatas</div>
+          <div class="role">Super Administrator</div>
+        </div>
+        <div class="avatar">AP</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="sc-header"><div class="sc-icon" style="background:rgba(73,92,149,0.1)"><span class="material-symbols-outlined" style="color:var(--secondary);font-size:20px">sentiment_very_satisfied</span></div><div style="display:flex;gap:2px;color:#f59e0b"><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:14px">star_half</span></div></div>
-      <div class="sc-label">Resident Satisfaction</div>
-      <div class="sc-value" style="font-size:22px">4.82 / 5.0</div>
-      <div class="sc-sub">Based on 1.2k responses</div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-header"><div class="sc-icon" style="background:#dcfce7"><span class="material-symbols-outlined" style="color:#16a34a;font-size:20px">task_alt</span></div></div>
-      <div class="sc-label">Project Completion</div>
-      <div class="sc-value" style="font-size:22px">94.2%</div>
-      <div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:94%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
-    </div>
-  </div>
+  </header>
 
-  <!-- Charts -->
-  <div class="col-2-1 mb-6">
-    <div class="chart-card">
-      <div class="chart-card-header">
-        <div><div class="card-title">Document Issuance Trends</div><div class="card-subtitle">Monthly volume of clearances and certificates</div></div>
-        <div class="chart-toggle"><button class="ctb-active">LINE</button><button class="ctb-inactive">BAR</button></div>
-      </div>
-      <div style="position:relative;padding-bottom:28px">
-        <div style="position:absolute;left:0;right:0;top:0;bottom:28px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none">
-          <div style="border-top:1px dashed rgba(195,198,215,0.3)"></div>
-          <div style="border-top:1px dashed rgba(195,198,215,0.3)"></div>
-          <div style="border-top:1px dashed rgba(195,198,215,0.3)"></div>
-          <div style="border-top:1px dashed rgba(195,198,215,0.3)"></div>
+<!-- ======================== MAIN CONTENT ======================== -->
+  <main class="main-content">
+    <!-- All pages are included inline for offline/demo mode -->
+    
+    <!-- ======= DASHBOARD ======= -->
+    <div id="page-dashboard" class="page active">
+      <div class="pg-header">
+        <div>
+          <h2>Dashboard</h2>
+          <p>Welcome back, Admin Payatas! Here's your community overview.</p>
         </div>
-        <div class="chart-container">
-          <div class="chart-bar-group"><div class="chart-bar" style="height:40%"></div><span class="chart-label">JAN</span></div>
-          <div class="chart-bar-group"><div class="chart-bar" style="height:55%"></div><span class="chart-label">FEB</span></div>
-          <div class="chart-bar-group"><div class="chart-bar" style="height:45%"></div><span class="chart-label">MAR</span></div>
-          <div class="chart-bar-group"><div class="chart-bar" style="height:70%"></div><span class="chart-label">APR</span></div>
-          <div class="chart-bar-group"><div class="chart-bar" style="height:65%"></div><span class="chart-label">MAY</span></div>
-          <div class="chart-bar-group"><div class="chart-bar highlighted" style="height:85%"></div><span class="chart-label active">JUN</span></div>
-          <div class="chart-bar-group"><div class="chart-bar" style="height:60%"></div><span class="chart-label">JUL</span></div>
-          <div class="chart-bar-group"><div class="chart-bar" style="height:50%"></div><span class="chart-label">AUG</span></div>
-          <div class="chart-bar-group"><div class="chart-bar" style="height:40%"></div><span class="chart-label">SEP</span></div>
-          <div class="chart-bar-group"><div class="chart-bar" style="height:75%"></div><span class="chart-label">OCT</span></div>
+        <div class="pg-actions">
+          <button class="btn-secondary" onclick="exportDashboardReport()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export Report</button>
+          <button class="btn-primary" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
         </div>
       </div>
-    </div>
-    <div class="chart-card">
-      <div class="card-title mb-4">Complaints vs. Resolutions</div>
-      <div class="card-subtitle mb-4">Efficiency of incident management</div>
-      <div class="h-bar">
-        <div class="h-bar-item">
-          <div class="hb-meta"><span>Incident Filed (142)</span><span style="color:var(--tertiary)">30% High Priority</span></div>
-          <div class="h-bar-track"><div class="h-bar-fill" style="width:70%;background:var(--tertiary)"></div></div>
+      
+      <!-- Stats -->
+      <div class="stats-grid-4 mb-6">
+        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(0,74,198,0.1)"><span class="material-symbols-outlined" style="color:var(--primary);font-size:20px">groups</span></div><span class="sc-badge" style="background:#dcfce7;color:#14532d;display:flex;align-items:center;gap:3px"><span class="material-symbols-outlined" style="font-size:11px">trending_up</span>+2.4%</span></div><div class="sc-label">Total Residents</div><div class="sc-value">42,305</div><div class="sc-sub">+1,012 this year</div></div>
+        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(148,55,0,0.1)"><span class="material-symbols-outlined" style="color:var(--tertiary);font-size:20px">description</span></div></div><div class="sc-label">Pending Requests</div><div class="sc-value">18</div><div class="sc-sub">5 urgent</div></div>
+        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(185,28,28,0.1)"><span class="material-symbols-outlined" style="color:#ba1a1a;font-size:20px">warning</span></div></div><div class="sc-label">Active Complaints</div><div class="sc-value">5</div><div class="sc-sub">2 critical</div></div>
+        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(5,150,105,0.1)"><span class="material-symbols-outlined" style="color:#16a34a;font-size:20px">account_tree</span></div></div><div class="sc-label">Ongoing Projects</div><div class="sc-value">3</div><div class="sc-sub">12 completed</div></div>
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="two-col mb-6">
+        <div class="card">
+          <div class="card-title mb-4">Quick Actions</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <button class="quick-action" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">description</span><span style="font-size:11px;font-weight:600;margin-top:6px">New Request</span></button>
+            <button class="quick-action" onclick="showPage('residents');"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">person_add</span><span style="font-size:11px;font-weight:600;margin-top:6px">Add Resident</span></button>
+            <button class="quick-action" onclick="openNewAnnouncementModal()"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">campaign</span><span style="font-size:11px;font-weight:600;margin-top:6px">Announce</span></button>
+          </div>
         </div>
-        <div class="h-bar-item">
-          <div class="hb-meta"><span>Resolved (128)</span><span style="color:#16a34a">90% Success Rate</span></div>
-          <div class="h-bar-track"><div class="h-bar-fill" style="width:90%;background:#10b981"></div></div>
+        <div class="emergency-card">
+          <div class="em-header"><span class="material-symbols-outlined" style="color:#dc2626">warning</span><span>Emergency Hub</span></div>
+          <p>Broadcast urgent alerts to all residents via SMS and push notifications.</p>
+          <button class="em-btn">Launch Alert</button>
         </div>
       </div>
-      <div class="insight-box">
-        <div class="insight-icon"><span class="material-symbols-outlined">lightbulb</span></div>
-        <div class="insight-text"><div class="it">Insight</div><div class="is">Resolutions are up 15% this month due to new Purok-level coordinators.</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Summary table + map -->
-  <div class="col-3-1">
-    <div class="card">
-      <div class="monthly-table">
-        <div class="mt-head"><h4>Monthly Performance Summary</h4><a href="#" onclick="showHistoricalData(); return false;">View Historical Data</a></div>
+      
+      <!-- Recent Activity Table -->
+      <div class="card">
+        <div class="card-title mb-4">Recent Document Requests</div>
         <table>
-          <thead><tr><th>Month</th><th>Total Requests</th><th>Total Revenue</th><th>Complaints Filed</th><th>Resolution Rate</th></tr></thead>
-          <tbody>
-            <tr><td class="font-bold">October 2023</td><td>2,410</td><td class="font-bold">₱142,850</td><td>42</td><td><span class="badge badge-approved">94%</span></td></tr>
-            <tr><td class="font-bold">September 2023</td><td>2,150</td><td class="font-bold">₱128,400</td><td>58</td><td><span class="badge badge-pending">88%</span></td></tr>
-            <tr><td class="font-bold">August 2023</td><td>2,890</td><td class="font-bold">₱156,200</td><td>35</td><td><span class="badge badge-approved">97%</span></td></tr>
+          <thead><tr><th>Resident</th><th>Document Type</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="dashboard-documents-tbody">
           </tbody>
         </table>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title">Requests by Purok</div>
-        <div class="card-subtitle mb-4">Heat map of document demand</div>
-        <div style="height:140px;background:linear-gradient(135deg,#0f2f6a,#1e4fd8);border-radius:10px;margin-bottom:16px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
-          <span class="material-symbols-outlined" style="font-size:70px;color:rgba(255,255,255,0.1)">map</span>
-          <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.9);padding:4px 10px;border-radius:99px;display:flex;align-items:center;gap:6px;white-space:nowrap">
-            <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);animation:pulse 1.5s infinite"></div>
-            <span style="font-size:10px;font-weight:700">Purok 7: High Activity</span>
+    
+    <!-- ======= RESIDENTS ======= -->
+    <div id="page-residents" class="page">
+      <div class="pg-header">
+        <div>
+          <h2>Residents</h2>
+          <p>Manage registered residents and their information.</p>
+        </div>
+        <div class="pg-actions">
+          <button class="btn-secondary" onclick="exportResidentsCSV()"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export</button>
+          <button class="btn-primary" onclick="openAddResidentModal()"><span class="material-symbols-outlined" style="font-size:16px">person_add</span> Add Resident</button>
+        </div>
+      </div>
+      <!-- Filter Bar -->
+      <div class="filter-bar mb-5">
+        <input type="text" placeholder="Search residents..." class="search-input"/>
+        <select><option>All Statuses</option><option>Active</option><option>Inactive</option></select>
+        <select><option>All Purok</option><option>Purok 1</option><option>Purok 2</option><option>Purok 3</option></select>
+      </div>
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Resident</th><th>Address</th><th>Contact</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody id="page-residents-tbody">
+          </tbody>
+        </table>
+        <div class="pagination"><span class="pg-info">Showing 1-5 of 42,305 residents</span><div class="pg-btns"><button class="pg-btn"><span class="material-symbols-outlined">chevron_left</span></button><button class="pg-btn active-pg">1</button><button class="pg-btn"><span class="material-symbols-outlined">chevron_right</span></button></div></div>
+      </div>
+    </div>
+    
+    <!-- ======= DOCUMENTS ======= -->
+    <div id="page-documents" class="page">
+      <div class="pg-header">
+        <div>
+          <h2>Document Requests</h2>
+          <p>Process and manage barangay document requests.</p>
+        </div>
+        <div class="pg-actions">
+          <button class="btn-secondary"><span class="material-symbols-outlined" style="font-size:16px">filter_list</span> Filter</button>
+          <button class="btn-primary" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
+        </div>
+      </div>
+      <!-- Filter Bar -->
+      <div class="filter-bar mb-5">
+        <input type="text" placeholder="Search requests..." class="search-input"/>
+        <select><option>All Types</option><option>Barangay Clearance</option><option>Certificate of Indigency</option><option>Business Permit</option></select>
+        <select><option>All Status</option><option>Pending</option><option>Approved</option><option>Rejected</option></select>
+      </div>
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Resident Name</th><th>Document Type</th><th>Date</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody id="page-documents-tbody">
+          </tbody>
+        </table>
+        <div class="pagination"><span class="pg-info">Showing 1-5 of requests</span><div class="pg-btns"><button class="pg-btn"><span class="material-symbols-outlined">chevron_left</span></button><button class="pg-btn active-pg">1</button><button class="pg-btn"><span class="material-symbols-outlined">chevron_right</span></button></div></div>
+      </div>
+    </div>
+    
+    <!-- ======= COMPLAINTS ======= -->
+    <div id="page-complaints" class="page">
+      <div class="pg-header">
+        <div><h2>Citizen Complaints</h2><p>Review and manage reported issues.</p></div>
+        <div class="pg-actions">
+          <button class="btn-secondary">Export CSV</button>
+          <button class="btn-primary" onclick="openNewComplaintModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Entry</button>
+        </div>
+      </div>
+      <div class="stats-grid-3 mb-6">
+        <div class="stat-card"><div class="sc-label">Total Active</div><div style="display:flex;align-items:baseline;gap:8px"><div class="sc-value">142</div><span style="font-size:12px;color:#16a34a">+12%</span></div></div>
+        <div class="stat-card" style="border-left:4px solid var(--error)"><div class="sc-label" style="color:var(--error)">Urgent</div><div class="sc-value">18</div></div>
+        <div class="kpi-hero"><span class="material-symbols-outlined bg-icon">analytics</span><div class="kh-label">Resolution</div><div class="kh-value">84.2%</div><div class="kh-sub">Avg 2.4 days</div></div>
+      </div>
+      <div class="filter-bar mb-5">
+        <button class="filter-chip chip-active">All</button>
+        <button class="filter-chip chip-inactive">Unassigned</button>
+        <button class="filter-chip chip-inactive">My Cases</button>
+      </div>
+      <!-- Complaints Grid -->
+      <div id="complaints-container" class="complaints-grid">
+      </div>
+    </div>
+    
+    <!-- ======= PROJECTS ======= -->
+    <div id="page-projects" class="page">
+      <div class="pg-header">
+        <div><h2>Community Projects</h2><p>Managing infrastructure and social initiatives.</p></div>
+        <div class="pg-actions">
+          <button class="btn-secondary">Export Report</button>
+          <button class="btn-primary" onclick="openNewProjectModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> Create Project</button>
+        </div>
+      </div>
+      <div class="stats-grid-4 mb-6">
+        <div class="stat-card"><div class="sc-label">Total Budget</div><div class="sc-value" style="font-size:24px">₱4.2M</div></div>
+        <div class="stat-card"><div class="sc-label">Ongoing</div><div class="sc-value">12</div></div>
+        <div class="stat-card"><div class="sc-label">Completed</div><div class="sc-value">24</div></div>
+        <div class="stat-card"><div class="sc-label">Planned</div><div class="sc-value">08</div></div>
+      </div>
+      <div class="proj-grid" id="projects-grid">
+      </div>
+    </div>
+    
+    <!-- ======= ANNOUNCEMENTS ======= -->
+    <div id="page-announcements" class="page">
+      <div class="pg-header">
+        <div><h2>Community Announcements</h2><p>Official updates for residents.</p></div>
+        <div class="pg-actions">
+          <button class="btn-secondary" onclick="showFilterAnnouncementsModal()">Filter</button>
+        </div>
+      </div>
+      <div class="featured-banner mb-6">
+        <div class="featured-img" style="background:linear-gradient(135deg,#0f2f6a,#1e4fd8)">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0.08"><span class="material-symbols-outlined" style="font-size:320px;color:white;font-variation-settings:'FILL' 1">medical_services</span></div>
+        </div>
+        <div class="featured-overlay"></div>
+        <div class="featured-content">
+          <span class="featured-tag">Featured Notice</span>
+          <h3 class="featured-title">Annual Vaccination Drive 2023</h3>
+          <p class="featured-desc">Free vaccinations for all residents. Join us this Saturday!</p>
+          <div class="featured-actions"><button class="btn-white">Read Guidelines</button></div>
+        </div>
+      </div>
+      <div class="ann-grid" id="announcements-grid">
+      </div>
+    </div>
+    
+    <!-- ======= REPORTS ======= -->
+    <div id="page-reports" class="page">
+      <div class="pg-header">
+        <div><h2>Operational Reports</h2><p>Performance metrics and analytics.</p></div>
+        <div class="pg-actions">
+          <button class="date-range-btn"><span class="material-symbols-outlined cal">calendar_today</span><div><span class="drb-label">Date Range</span><span class="drb-val">Oct 1-31, 2023</span></div><span class="material-symbols-outlined chev">expand_more</span></button>
+          <button class="btn-primary" onclick="exportAllReports()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export</button>
+        </div>
+      </div>
+      <div class="stats-grid-4 mb-6">
+        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(0,74,198,0.1)"><span class="material-symbols-outlined" style="color:var(--primary)">payments</span></div><span class="sc-badge" style="background:#dcfce7;color:#14532d">+12.5%</span></div><div class="sc-label">Total Revenue</div><div class="sc-value" style="font-size:22px">₱142,850</div></div>
+        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(148,55,0,0.1)"><span class="material-symbols-outlined" style="color:var(--tertiary)">timer</span></div></div><div class="sc-label">Processing Time</div><div class="sc-value" style="font-size:22px">18.5 min</div></div>
+        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(73,92,149,0.1)"><span class="material-symbols-outlined" style="color:var(--secondary)">star</span></div></div><div class="sc-label">Satisfaction</div><div class="sc-value" style="font-size:22px">4.82/5.0</div></div>
+        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:#dcfce7"><span class="material-symbols-outlined" style="color:#16a34a">task_alt</span></div></div><div class="sc-label">Completion</div><div class="sc-value" style="font-size:22px">94.2%</div><div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:94%"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="mt-head"><h4>Monthly Summary</h4><a href="#" onclick="showHistoricalData(); return false;">View History</a></div>
+        <table><thead><tr><th>Month</th><th>Requests</th><th>Revenue</th><th>Resolution</th></tr></thead>
+          <tbody><tr><td class="font-bold">October 2023</td><td>2,410</td><td class="font-bold">₱142,850</td><td><span class="badge badge-approved">94%</span></td></tr>
+            <tr><td class="font-bold">September 2023</td><td>2,150</td><td class="font-bold">₱128,400</td><td><span class="badge badge-pending">88%</span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- ======= USERS ======= -->
+    <div id="page-users" class="page">
+      <div class="pg-header">
+        <div><h2>User Management</h2><p>Manage system users and permissions.</p></div>
+        <div class="pg-actions">
+          <button class="btn-secondary" onclick="exportUsersCSV()">Export Users</button>
+          <button class="btn-primary" onclick="openAddUserModal()">Add User</button>
+        </div>
+      </div>
+      <div class="stats-grid-4 mb-6">
+        <div class="stat-card"><div class="sc-label">Total Users</div><div class="sc-value" id="total-users">0</div></div>
+        <div class="stat-card"><div class="sc-label">Administrators</div><div class="sc-value" id="admin-count">0</div></div>
+        <div class="stat-card"><div class="sc-label">Staff</div><div class="sc-value" id="staff-count">0</div></div>
+        <div class="stat-card"><div class="sc-label">Active Now</div><div class="sc-value">1</div></div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>User</th><th>Role</th><th>Email</th><th>Last Login</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody id="users-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- ======= SETTINGS ======= -->
+    <div id="page-settings" class="page">
+      <div class="pg-header">
+        <div><h2>Settings</h2><p>Configure system preferences.</p></div>
+        <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title mb-4">Barangay Information</div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div><label>Barangay Name</label><input type="text" value="Barangay Payatas"/></div>
+            <div><label>District</label><input type="text" value="Quezon City, Metro Manila"/></div>
+            <div><label>Contact Number</label><input type="text" value="+63 2 8123 4567"/></div>
+            <div><label>Email</label><input type="email" value="payatas.ledger@qc.gov.ph"/></div>
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;align-items:center;gap:7px;font-size:12px"><div style="width:9px;height:9px;border-radius:50%;background:var(--primary)"></div>Purok 7 (Area A)</div><span style="font-size:12px;font-weight:700">842</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;align-items:center;gap:7px;font-size:12px"><div style="width:9px;height:9px;border-radius:50%;background:var(--primary-container)"></div>Purok 3 (Area B)</div><span style="font-size:12px;font-weight:700">654</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;align-items:center;gap:7px;font-size:12px"><div style="width:9px;height:9px;border-radius:50%;background:var(--secondary-container)"></div>Purok 9 (Area C)</div><span style="font-size:12px;font-weight:700">321</span></div>
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div class="card">
+            <div class="card-title mb-4">Notification Preferences</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;justify-content:space-between"><span>Urgent Complaints</span><div class="toggle" data-notif-label="Urgent Complaints"></div></div>
+              <div style="display:flex;justify-content:space-between"><span>New Documents</span><div class="toggle active" data-notif-label="New Document Requests"></div></div>
+              <div style="display:flex;justify-content:space-between"><span>Project Updates</span><div class="toggle" data-notif-label="Project Updates"></div></div>
+              <div style="display:flex;justify-content:space-between"><span>Weekly Reports</span><div class="toggle active" data-notif-label="Weekly Reports"></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title mb-4">System Version</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,74,198,0.08);display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="color:var(--primary)">security</span></div>
+              <div><div style="font-size:13px;font-weight:700">Secure Ledger Protocol v2.4</div><div style="font-size:11px;color:#64748b">Last updated Oct 1, 2023</div></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+    
+  </main>
 </div>
 
-<!-- ======= SETTINGS ======= -->
-<div id="page-settings" class="page">
-  <div class="pg-header">
-    <div><h2>Settings</h2><p>Configure system preferences, user access, and barangay information.</p></div>
-    <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
-  </div>
-  <div class="two-col">
-    <div class="card"><div class="card-body">
-      <div class="card-title mb-4">Barangay Information</div>
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <div><label style="font-size:11.5px;font-weight:700;color:#64748b;display:block;margin-bottom:6px">Barangay Name</label><input type="text" value="Barangay Payatas" style="width:100%;padding:9px 12px;background:var(--surface-container-high);border:none;border-radius:8px;font-size:13.5px;font-family:inherit;outline:none"/></div>
-        <div><label style="font-size:11.5px;font-weight:700;color:#64748b;display:block;margin-bottom:6px">District</label><input type="text" value="Quezon City, Metro Manila" style="width:100%;padding:9px 12px;background:var(--surface-container-high);border:none;border-radius:8px;font-size:13.5px;font-family:inherit;outline:none"/></div>
-        <div><label style="font-size:11.5px;font-weight:700;color:#64748b;display:block;margin-bottom:6px">Contact Number</label><input type="text" value="+63 2 8123 4567" style="width:100%;padding:9px 12px;background:var(--surface-container-high);border:none;border-radius:8px;font-size:13.5px;font-family:inherit;outline:none"/></div>
-        <div><label style="font-size:11.5px;font-weight:700;color:#64748b;display:block;margin-bottom:6px">Email</label><input type="email" value="payatas.ledger@qc.gov.ph" style="width:100%;padding:9px 12px;background:var(--surface-container-high);border:none;border-radius:8px;font-size:13.5px;font-family:inherit;outline:none"/></div>
-      </div>
-    </div></div>
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="card"><div class="card-body">
-        <div class="card-title mb-4">Notification Preferences</div>
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13.5px;font-weight:600">Urgent Complaints</span><div style="width:40px;height:22px;background:var(--primary);border-radius:99px;position:relative;cursor:pointer" data-notif-label="Urgent Complaints"><div style="position:absolute;right:3px;top:3px;width:16px;height:16px;background:white;border-radius:50%"></div></div></div>
-          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13.5px;font-weight:600">New Document Requests</span><div style="width:40px;height:22px;background:var(--primary);border-radius:99px;position:relative;cursor:pointer" data-notif-label="New Document Requests"><div style="position:absolute;right:3px;top:3px;width:16px;height:16px;background:white;border-radius:50%"></div></div></div>
-          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13.5px;font-weight:600">Project Updates</span><div style="width:40px;height:22px;background:var(--surface-container-highest);border-radius:99px;position:relative;cursor:pointer" data-notif-label="Project Updates"><div style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:white;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div></div></div>
-          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13.5px;font-weight:600">Weekly Reports</span><div style="width:40px;height:22px;background:var(--primary);border-radius:99px;position:relative;cursor:pointer" data-notif-label="Weekly Reports"><div style="position:absolute;right:3px;top:3px;width:16px;height:16px;background:white;border-radius:50%"></div></div></div>
-        </div>
-      </div></div>
-      <div class="card"><div class="card-body">
-        <div class="card-title mb-4">System Version</div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,74,198,0.08);display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:18px;color:var(--primary)">security</span></div>
-          <div><div style="font-size:13px;font-weight:700">Secure Ledger Protocol v2.4</div><div style="font-size:11px;color:#64748b">Last updated Oct 1, 2023</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b"><span class="material-symbols-outlined" style="font-size:14px">sync</span>Last synced 2 minutes ago</div>
-      </div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ======= USERS (Admin Only) ======= -->
-<div id="page-users" class="page">
-  <div class="pg-header">
-    <div>
-      <h2>User Management</h2>
-      <p>Manage system users, roles, and access permissions.</p>
-    </div>
-    <div class="pg-actions">
-      <button class="btn-secondary" onclick="exportUsersCSV()"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export Users</button>
-      <button class="btn-primary" onclick="openAddUserModal()"><span class="material-symbols-outlined" style="font-size:16px">person_add</span> Add User</button>
-    </div>
-  </div>
-
-  <!-- User Stats -->
-  <div class="stats-grid-4 mb-6">
-    <div class="stat-card">
-      <div class="sc-header">
-        <div class="sc-icon" style="background:#dbeafe"><span class="material-symbols-outlined" style="color:#1d4ed8;font-size:20px">people</span></div>
-      </div>
-      <div class="sc-label">Total Users</div>
-      <div class="sc-value" id="total-users">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-header">
-        <div class="sc-icon" style="background:#dcfce7"><span class="material-symbols-outlined" style="color:#16a34a;font-size:20px">admin_panel_settings</span></div>
-      </div>
-      <div class="sc-label">Administrators</div>
-      <div class="sc-value" id="admin-count">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-header">
-        <div class="sc-icon" style="background:#fef3c7"><span class="material-symbols-outlined" style="color:#d97706;font-size:20px">support_agent</span></div>
-      </div>
-      <div class="sc-label">Staff</div>
-      <div class="sc-value" id="staff-count">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-header">
-        <div class="sc-icon" style="background:#ede9fe"><span class="material-symbols-outlined" style="color:#7c3aed;font-size:20px">active_users</span></div>
-      </div>
-      <div class="sc-label">Active Now</div>
-      <div class="sc-value" id="active-count">1</div>
-    </div>
-  </div>
-
-  <!-- Users Table -->
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>User</th><th>Role</th><th>Email</th><th>Last Login</th><th>Status</th><th style="text-align:right">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="users-table-body">
-      </tbody>
-    </table>
-    <div class="pagination">
-      <span class="pg-info">Showing users</span>
-      <div class="pg-btns">
-        <button class="pg-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-        <button class="pg-btn active-pg">1</button>
-        <button class="pg-btn"><span class="material-symbols-outlined">chevron_right</span></button>
-      </div>
-    </div>
-  </div>
-</div>
-
-</main>
+<!-- No external page loading - all pages inline -->
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="app.js"></script>
+
+<!-- Page-specific scripts (modular) -->
+<script src="js/pages/dashboard.js"></script>
+<script src="js/pages/residents.js"></script>
+<script src="js/pages/documents.js"></script>
+<script src="js/pages/complaints.js"></script>
+<script src="js/pages/projects.js"></script>
+<script src="js/pages/announcements.js"></script>
+<script src="js/pages/reports.js"></script>
+<script src="js/pages/users.js"></script>
+<script src="js/pages/settings.js"></script>
 </body>
 </html>
