@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Payatas Ledger | Civic Management System (Demo)</title>
+<title>Payatas Ledger | Civic Management System</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<!-- ======================== LOGIN SCREEN ======================== -->
+<!-- LOGIN SCREEN -->
 <div id="login-screen" class="login-screen">
   <div class="login-container">
     <div class="login-brand">
@@ -37,378 +37,331 @@
       <button class="login-btn" onclick="login()">Sign In</button>
     </div>
     <div class="login-footer">
-      <p>Payatas Ledger Demo Project &copy; 2026</p>
-      <p style="font-size:10px;color:#94a3b8;margin-top:4px">This is a demo project for educational purposes</p>
+      <p>Demo: admin / admin123</p>
     </div>
   </div>
 </div>
 
-<!-- ======================== MAIN APP ======================== -->
+<!-- MAIN APP -->
 <div id="main-app" class="main-app" style="display:none">
 
-  <!-- ======================== SIDEBAR ======================== -->
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-icon">
-        <span class="material-symbols-outlined ms" style="font-variation-settings:'FILL' 1;">account_balance</span>
-      </div>
-      <div class="brand-name">
-        <h1>Payatas Ledger</h1>
-        <p>Demo Project</p>
-      </div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <span class="material-symbols-outlined ms" style="font-variation-settings:'FILL' 1;">account_balance</span>
     </div>
-    <nav class="nav-section">
-      <button class="nav-item active" onclick="showPage('dashboard'); return false;">
-        <span class="material-symbols-outlined">dashboard</span>
-        <span class="label">Dashboard</span>
-      </button>
-      <button class="nav-item" onclick="showPage('residents'); return false;">
-        <span class="material-symbols-outlined">groups</span>
-        <span class="label">Residents</span>
-      </button>
-      <button class="nav-item" onclick="showPage('documents'); return false;">
-        <span class="material-symbols-outlined">description</span>
-        <span class="label">Document Requests</span>
-      </button>
-      <button class="nav-item" onclick="showPage('complaints'); return false;">
-        <span class="material-symbols-outlined">gavel</span>
-        <span class="label">Complaints</span>
-      </button>
-      <button class="nav-item" onclick="showPage('projects'); return false;">
-        <span class="material-symbols-outlined">account_tree</span>
-        <span class="label">Projects</span>
-      </button>
-      <button class="nav-item" onclick="showPage('announcements'); return false;">
-        <span class="material-symbols-outlined">campaign</span>
-        <span class="label">Announcements</span>
-      </button>
-      <button class="nav-item" onclick="showPage('reports'); return false;">
-        <span class="material-symbols-outlined">analytics</span>
-        <span class="label">Reports</span>
-      </button>
-      <button class="nav-item admin-only" onclick="showPage('users'); return false;">
-        <span class="material-symbols-outlined">supervised_user_circle</span>
-        <span class="label">Users</span>
-      </button>
-      <button class="nav-item" onclick="showPage('settings'); return false;">
-        <span class="material-symbols-outlined">settings</span>
-        <span class="label">Settings</span>
-      </button>
-    </nav>
-    <div class="sidebar-footer">
-      <button class="sidebar-cta-btn">
-        <span class="material-symbols-outlined" style="font-size:16px">add</span>
-        New Announcement
-      </button>
+    <div class="brand-name">
+      <h1>Payatas Ledger</h1>
+      <p>Demo Project</p>
     </div>
-  </aside>
+  </div>
+  <nav class="nav-section">
+    <button class="nav-item active" onclick="showPage('dashboard')">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="label">Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="showPage('residents')">
+      <span class="material-symbols-outlined">groups</span>
+      <span class="label">Residents</span>
+    </button>
+    <button class="nav-item" onclick="showPage('documents')">
+      <span class="material-symbols-outlined">description</span>
+      <span class="label">Documents</span>
+    </button>
+    <button class="nav-item" onclick="showPage('complaints')">
+      <span class="material-symbols-outlined">gavel</span>
+      <span class="label">Complaints</span>
+    </button>
+    <button class="nav-item" onclick="showPage('projects')">
+      <span class="material-symbols-outlined">account_tree</span>
+      <span class="label">Projects</span>
+    </button>
+    <button class="nav-item" onclick="showPage('announcements')">
+      <span class="material-symbols-outlined">campaign</span>
+      <span class="label">Announcements</span>
+    </button>
+    <button class="nav-item" onclick="showPage('reports')">
+      <span class="material-symbols-outlined">analytics</span>
+      <span class="label">Reports</span>
+    </button>
+    <button class="nav-item admin-only" onclick="showPage('users')">
+      <span class="material-symbols-outlined">supervised_user_circle</span>
+      <span class="label">Users</span>
+    </button>
+    <button class="nav-item" onclick="showPage('settings')">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="label">Settings</span>
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="sidebar-cta-btn" onclick="openNewAnnouncementModal()">
+      <span class="material-symbols-outlined">add</span> New Announcement
+    </button>
+  </div>
+</aside>
 
-  <!-- ======================== TOPBAR ======================== -->
-  <header class="topbar">
-    <div class="search-wrap">
-      <span class="material-symbols-outlined">search</span>
-      <input type="text" id="searchInput" placeholder="Search residents, documents, or records..."/>
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="search-wrap">
+    <span class="material-symbols-outlined">search</span>
+    <input type="text" id="searchInput" placeholder="Search..."/>
+  </div>
+  <div class="topbar-end">
+    <div class="topbar-date">
+      <span class="material-symbols-outlined">calendar_today</span>
+      <span id="current-date"></span>
     </div>
-    <div class="topbar-end">
-      <div class="topbar-date">
-        <span class="material-symbols-outlined" style="font-size:16px;color:var(--primary)">calendar_today</span>
-        October 24, 2023
+    <button class="notif-btn" onclick="showNotifications()">
+      <span class="material-symbols-outlined">notifications</span>
+      <span class="notif-dot"></span>
+    </button>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="user-info">
+        <div class="name" id="user-name">Admin Payatas</div>
+        <div class="role" id="user-role">Super Administrator</div>
       </div>
-      <div class="topbar-divider"></div>
-      <button class="notif-btn">
-        <span class="material-symbols-outlined">notifications</span>
-        <span class="notif-dot"></span>
-      </button>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div class="user-info">
-          <div class="name">Admin Payatas</div>
-          <div class="role">Super Administrator</div>
-        </div>
-        <div class="avatar">AP</div>
-      </div>
+      <div class="avatar" id="user-avatar" onclick="showProfile()">AP</div>
     </div>
-  </header>
+  </div>
+</header>
 
-<!-- ======================== MAIN CONTENT ======================== -->
-  <main class="main-content">
-    <!-- All pages are included inline for offline/demo mode -->
-    
-    <!-- ======= DASHBOARD ======= -->
-    <div id="page-dashboard" class="page active">
-      <div class="pg-header">
-        <div>
-          <h2>Dashboard</h2>
-          <p>Welcome back, Admin Payatas! Here's your community overview.</p>
-        </div>
-        <div class="pg-actions">
-          <button class="btn-secondary" onclick="exportDashboardReport()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export Report</button>
-          <button class="btn-primary" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
-        </div>
-      </div>
-      
-      <!-- Stats -->
-      <div class="stats-grid-4 mb-6">
-        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(0,74,198,0.1)"><span class="material-symbols-outlined" style="color:var(--primary);font-size:20px">groups</span></div><span class="sc-badge" style="background:#dcfce7;color:#14532d;display:flex;align-items:center;gap:3px"><span class="material-symbols-outlined" style="font-size:11px">trending_up</span>+2.4%</span></div><div class="sc-label">Total Residents</div><div class="sc-value">42,305</div><div class="sc-sub">+1,012 this year</div></div>
-        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(148,55,0,0.1)"><span class="material-symbols-outlined" style="color:var(--tertiary);font-size:20px">description</span></div></div><div class="sc-label">Pending Requests</div><div class="sc-value">18</div><div class="sc-sub">5 urgent</div></div>
-        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(185,28,28,0.1)"><span class="material-symbols-outlined" style="color:#ba1a1a;font-size:20px">warning</span></div></div><div class="sc-label">Active Complaints</div><div class="sc-value">5</div><div class="sc-sub">2 critical</div></div>
-        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(5,150,105,0.1)"><span class="material-symbols-outlined" style="color:#16a34a;font-size:20px">account_tree</span></div></div><div class="sc-label">Ongoing Projects</div><div class="sc-value">3</div><div class="sc-sub">12 completed</div></div>
-      </div>
-      
-      <!-- Quick Actions -->
-      <div class="two-col mb-6">
-        <div class="card">
-          <div class="card-title mb-4">Quick Actions</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-            <button class="quick-action" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">description</span><span style="font-size:11px;font-weight:600;margin-top:6px">New Request</span></button>
-            <button class="quick-action" onclick="showPage('residents');"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">person_add</span><span style="font-size:11px;font-weight:600;margin-top:6px">Add Resident</span></button>
-            <button class="quick-action" onclick="openNewAnnouncementModal()"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">campaign</span><span style="font-size:11px;font-weight:600;margin-top:6px">Announce</span></button>
-          </div>
-        </div>
-        <div class="emergency-card">
-          <div class="em-header"><span class="material-symbols-outlined" style="color:#dc2626">warning</span><span>Emergency Hub</span></div>
-          <p>Broadcast urgent alerts to all residents via SMS and push notifications.</p>
-          <button class="em-btn">Launch Alert</button>
-        </div>
-      </div>
-      
-      <!-- Recent Activity Table -->
-      <div class="card">
-        <div class="card-title mb-4">Recent Document Requests</div>
-        <table>
-          <thead><tr><th>Resident</th><th>Document Type</th><th>Date</th><th>Status</th></tr></thead>
-          <tbody id="dashboard-documents-tbody">
-          </tbody>
-        </table>
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="pg-header">
+    <div><h2>Dashboard</h2><p id="dashboard-welcome">Welcome back!</p></div>
+    <div class="pg-actions">
+      <button class="btn-secondary" onclick="exportDashboardReport()">Export Report</button>
+      <button class="btn-primary" onclick="openNewRequestModal()">New Request</button>
+    </div>
+  </div>
+  <div class="stats-grid-4 mb-6">
+    <div class="stat-card">
+      <div class="sc-header"><div class="sc-icon" style="background:rgba(0,74,198,0.1)"><span class="material-symbols-outlined" style="color:var(--primary)">groups</span></div></div>
+      <div class="sc-label">Total Residents</div><div class="sc-value" id="stat-residents">42,305</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-header"><div class="sc-icon" style="background:rgba(148,55,0,0.1)"><span class="material-symbols-outlined" style="color:var(--tertiary)">description</span></div></div>
+      <div class="sc-label">Pending Requests</div><div class="sc-value" id="stat-requests">18</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-header"><div class="sc-icon" style="background:rgba(185,28,28,0.1)"><span class="material-symbols-outlined" style="color:#ba1a1a">warning</span></div></div>
+      <div class="sc-label">Active Complaints</div><div class="sc-value" id="stat-complaints">5</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-header"><div class="sc-icon" style="background:rgba(5,150,105,0.1)"><span class="material-symbols-outlined" style="color:#16a34a">account_tree</span></div></div>
+      <div class="sc-label">Ongoing Projects</div><div class="sc-value" id="stat-projects">3</div>
+    </div>
+  </div>
+  <div class="two-col mb-6">
+    <div class="card">
+      <div class="card-title mb-4">Quick Actions</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <button class="quick-action" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">description</span><span>New Request</span></button>
+        <button class="quick-action" onclick="openAddResidentModal()"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">person_add</span><span>Add Resident</span></button>
+        <button class="quick-action" onclick="openNewAnnouncementModal()"><span class="material-symbols-outlined" style="font-size:24px;color:var(--primary)">campaign</span><span>Announce</span></button>
       </div>
     </div>
-    
-    <!-- ======= RESIDENTS ======= -->
-    <div id="page-residents" class="page">
-      <div class="pg-header">
-        <div>
-          <h2>Residents</h2>
-          <p>Manage registered residents and their information.</p>
-        </div>
-        <div class="pg-actions">
-          <button class="btn-secondary" onclick="exportResidentsCSV()"><span class="material-symbols-outlined" style="font-size:16px">file_download</span> Export</button>
-          <button class="btn-primary" onclick="openAddResidentModal()"><span class="material-symbols-outlined" style="font-size:16px">person_add</span> Add Resident</button>
-        </div>
-      </div>
-      <!-- Filter Bar -->
-      <div class="filter-bar mb-5">
-        <input type="text" placeholder="Search residents..." class="search-input"/>
-        <select><option>All Statuses</option><option>Active</option><option>Inactive</option></select>
-        <select><option>All Purok</option><option>Purok 1</option><option>Purok 2</option><option>Purok 3</option></select>
-      </div>
-      <!-- Table -->
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Resident</th><th>Address</th><th>Contact</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
-          <tbody id="page-residents-tbody">
-          </tbody>
-        </table>
-        <div class="pagination"><span class="pg-info">Showing 1-5 of 42,305 residents</span><div class="pg-btns"><button class="pg-btn"><span class="material-symbols-outlined">chevron_left</span></button><button class="pg-btn active-pg">1</button><button class="pg-btn"><span class="material-symbols-outlined">chevron_right</span></button></div></div>
-      </div>
+    <div class="emergency-card">
+      <div class="em-header"><span class="material-symbols-outlined" style="color:#dc2626">warning</span><span>Emergency Hub</span></div>
+      <p>Broadcast urgent alerts to all residents.</p>
+      <button class="em-btn" onclick="openEmergencyAlert()">Launch Alert</button>
     </div>
-    
-    <!-- ======= DOCUMENTS ======= -->
-    <div id="page-documents" class="page">
-      <div class="pg-header">
-        <div>
-          <h2>Document Requests</h2>
-          <p>Process and manage barangay document requests.</p>
-        </div>
-        <div class="pg-actions">
-          <button class="btn-secondary"><span class="material-symbols-outlined" style="font-size:16px">filter_list</span> Filter</button>
-          <button class="btn-primary" onclick="openNewRequestModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
-        </div>
-      </div>
-      <!-- Filter Bar -->
-      <div class="filter-bar mb-5">
-        <input type="text" placeholder="Search requests..." class="search-input"/>
-        <select><option>All Types</option><option>Barangay Clearance</option><option>Certificate of Indigency</option><option>Business Permit</option></select>
-        <select><option>All Status</option><option>Pending</option><option>Approved</option><option>Rejected</option></select>
-      </div>
-      <!-- Table -->
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Resident Name</th><th>Document Type</th><th>Date</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
-          <tbody id="page-documents-tbody">
-          </tbody>
-        </table>
-        <div class="pagination"><span class="pg-info">Showing 1-5 of requests</span><div class="pg-btns"><button class="pg-btn"><span class="material-symbols-outlined">chevron_left</span></button><button class="pg-btn active-pg">1</button><button class="pg-btn"><span class="material-symbols-outlined">chevron_right</span></button></div></div>
-      </div>
-    </div>
-    
-    <!-- ======= COMPLAINTS ======= -->
-    <div id="page-complaints" class="page">
-      <div class="pg-header">
-        <div><h2>Citizen Complaints</h2><p>Review and manage reported issues.</p></div>
-        <div class="pg-actions">
-          <button class="btn-secondary">Export CSV</button>
-          <button class="btn-primary" onclick="openNewComplaintModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> New Entry</button>
-        </div>
-      </div>
-      <div class="stats-grid-3 mb-6">
-        <div class="stat-card"><div class="sc-label">Total Active</div><div style="display:flex;align-items:baseline;gap:8px"><div class="sc-value">142</div><span style="font-size:12px;color:#16a34a">+12%</span></div></div>
-        <div class="stat-card" style="border-left:4px solid var(--error)"><div class="sc-label" style="color:var(--error)">Urgent</div><div class="sc-value">18</div></div>
-        <div class="kpi-hero"><span class="material-symbols-outlined bg-icon">analytics</span><div class="kh-label">Resolution</div><div class="kh-value">84.2%</div><div class="kh-sub">Avg 2.4 days</div></div>
-      </div>
-      <div class="filter-bar mb-5">
-        <button class="filter-chip chip-active">All</button>
-        <button class="filter-chip chip-inactive">Unassigned</button>
-        <button class="filter-chip chip-inactive">My Cases</button>
-      </div>
-      <!-- Complaints Grid -->
-      <div id="complaints-container" class="complaints-grid">
-      </div>
-    </div>
-    
-    <!-- ======= PROJECTS ======= -->
-    <div id="page-projects" class="page">
-      <div class="pg-header">
-        <div><h2>Community Projects</h2><p>Managing infrastructure and social initiatives.</p></div>
-        <div class="pg-actions">
-          <button class="btn-secondary">Export Report</button>
-          <button class="btn-primary" onclick="openNewProjectModal()"><span class="material-symbols-outlined" style="font-size:16px">add</span> Create Project</button>
-        </div>
-      </div>
-      <div class="stats-grid-4 mb-6">
-        <div class="stat-card"><div class="sc-label">Total Budget</div><div class="sc-value" style="font-size:24px">₱4.2M</div></div>
-        <div class="stat-card"><div class="sc-label">Ongoing</div><div class="sc-value">12</div></div>
-        <div class="stat-card"><div class="sc-label">Completed</div><div class="sc-value">24</div></div>
-        <div class="stat-card"><div class="sc-label">Planned</div><div class="sc-value">08</div></div>
-      </div>
-      <div class="proj-grid" id="projects-grid">
-      </div>
-    </div>
-    
-    <!-- ======= ANNOUNCEMENTS ======= -->
-    <div id="page-announcements" class="page">
-      <div class="pg-header">
-        <div><h2>Community Announcements</h2><p>Official updates for residents.</p></div>
-        <div class="pg-actions">
-          <button class="btn-secondary" onclick="showFilterAnnouncementsModal()">Filter</button>
-        </div>
-      </div>
-      <div class="featured-banner mb-6">
-        <div class="featured-img" style="background:linear-gradient(135deg,#0f2f6a,#1e4fd8)">
-          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0.08"><span class="material-symbols-outlined" style="font-size:320px;color:white;font-variation-settings:'FILL' 1">medical_services</span></div>
-        </div>
-        <div class="featured-overlay"></div>
-        <div class="featured-content">
-          <span class="featured-tag">Featured Notice</span>
-          <h3 class="featured-title">Annual Vaccination Drive 2023</h3>
-          <p class="featured-desc">Free vaccinations for all residents. Join us this Saturday!</p>
-          <div class="featured-actions"><button class="btn-white">Read Guidelines</button></div>
-        </div>
-      </div>
-      <div class="ann-grid" id="announcements-grid">
-      </div>
-    </div>
-    
-    <!-- ======= REPORTS ======= -->
-    <div id="page-reports" class="page">
-      <div class="pg-header">
-        <div><h2>Operational Reports</h2><p>Performance metrics and analytics.</p></div>
-        <div class="pg-actions">
-          <button class="date-range-btn"><span class="material-symbols-outlined cal">calendar_today</span><div><span class="drb-label">Date Range</span><span class="drb-val">Oct 1-31, 2023</span></div><span class="material-symbols-outlined chev">expand_more</span></button>
-          <button class="btn-primary" onclick="exportAllReports()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export</button>
-        </div>
-      </div>
-      <div class="stats-grid-4 mb-6">
-        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(0,74,198,0.1)"><span class="material-symbols-outlined" style="color:var(--primary)">payments</span></div><span class="sc-badge" style="background:#dcfce7;color:#14532d">+12.5%</span></div><div class="sc-label">Total Revenue</div><div class="sc-value" style="font-size:22px">₱142,850</div></div>
-        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(148,55,0,0.1)"><span class="material-symbols-outlined" style="color:var(--tertiary)">timer</span></div></div><div class="sc-label">Processing Time</div><div class="sc-value" style="font-size:22px">18.5 min</div></div>
-        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:rgba(73,92,149,0.1)"><span class="material-symbols-outlined" style="color:var(--secondary)">star</span></div></div><div class="sc-label">Satisfaction</div><div class="sc-value" style="font-size:22px">4.82/5.0</div></div>
-        <div class="stat-card"><div class="sc-header"><div class="sc-icon" style="background:#dcfce7"><span class="material-symbols-outlined" style="color:#16a34a">task_alt</span></div></div><div class="sc-label">Completion</div><div class="sc-value" style="font-size:22px">94.2%</div><div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:94%"></div></div></div>
-      </div>
-      <div class="card">
-        <div class="mt-head"><h4>Monthly Summary</h4><a href="#" onclick="showHistoricalData(); return false;">View History</a></div>
-        <table><thead><tr><th>Month</th><th>Requests</th><th>Revenue</th><th>Resolution</th></tr></thead>
-          <tbody><tr><td class="font-bold">October 2023</td><td>2,410</td><td class="font-bold">₱142,850</td><td><span class="badge badge-approved">94%</span></td></tr>
-            <tr><td class="font-bold">September 2023</td><td>2,150</td><td class="font-bold">₱128,400</td><td><span class="badge badge-pending">88%</span></td></tr></tbody>
-        </table>
-      </div>
-    </div>
-    
-    <!-- ======= USERS ======= -->
-    <div id="page-users" class="page">
-      <div class="pg-header">
-        <div><h2>User Management</h2><p>Manage system users and permissions.</p></div>
-        <div class="pg-actions">
-          <button class="btn-secondary" onclick="exportUsersCSV()">Export Users</button>
-          <button class="btn-primary" onclick="openAddUserModal()">Add User</button>
-        </div>
-      </div>
-      <div class="stats-grid-4 mb-6">
-        <div class="stat-card"><div class="sc-label">Total Users</div><div class="sc-value" id="total-users">0</div></div>
-        <div class="stat-card"><div class="sc-label">Administrators</div><div class="sc-value" id="admin-count">0</div></div>
-        <div class="stat-card"><div class="sc-label">Staff</div><div class="sc-value" id="staff-count">0</div></div>
-        <div class="stat-card"><div class="sc-label">Active Now</div><div class="sc-value">1</div></div>
-      </div>
-      <div class="table-wrap">
-        <table><thead><tr><th>User</th><th>Role</th><th>Email</th><th>Last Login</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
-          <tbody id="users-table-body"></tbody>
-        </table>
-      </div>
-    </div>
-    
-    <!-- ======= SETTINGS ======= -->
-    <div id="page-settings" class="page">
-      <div class="pg-header">
-        <div><h2>Settings</h2><p>Configure system preferences.</p></div>
-        <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
-      </div>
-      <div class="two-col">
-        <div class="card">
-          <div class="card-title mb-4">Barangay Information</div>
-          <div style="display:flex;flex-direction:column;gap:16px">
-            <div><label>Barangay Name</label><input type="text" value="Barangay Payatas"/></div>
-            <div><label>District</label><input type="text" value="Quezon City, Metro Manila"/></div>
-            <div><label>Contact Number</label><input type="text" value="+63 2 8123 4567"/></div>
-            <div><label>Email</label><input type="email" value="payatas.ledger@qc.gov.ph"/></div>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:20px">
-          <div class="card">
-            <div class="card-title mb-4">Notification Preferences</div>
-            <div style="display:flex;flex-direction:column;gap:14px">
-              <div style="display:flex;justify-content:space-between"><span>Urgent Complaints</span><div class="toggle" data-notif-label="Urgent Complaints"></div></div>
-              <div style="display:flex;justify-content:space-between"><span>New Documents</span><div class="toggle active" data-notif-label="New Document Requests"></div></div>
-              <div style="display:flex;justify-content:space-between"><span>Project Updates</span><div class="toggle" data-notif-label="Project Updates"></div></div>
-              <div style="display:flex;justify-content:space-between"><span>Weekly Reports</span><div class="toggle active" data-notif-label="Weekly Reports"></div></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title mb-4">System Version</div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,74,198,0.08);display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="color:var(--primary)">security</span></div>
-              <div><div style="font-size:13px;font-weight:700">Secure Ledger Protocol v2.4</div><div style="font-size:11px;color:#64748b">Last updated Oct 1, 2023</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-  </main>
+  </div>
+  <div class="card">
+    <div class="card-title mb-4">Recent Document Requests</div>
+    <table><thead><tr><th>Resident</th><th>Type</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody id="dashboard-docs"></tbody>
+    </table>
+  </div>
 </div>
 
-<!-- No external page loading - all pages inline -->
+<!-- RESIDENTS -->
+<div id="page-residents" class="page">
+  <div class="pg-header">
+    <div><h2>Residents</h2><p>Manage registered residents</p></div>
+    <div class="pg-actions">
+      <button class="btn-secondary" onclick="exportResidentsCSV()">Export</button>
+      <button class="btn-primary" onclick="openAddResidentModal()">Add Resident</button>
+    </div>
+  </div>
+  <div class="filter-bar mb-5">
+    <input type="text" id="residents-search" placeholder="Search residents..." class="search-input" onkeyup="filterResidents()"/>
+    <select id="residents-status-filter" onchange="filterResidents()"><option value="">All Status</option><option>Active</option><option>Inactive</option></select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Resident</th><th>Address</th><th>Contact</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody id="residents-table"></tbody>
+    </table>
+  </div>
+</div>
 
-<!-- Supabase SDK -->
+<!-- DOCUMENTS -->
+<div id="page-documents" class="page">
+  <div class="pg-header">
+    <div><h2>Document Requests</h2><p>Process document requests</p></div>
+    <div class="pg-actions">
+      <button class="btn-secondary" onclick="showDocFilters()">Filter</button>
+      <button class="btn-primary" onclick="openNewRequestModal()">New Request</button>
+    </div>
+  </div>
+  <div class="filter-bar mb-5">
+    <input type="text" id="documents-search" placeholder="Search requests..." class="search-input" onkeyup="filterDocuments()"/>
+    <select id="documents-type-filter" onchange="filterDocuments()"><option value="">All Types</option><option>Barangay Clearance</option><option>Certificate of Indigency</option><option>Business Permit</option></select>
+    <select id="documents-status-filter" onchange="filterDocuments()"><option value="">All Status</option><option>Pending</option><option>Approved</option><option>Rejected</option></select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Resident</th><th>Document Type</th><th>Date</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody id="documents-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- COMPLAINTS -->
+<div id="page-complaints" class="page">
+  <div class="pg-header">
+    <div><h2>Complaints</h2><p>Manage citizen complaints</p></div>
+    <div class="pg-actions">
+      <button class="btn-secondary" onclick="exportComplaintsCSV()">Export</button>
+      <button class="btn-primary" onclick="openNewComplaintModal()">New Complaint</button>
+    </div>
+  </div>
+  <div class="stats-grid-3 mb-6">
+    <div class="stat-card"><div class="sc-label">Total Active</div><div class="sc-value" id="cmp-active">142</div></div>
+    <div class="stat-card" style="border-left:4px solid var(--error)"><div class="sc-label" style="color:var(--error)">Urgent</div><div class="sc-value" id="cmp-urgent">18</div></div>
+    <div class="kpi-hero"><span class="material-symbols-outlined bg-icon">analytics</span><div class="kh-label">Resolution</div><div class="kh-value">84.2%</div></div>
+  </div>
+  <div class="filter-bar mb-5">
+    <button class="filter-chip chip-active" onclick="filterComplaints('all',this)">All</button>
+    <button class="filter-chip chip-inactive" onclick="filterComplaints('pending',this)">Pending</button>
+    <button class="filter-chip chip-inactive" onclick="filterComplaints('resolved',this)">Resolved</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Category</th><th>Status</th><th>Submitter</th><th>Date</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody id="complaints-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div id="page-projects" class="page">
+  <div class="pg-header">
+    <div><h2>Projects</h2><p>Community development projects</p></div>
+    <div class="pg-actions">
+      <button class="btn-secondary" onclick="exportProjectsCSV()">Export</button>
+      <button class="btn-primary" onclick="openNewProjectModal()">New Project</button>
+    </div>
+  </div>
+  <div class="stats-grid-4 mb-6">
+    <div class="stat-card"><div class="sc-label">Total Budget</div><div class="sc-value">₱4.2M</div></div>
+    <div class="stat-card"><div class="sc-label">Ongoing</div><div class="sc-value" id="proj-ongoing">12</div></div>
+    <div class="stat-card"><div class="sc-label">Completed</div><div class="sc-value" id="proj-completed">24</div></div>
+    <div class="stat-card"><div class="sc-label">Planned</div><div class="sc-value" id="proj-planned">8</div></div>
+  </div>
+  <div id="projects-grid" class="proj-grid"></div>
+</div>
+
+<!-- ANNOUNCEMENTS -->
+<div id="page-announcements" class="page">
+  <div class="pg-header">
+    <div><h2>Announcements</h2><p>Community notices and updates</p></div>
+    <div class="pg-actions">
+      <button class="btn-primary" onclick="openNewAnnouncementModal()">New Announcement</button>
+    </div>
+  </div>
+  <div id="announcements-grid" class="ann-grid"></div>
+</div>
+
+<!-- REPORTS -->
+<div id="page-reports" class="page">
+  <div class="pg-header">
+    <div><h2>Reports</h2><p>Analytics and performance metrics</p></div>
+    <div class="pg-actions">
+      <button class="btn-primary" onclick="exportAllReports()">Export All</button>
+    </div>
+  </div>
+  <div class="stats-grid-4 mb-6">
+    <div class="stat-card"><div class="sc-label">Total Revenue</div><div class="sc-value">₱142,850</div></div>
+    <div class="stat-card"><div class="sc-label">Avg Processing</div><div class="sc-value">18.5 min</div></div>
+    <div class="stat-card"><div class="sc-label">Satisfaction</div><div class="sc-value">4.82/5</div></div>
+    <div class="stat-card"><div class="sc-label">Completion</div><div class="sc-value">94.2%</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title mb-4">Monthly Summary</div>
+    <table>
+      <thead><tr><th>Month</th><th>Requests</th><th>Revenue</th><th>Resolution</th></tr></thead>
+      <tbody>
+        <tr><td>October 2023</td><td>2,410</td><td>₱142,850</td><td><span class="badge badge-approved">94%</span></td></tr>
+        <tr><td>September 2023</td><td>2,150</td><td>₱128,400</td><td><span class="badge badge-pending">88%</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- USERS -->
+<div id="page-users" class="page">
+  <div class="pg-header">
+    <div><h2>User Management</h2><p>Manage system users</p></div>
+    <div class="pg-actions">
+      <button class="btn-secondary" onclick="exportUsersCSV()">Export</button>
+      <button class="btn-primary" onclick="openAddUserModal()">Add User</button>
+    </div>
+  </div>
+  <div class="stats-grid-4 mb-6">
+    <div class="stat-card"><div class="sc-label">Total Users</div><div class="sc-value" id="total-users">3</div></div>
+    <div class="stat-card"><div class="sc-label">Administrators</div><div class="sc-value" id="admin-count">1</div></div>
+    <div class="stat-card"><div class="sc-label">Staff</div><div class="sc-value" id="staff-count">2</div></div>
+    <div class="stat-card"><div class="sc-label">Active</div><div class="sc-value" id="active-count">3</div></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>User</th><th>Role</th><th>Email</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody id="users-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="page-settings" class="page">
+  <div class="pg-header">
+    <div><h2>Settings</h2><p>System configuration</p></div>
+    <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title mb-4">Barangay Information</div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><label>Barangay Name</label><input type="text" id="setting-name" value="Barangay Payatas"/></div>
+        <div><label>District</label><input type="text" id="setting-district" value="Quezon City, Metro Manila"/></div>
+        <div><label>Contact</label><input type="text" id="setting-contact" value="+63 2 8123 4567"/></div>
+        <div><label>Email</label><input type="email" id="setting-email" value="payatas.ledger@qc.gov.ph"/></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card">
+        <div class="card-title mb-4">Notifications</div>
+        <div id="notification-toggles"></div>
+      </div>
+      <div class="card">
+        <div class="card-title mb-4">System Info</div>
+        <p style="color:#64748b">Version 2.4.0</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="app.js"></script>
-
-<!-- Page-specific scripts (modular) -->
-<script src="js/pages/dashboard.js"></script>
-<script src="js/pages/residents.js"></script>
-<script src="js/pages/documents.js"></script>
-<script src="js/pages/complaints.js"></script>
-<script src="js/pages/projects.js"></script>
-<script src="js/pages/announcements.js"></script>
-<script src="js/pages/reports.js"></script>
-<script src="js/pages/users.js"></script>
-<script src="js/pages/settings.js"></script>
 </body>
 </html>
