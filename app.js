@@ -254,6 +254,11 @@ function showPage(page) {
   // NEW: clear bulk selections when changing pages
   state.selectedDocuments.clear();
   state.selectedComplaints.clear();
+  // Close sidebar on mobile when navigating
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+  }
   switch (page) {
     case 'dashboard': updateDashboard(); break;
     case 'residents': renderResidents(); break;
@@ -265,6 +270,18 @@ function showPage(page) {
     case 'users': renderUsers(); break;
   }
   window.scrollTo(0, 0);
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  } else {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+  }
 }
 
 // ===================== DASHBOARD =====================
@@ -1810,3 +1827,13 @@ function renderReports() {
     `).join('');
   }
 }
+
+// ===================== RESPONSIVE HANDLERS =====================
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+  }
+});

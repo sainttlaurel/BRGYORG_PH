@@ -41,7 +41,7 @@
 <div id="main-app" class="main-app" style="display:none">
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="sidebar-logo-mark">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18l6.9 3.45L12 10.64 5.1 7.63 12 4.18zM4 8.82l7 3.5v7.36l-7-3.5V8.82zm9 10.86v-7.36l7-3.5v7.36l-7 3.5z"/></svg>
@@ -109,11 +109,17 @@
   </div>
 </aside>
 
+<!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
 <!-- MAIN WRAPPER -->
 <div class="main-wrapper">
 
 <!-- TOPBAR -->
 <header class="topbar">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()" title="Menu">
+    <span class="material-symbols-outlined">menu</span>
+  </button>
   <div class="search-wrap">
     <span class="material-symbols-outlined">search</span>
     <input type="text" id="global-search" placeholder="Search residents, documents, complaints..." oninput="globalSearch(this.value)"/>

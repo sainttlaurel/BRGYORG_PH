@@ -39,6 +39,7 @@
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { width: 100%; height: 100%; overflow: hidden; }
+html { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--on-surface); -webkit-font-smoothing: antialiased; }
 .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; line-height: 1; }
 
@@ -718,5 +719,125 @@ tbody tr:hover .tbl-actions { opacity: 1; }
 /* Animate panel open */
 @keyframes panelFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .doc-panel-overlay.open { animation: panelFadeIn 0.2s ease; }
+
+/* ========== MOBILE RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .stats-4 { grid-template-columns: repeat(2, 1fr); }
+  .two-col, .col-2-1 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  html, body { overflow: auto; height: auto; }
+  
+  .sidebar {
+    position: fixed; left: -260px; top: 0; bottom: 0;
+    width: 260px; z-index: 1000; transition: left 0.3s ease;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  }
+  .sidebar.open { left: 0; }
+  
+  .sidebar-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 999; opacity: 0; visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+  .sidebar-overlay.open { opacity: 1; visibility: visible; }
+  
+  .main-app { flex-direction: column; height: auto; }
+  .main-wrapper { height: auto; min-height: 100vh; }
+  
+  .topbar {
+    padding: 0 16px; height: 56px;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .search-wrap { order: 3; max-width: 100%; width: 100%; margin-top: 8px; }
+  .topbar-date { display: none; }
+  .topbar-user-info { display: none; }
+  
+  .pg-header {
+    flex-direction: column; align-items: flex-start; gap: 12px;
+  }
+  .pg-actions { width: 100%; }
+  .pg-actions button { flex: 1; }
+  
+  .stats-grid { grid-template-columns: 1fr; }
+  .stats-3 { grid-template-columns: 1fr; }
+  
+  .quick-actions-grid { grid-template-columns: repeat(3, 1fr); }
+  .ann-grid, .proj-grid { grid-template-columns: 1fr; }
+  
+  .login-container { padding: 32px 24px; margin: 16px; }
+  .login-brand h1 { font-size: 22px; }
+  
+  .modal { max-width: calc(100vw - 32px); margin: 16px; }
+  .modal-body { padding: 16px; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+  
+  .notif-panel {
+    right: 16px; left: 16px; width: auto;
+    top: 64px;
+  }
+  
+  .profile-menu {
+    right: 16px; left: 16px; width: auto;
+    top: 64px;
+  }
+  
+  .page { padding: 16px; }
+  
+  .table-scroll { overflow-x: auto; }
+  table { min-width: 600px; }
+  
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  
+  .doc-panel {
+    width: 100vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container { padding: 24px 20px; }
+  .login-logo { width: 56px; height: 56px; }
+  .login-logo svg { width: 28px; height: 28px; }
+  
+  .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
+  
+  .btn-primary, .btn-secondary {
+    padding: 10px 12px; font-size: 12px;
+  }
+  .btn-primary span, .btn-secondary span { display: none; }
+  
+  .stat-card { padding: 14px; }
+  .stat-value { font-size: 22px; }
+  
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-select, .search-input { width: 100%; min-width: auto; }
+  
+  .chip { padding: 8px 12px; font-size: 11px; }
+  
+  .doc-panel-body, .doc-panel-header { padding: 16px; }
+  .doc-panel-footer { padding: 12px 16px; flex-wrap: wrap; }
+  .doc-panel-footer button { flex: 1; min-width: 100px; }
+  
+  .panel-field input, .panel-field select, .panel-field textarea { font-size: 14px; }
+  .panel-field { margin-bottom: 10px; }
+}
+
+.mobile-menu-btn {
+  display: none;
+  width: 40px; height: 40px;
+  border: none; background: none;
+  cursor: pointer; color: var(--on-surface);
+  border-radius: var(--radius-sm);
+  align-items: center; justify-content: center;
+}
+.mobile-menu-btn:hover { background: var(--surface); }
+.mobile-menu-btn .material-symbols-outlined { font-size: 24px; }
+
+@media (max-width: 768px) {
+  .mobile-menu-btn { display: flex; }
+}
 
 
