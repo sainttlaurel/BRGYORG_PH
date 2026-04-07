@@ -82,7 +82,7 @@ async function login() {
       console.warn('Offline: proceeding with empty state');
     }
 
-    state.session = { ...user, token: authData.session.access_token };
+    state.session = { ...user };
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
 
     document.getElementById('login-screen').style.display = 'none';

@@ -1,14 +1,9 @@
 // ============================================================
 // SUPABASE CONFIGURATION
-// Payatas Ledger - Civic Management System
+// Payatas Ledger — Civic Management System
 // ============================================================
 
-const isLocalFile = window.location.protocol === 'file:';
-
-const SUPABASE_CONFIG = isLocalFile ? {
-  url: null,
-  anonKey: null
-} : {
+const SUPABASE_CONFIG = {
   url: 'https://xyaqigazszqhvvglqint.supabase.co',
   anonKey: 'sb_publishable_ftY2kTePsAkVcK-PrgTgiQ_jG636mXp'
 };
@@ -20,38 +15,23 @@ const SUPABASE_CONFIG = isLocalFile ? {
 let supabaseClient = null;
 
 try {
-  if (isLocalFile) {
-    console.warn('⚠️ Running in local file mode - using offline/localStorage');
-  }
-  else if (typeof supabase !== 'undefined' && supabase.createClient && SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey) {
-
+  if (typeof supabase !== 'undefined' && supabase.createClient) {
     const { createClient } = supabase;
     supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-
     console.log('🚀 Supabase client initialized');
 
-    // ✅ SAFE CONNECTION TEST (no breaking)
     (async () => {
       try {
-        const { data, error } = await supabaseClient
-          .from('users')
-          .select('*')
-          .limit(1);
-
-        if (error) {
-          console.warn('⚠️ Supabase connected but query failed:', error.message);
-        } else {
-          console.log('✅ Supabase connected successfully!', data);
-        }
+        const { data, error } = await supabaseClient.from('users').select('id').limit(1);
+        if (error) console.warn('⚠️ Supabase query test failed:', error.message);
+        else console.log('✅ Supabase connected!', data);
       } catch (err) {
         console.warn('⚠️ Supabase test error:', err.message);
       }
     })();
-
   } else {
-    console.warn('⚠️ Supabase SDK not loaded or config missing');
+    console.warn('⚠️ Supabase SDK not loaded');
   }
-
 } catch (err) {
   console.error('❌ Supabase initialization failed:', err.message);
   supabaseClient = null;
@@ -84,108 +64,114 @@ function checkClient() {
 async function dbFetch(table, filters = {}) {
   checkClient();
   let q = supabaseClient.from(table).select('*');
-
-  Object.entries(filters).forEach(([k, v]) => {
-    q = q.eq(k, v);
-  });
-
+  Object.entries(filters).forEach(([k, v]) => { q = q.eq(k, v); });
   const { data, error } = await q;
-
-  if (error) {
-    console.error(`❌ FETCH ERROR (${table}):`, error.message);
-    throw error;
+  if (error) { console.error('FETCH ERROR (' + table + '):', error.message); throw error; }
+  // Map description -> desc for complaints
+  if (table === 'complaints' && Array.isArray(data)) {
+    return data.map(c => ({ ...c, desc: c.description || c.desc || '' }));
   }
-
   return data;
 }
 
 async function dbInsert(table, row) {
   checkClient();
-
-  const { data, error } = await supabaseClient
-    .from(table)
-    .insert(row)
-    .select();
-
-  if (error) {
-    console.error(`❌ INSERT ERROR (${table}):`, error.message);
-    throw error;
+  let insertRow = { ...row };
+  if (table === 'complaints') {
+    if (insertRow.desc && !insertRow.description) insertRow.description = insertRow.desc;
+    delete insertRow.desc;
   }
-
+  const { data, error } = await supabaseClient.from(table).insert(insertRow).select();
+  if (error) { console.error('INSERT ERROR (' + table + '):', error.message); throw error; }
+  if (table === 'complaints' && Array.isArray(data)) {
+    return data.map(c => ({ ...c, desc: c.description || '' }));
+  }
   return data;
 }
 
 async function dbUpdate(table, id, row) {
   checkClient();
-
-  const { data, error } = await supabaseClient
-    .from(table)
-    .update(row)
-    .eq('id', id)
-    .select();
-
-  if (error) {
-    console.error(`❌ UPDATE ERROR (${table}):`, error.message);
-    throw error;
+  let updateRow = { ...row };
+  if (table === 'complaints') {
+    if (updateRow.desc && !updateRow.description) updateRow.description = updateRow.desc;
+    delete updateRow.desc;
   }
-
+  const { data, error } = await supabaseClient.from(table).update(updateRow).eq('id', id).select();
+  if (error) { console.error('UPDATE ERROR (' + table + '):', error.message); throw error; }
   return data;
 }
 
 async function dbDelete(table, id) {
   checkClient();
-
-  const { error } = await supabaseClient
-    .from(table)
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error(`❌ DELETE ERROR (${table}):`, error.message);
-    throw error;
-  }
-
+  const { error } = await supabaseClient.from(table).delete().eq('id', id);
+  if (error) { console.error('DELETE ERROR (' + table + '):', error.message); throw error; }
   return { success: true };
 }
 
 // ============================================================
-// DEBUG TEST (run manually in console if needed)
+// AUTH — returns { user, session } shape that app.js expects
+// ============================================================
+
+async function sbAuthenticateUser(username, password) {
+  checkClient();
+  const { data, error } = await supabaseClient
+    .from('users')
+    .select('*')
+    .or('username.eq."' + username + '",email.eq."' + username + '"')
+    .limit(20);
+
+  if (error) throw new Error('Authentication service error. Please try again.');
+  if (!data || data.length === 0) throw new Error('Invalid username or password.');
+
+  const user = data.find(u => u.password === password);
+  if (!user) throw new Error('Invalid username or password.');
+
+  // Update last_active (non-critical)
+  try {
+    await supabaseClient.from('users').update({ last_active: new Date().toLocaleString('en-PH') }).eq('id', user.id);
+  } catch (e) { /* ignore */ }
+
+  // Return { user, session } — shape app.js expects
+  return {
+    user: { ...user },
+    session: {
+      access_token: btoa(JSON.stringify({ id: user.id, ts: Date.now() })),
+      user_id: user.id
+    }
+  };
+}
+
+// ============================================================
+// GENERATE UNIQUE IDs FROM DB
+// ============================================================
+
+async function dbGenerateId(table, prefix) {
+  checkClient();
+  try {
+    const { count, error } = await supabaseClient
+      .from(table).select('*', { count: 'exact', head: true });
+    const next = (!error && count != null) ? count + 1 : Math.floor(Math.random() * 9000) + 1000;
+    return prefix + '-' + String(next).padStart(3, '0');
+  } catch (e) {
+    return prefix + '-' + String(Date.now()).slice(-6);
+  }
+}
+
+// ============================================================
+// DEBUG
 // ============================================================
 
 async function debugSupabase() {
   try {
     const data = await dbFetch(DB_TABLES.users);
-    console.log('🔥 USERS:', data);
+    console.log('USERS:', data);
   } catch (err) {
-    console.error('🔥 DEBUG ERROR:', err.message);
+    console.error('DEBUG ERROR:', err.message);
   }
 }
 
-async function sbAuthenticateUser(username, password) {
-  checkClient();
-
-  // Try matching by username first, then email
-  const { data, error } = await supabaseClient
-    .from('users')
-    .select('*')
-    .or(`username.eq.${username},email.eq.${username}`)
-    .eq('password', password)
-    .single();
-
-  if (error || !data) {
-    throw new Error('Invalid username or password.');
-  }
-
-  // Return in the same shape as Supabase Auth would
-  return { user: data };
-}
-
-// expose globally (optional)
 window.debugSupabase = debugSupabase;
 window.sbAuthenticateUser = sbAuthenticateUser;
-
-// ============================================================
-// STATUS LOG
-// ============================================================
+window.dbGenerateId = dbGenerateId;
 
 console.log('✅ supabase-config.js loaded');
