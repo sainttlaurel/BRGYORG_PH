@@ -22,6 +22,24 @@ function initNavbar() {
   });
 }
 
+function toggleMobileMenu() {
+  const navWrapper = document.getElementById('nav-links-wrapper');
+  const overlay = document.getElementById('mobile-menu-overlay');
+  const body = document.body;
+  
+  if (!navWrapper || !overlay) return;
+
+  if (navWrapper.classList.contains('active')) {
+    navWrapper.classList.remove('active');
+    overlay.classList.remove('active');
+    body.style.overflow = '';
+  } else {
+    navWrapper.classList.add('active');
+    overlay.classList.add('active');
+    body.style.overflow = 'hidden';
+  }
+}
+
 // --- DARK MODE ---
 function initDarkMode() {
   const toggle = document.getElementById('theme-toggle');
@@ -416,3 +434,4 @@ window.closeModal = closeModal;
 window.doVerify = doVerify;
 window.submitClearance = submitClearance;
 window.submitComplaint = submitComplaint;
+window.toggleMobileMenu = toggleMobileMenu;

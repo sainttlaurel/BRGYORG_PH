@@ -24,25 +24,41 @@
       </div>
     </a>
 
-    <ul class="nav-links">
-      <li><a href="#services">Services</a></li>
-      <li><a href="#verify">Verification</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="admin.html">Admin Portal</a></li>
-      <li>
-        <div class="theme-switch" id="theme-toggle">
-          <div class="theme-switch-thumb">
-            <span class="material-symbols-outlined theme-switch-icon" id="theme-icon">light_mode</span>
-          </div>
-        </div>
-      </li>
-    </ul>
+    <div class="nav-links-wrapper" id="nav-links-wrapper">
+      <ul class="nav-links">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#verify">Verification</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="admin.html" class="admin-link">Admin Portal</a></li>
+        <li class="mobile-only">
+          <a href="javascript:void(0)" class="nav-cta-mobile" onclick="openModal('apply');">
+            <span class="material-symbols-outlined">description</span>
+            Apply Now
+          </a>
+        </li>
+      </ul>
+    </div>
 
-    <a href="javascript:void(0)" class="nav-cta" onclick="openModal('apply')">
-      <span class="material-symbols-outlined">description</span>
-      Apply for Documents
-    </a>
+    <div class="nav-actions">
+      <div class="theme-switch" id="theme-toggle">
+        <div class="theme-switch-thumb">
+          <span class="material-symbols-outlined theme-switch-icon" id="theme-icon">light_mode</span>
+        </div>
+      </div>
+
+      <a href="javascript:void(0)" class="nav-cta desktop-only" onclick="openModal('apply')">
+        <span class="material-symbols-outlined">description</span>
+        Apply for Documents
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" onclick="toggleMobileMenu()" aria-label="Toggle Menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
   </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
 
   <!-- HERO -->
   <header class="hero">
