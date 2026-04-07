@@ -147,27 +147,111 @@ function initModals() {
 
 // --- VERIFY LOGIC ---
 function initVerifyBtn() {
-  const btn = document.getElementById('strip-verify-btn');
-  const input = document.getElementById('strip-verify-input');
-
-  if (btn && input) {
-    btn.addEventListener('click', () => {
-      const val = input.value.trim();
+  const stripBtn = document.getElementById('strip-verify-btn');
+  if (stripBtn) {
+    stripBtn.addEventListener('click', () => {
+      const val = document.getElementById('strip-verify-input').value;
       if (!val) return;
-      openModal('verify');
-      const verifyInput = document.getElementById('verify-query');
-      if (verifyInput) {
-        verifyInput.value = val;
-        doVerify(val);
-      }
+      doVerify(val);
+    });
+  }
+
+  const resBtn = document.getElementById('resident-verify-btn');
+  if (resBtn) {
+    resBtn.addEventListener('click', () => {
+      doResidentVerify();
     });
   }
 }
 
-async function doVerify(queryArg) {
-  const query = queryArg || document.getElementById('verify-query').value.trim().toUpperCase();
+function switchVerifyTab(tabId) {
+  document.querySelectorAll('.verify-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll('.verify-tab-content').forEach(content => {
+    content.classList.toggle('active', content.id === 'tab-' + tabId);
+  });
+}
+
+async function doResidentVerify() {
+  const input = document.getElementById('resident-verify-input');
+  const query = input ? input.value.trim() : '';
+  if (!query) return;
+
+  if (window.openModal) window.openModal('verify');
+  const title = document.getElementById('modal-title');
+  if (title) title.textContent = 'Resident Verification';
+
   const resEl = document.getElementById('modal-result-content');
-  if (!query || !resEl) return;
+  if (!resEl) return;
+
+  resEl.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">
+    <span class="material-symbols-outlined" style="font-size:32px; animation: spin 2s linear infinite;">sync</span>
+    <p>Verifying resident record...</p>
+  </div>`;
+
+  try {
+    const isId = query.startsWith('PAY-');
+    let dbQuery = supabaseClient.from('residents').select('*');
+    if (isId) {
+      dbQuery = dbQuery.eq('id', query);
+    } else {
+      dbQuery = dbQuery.ilike('fname', `%${query}%`).or(`lname.ilike.%${query}%`);
+    }
+
+    const { data: res, error } = await dbQuery.limit(1);
+    if (error) throw error;
+
+    if (!res || res.length === 0) {
+      resEl.innerHTML = `
+        <div style="text-align:center; padding:40px; background:var(--background); border-radius:16px;">
+          <span class="material-symbols-outlined" style="font-size:64px; color:#dc2626; margin-bottom:16px;">person_off</span>
+          <h4 style="color:#dc2626; margin-bottom:8px; font-size:20px;">No Record Found</h4>
+          <p style="font-size:14px; color:var(--text-muted);">"${query}" is not in our official resident directory.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const r = res[0];
+    const status = r.status || 'Inactive';
+    const isActive = status === 'Active';
+    const color = isActive ? 'var(--primary)' : '#f59e0b';
+    const border = isActive ? 'var(--primary)' : '#f59e0b';
+
+    resEl.innerHTML = `
+      <div style="background:var(--background); border-radius:24px; padding:32px; border: 2px solid ${border}">
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px;">
+          <div style="width:56px; height:56px; background:${color}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+            <span class="material-symbols-outlined" style="font-size:32px;">${isActive ? 'person_check' : 'person_search'}</span>
+          </div>
+          <div>
+            <h4 style="margin:0; font-size:20px; font-weight:900; color:${color}">${isActive ? 'Verified Resident' : 'Unverified Status'}</h4>
+            <p style="color:var(--text-muted); margin:4px 0 0; font-size:13px;">ID: ${r.id}</p>
+          </div>
+        </div>
+
+        <div style="display:grid; gap:12px; margin-bottom:24px;">
+          <div style="display:flex; justify-content:space-between;"><span>Full Name:</span><strong>${r.fname} ${r.lname}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Purok:</span><strong>${r.purok}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Current Status:</span><span style="font-weight:800; color:${color}">${status}</span></div>
+        </div>
+      </div>
+    `;
+
+  } catch (err) {
+    resEl.innerHTML = `<div style="color:#dc2626; text-align:center; padding:20px;">System Error: Connection failed.</div>`;
+    console.error('Resident Verify Error:', err.message);
+  }
+}
+
+async function doVerify(queryArg) {
+  const query = queryArg || document.getElementById('strip-verify-input').value.trim().toUpperCase();
+  if (!query) return;
+
+  if (window.openModal) window.openModal('verify');
+  const resEl = document.getElementById('modal-result-content');
+  if (!resEl) return;
 
   resEl.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">
     <span class="material-symbols-outlined" style="font-size:32px; animation: spin 2s linear infinite;">sync</span>

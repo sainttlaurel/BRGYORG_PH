@@ -1108,7 +1108,3 @@ footer {
 [data-theme='dark'] .brand-text p {
   color: var(--text-main);
 }
-
-[data-theme='dark'] .hero {
-  background: var(--background);
-}
