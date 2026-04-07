@@ -162,6 +162,11 @@ function initVerifyBtn() {
       doResidentVerify();
     });
   }
+
+  // EXPOSURE
+  window.switchVerifyTab = switchVerifyTab;
+  window.doResidentVerify = doResidentVerify;
+  window.doVerify = doVerify;
 }
 
 function switchVerifyTab(tabId) {
@@ -246,10 +251,19 @@ async function doResidentVerify() {
 }
 
 async function doVerify(queryArg) {
-  const query = queryArg || document.getElementById('strip-verify-input').value.trim().toUpperCase();
+  // If no arg, check the main strip input OR the modal input
+  const inputMain = document.getElementById('strip-verify-input');
+  const inputModal = document.getElementById('verify-query');
+  
+  const query = queryArg || (inputModal ? inputModal.value.trim() : '') || (inputMain ? inputMain.value.trim() : '');
   if (!query) return;
 
   if (window.openModal) window.openModal('verify');
+  
+  // Also sync the modal input field if it's not the source
+  if (inputModal && inputModal.value.trim().toUpperCase() !== query.toUpperCase()) {
+    inputModal.value = query;
+  }
   const resEl = document.getElementById('modal-result-content');
   if (!resEl) return;
 

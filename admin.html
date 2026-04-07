@@ -1088,7 +1088,27 @@
           <div class="panel-field">
             <label>Purpose</label>
             <textarea id="dp-edit-purpose" placeholder="Purpose of request..."></textarea>
-
+          </div>
+          <div class="panel-field">
+            <label>Status</label>
+            <select id="dp-edit-status" onchange="updateQuickRemarks(this.value)">
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="panel-field">
+            <label>Quick Select Options</label>
+            <select id="dp-quick-select" onchange="applyQuickRemark(this.value)">
+              <option value="">-- Choose a predefined message --</option>
+            </select>
+          </div>
+          <div class="panel-field">
+            <label>Admin Remarks / Comments</label>
+            <textarea id="dp-edit-remarks" placeholder="Optional notes for the resident..."></textarea>
+          </div>
+        </div>
+      </div>
       <div class="doc-panel-footer">
         <button class="btn-secondary" onclick="printDocument()">
           <span class="material-symbols-outlined" style="font-size:15px">print</span> Print
