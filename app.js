@@ -1,10 +1,4 @@
 // ===================== STATE =====================
-const USERS_KEY = 'pl_users';
-const RESIDENTS_KEY = 'pl_residents';
-const DOCUMENTS_KEY = 'pl_documents';
-const COMPLAINTS_KEY = 'pl_complaints';
-const PROJECTS_KEY = 'pl_projects';
-const ANNOUNCEMENTS_KEY = 'pl_announcements';
 const SESSION_KEY = 'pl_session';
 
 let state = {
@@ -17,122 +11,77 @@ let state = {
   users: [],
   complaintFilter: 'all',
   annFilter: 'all',
-  annSort: 'newest',           // NEW: announcement sort order
+  annSort: 'newest',
   confirmCallback: null,
   pagination: { residents: 1, documents: 1, complaints: 1 },
   perPage: 8,
-  selectedDocuments: new Set(),   // NEW: bulk selection
-  selectedComplaints: new Set(),  // NEW: bulk selection
-  sessionTimeout: null,           // NEW: session timeout handle
-  docDateFrom: '',                // NEW: document date filter
-  docDateTo: '',                  // NEW: document date filter
+  selectedDocuments: new Set(),
+  selectedComplaints: new Set(),
+  sessionTimeout: null,
+  docDateFrom: '',
+  docDateTo: '',
 };
 
-// ===================== SEED DATA =====================
-function seedData() {
-  if (!localStorage.getItem(USERS_KEY)) {
-    const users = [
-      { id: 1, name: 'Admin Payatas', username: 'admin', role: 'Admin', email: 'admin@payatas.gov.ph', status: 'Active', lastActive: '2 mins ago', initials: 'AP' },
-      { id: 2, name: 'Elena Garcia', username: 'egarcia', role: 'Staff', email: 'elena.garcia@payatas.gov.ph', status: 'Active', lastActive: '1 hour ago', initials: 'EG' },
-      { id: 3, name: 'Roberto Santos', username: 'rsantos', role: 'Staff', email: 'roberto.santos@payatas.gov.ph', status: 'Active', lastActive: '3 days ago', initials: 'RS' }
-    ];
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  }
-  if (!localStorage.getItem(RESIDENTS_KEY)) {
-    const residents = [
-      { id: 'PAY-029481', fname: 'Maria Clara', lname: 'Agustin', purok: 'Purok 1', contact: '+63 912 345 6789', status: 'Active', registered: '2018', address: 'Block 3 Lot 5, Purok 1, Barangay Payatas', gender: 'Female', dob: '1985-04-12' },
-      { id: 'PAY-055102', fname: 'Santiago', lname: 'Bautista Jr.', purok: 'Purok 3', contact: '+63 945 882 1092', status: 'Active', registered: '2020', address: 'Block 7 Lot 2, Purok 3, Barangay Payatas', gender: 'Male', dob: '1991-08-23' },
-      { id: 'PAY-010293', fname: 'Theresa Mae', lname: 'Cruz', purok: 'Purok 2', contact: '+63 908 556 1234', status: 'Inactive', registered: '2015', address: 'Block 1 Lot 8, Purok 2, Barangay Payatas', gender: 'Female', dob: '1978-01-15' },
-      { id: 'PAY-129038', fname: 'Leonardo', lname: 'Dela Cruz', purok: 'Purok 1', contact: '+63 922 110 4492', status: 'Active', registered: '2022', address: 'Block 5 Lot 11, Purok 1, Barangay Payatas', gender: 'Male', dob: '1995-11-07' },
-      { id: 'PAY-003482', fname: 'Gloria', lname: 'Estrada', purok: 'Purok 5', contact: '+63 933 772 0019', status: 'Active', registered: '2012', address: 'Block 2 Lot 4, Purok 5, Barangay Payatas', gender: 'Female', dob: '1962-06-30' },
-      { id: 'PAY-073910', fname: 'Ricardo Jose', lname: 'de Vera', purok: 'Purok 4', contact: '+63 917 441 2230', status: 'Active', registered: '2019', address: 'Block 9 Lot 6, Purok 4, Barangay Payatas', gender: 'Male', dob: '1988-03-18' },
-      { id: 'PAY-098234', fname: 'Amara', lname: 'Luna', purok: 'Purok 2', contact: '+63 926 234 5678', status: 'Active', registered: '2021', address: 'Block 4 Lot 3, Purok 2, Barangay Payatas', gender: 'Female', dob: '1999-09-05' },
-    ];
-    localStorage.setItem(RESIDENTS_KEY, JSON.stringify(residents));
-  }
-  if (!localStorage.getItem(DOCUMENTS_KEY)) {
-    const docs = [
-      { id: 'DOC-001', resident: 'Mateo Cruz', type: 'Barangay Clearance', date: '2024-10-24', status: 'Approved', ref: 'PAY-2024-001', purpose: 'Employment' },
-      { id: 'DOC-002', resident: 'Elena Santos', type: 'Certificate of Indigency', date: '2024-10-26', status: 'Pending', ref: 'PAY-2024-002', purpose: 'Medical assistance' },
-      { id: 'DOC-003', resident: 'Ricardo Dalisay', type: 'Residency Certificate', date: '2024-10-25', status: 'Rejected', ref: 'PAY-2024-003', purpose: 'School enrollment' },
-      { id: 'DOC-004', resident: 'Amara Luna', type: 'Barangay Clearance', date: '2024-10-27', status: 'Pending', ref: 'PAY-2024-004', purpose: 'Bank account' },
-      { id: 'DOC-005', resident: 'Maria Clara Agustin', type: 'Business Permit', date: '2024-10-28', status: 'Pending', ref: 'PAY-2024-005', purpose: 'Business registration' },
-    ];
-    localStorage.setItem(DOCUMENTS_KEY, JSON.stringify(docs));
-  }
-  if (!localStorage.getItem(COMPLAINTS_KEY)) {
-    const complaints = [
-      { id: 'CMP-001', complainant: 'Maria Alicia Santos', category: 'Sanitation', priority: 'High', status: 'Pending', date: '2024-10-24', desc: 'Overflowing garbage bins near the market area.' },
-      { id: 'CMP-002', complainant: 'Ricardo Jose de Vera', category: 'Noise', priority: 'Medium', status: 'Pending', date: '2024-10-25', desc: 'Loud music from neighbor past midnight.' },
-      { id: 'CMP-003', complainant: 'Elena Ledesma', category: 'Public Safety', priority: 'Low', status: 'Resolved', date: '2024-10-20', desc: 'Broken streetlight in Purok 3.' },
-      { id: 'CMP-004', complainant: 'Benjamin Pascual', category: 'Sanitation', priority: 'High', status: 'Pending', date: '2024-10-26', desc: 'Stagnant water causing mosquito breeding.' },
-      { id: 'CMP-005', complainant: 'Gloria Estrada', category: 'Infrastructure', priority: 'Medium', status: 'Resolved', date: '2024-10-18', desc: 'Pothole on main road near purok 5.' },
-    ];
-    localStorage.setItem(COMPLAINTS_KEY, JSON.stringify(complaints));
-  }
-  if (!localStorage.getItem(PROJECTS_KEY)) {
-    const projects = [
-      { id: 'PRJ-001', title: 'Phase 4 Road Maintenance', category: 'Infrastructure', status: 'Ongoing', budget: 4200000, progress: 75, desc: 'Rehabilitation of main roads in Sectors 1-4.' },
-      { id: 'PRJ-002', title: 'Smart LED Street Lighting', category: 'Public Safety', status: 'Ongoing', budget: 1850000, progress: 32, desc: 'Installation of solar LED street lights.' },
-      { id: 'PRJ-003', title: 'Barangay Health Center Renovation', category: 'Healthcare', status: 'Completed', budget: 3400000, progress: 100, desc: 'Full renovation of the health center facilities.' },
-      { id: 'PRJ-004', title: 'Flood Control & Drainage System', category: 'Environment', status: 'Ongoing', budget: 2900000, progress: 58, desc: 'Upgrading drainage to prevent monsoon flooding.' },
-      { id: 'PRJ-005', title: 'Youth Digital Literacy Hub', category: 'Education', status: 'Planned', budget: 1200000, progress: 15, desc: 'Community digital education center.' },
-      { id: 'PRJ-006', title: 'Eco-Waste Recovery Center', category: 'Sanitation', status: 'Ongoing', budget: 2100000, progress: 92, desc: 'Organized waste sorting and recovery facility.' },
-    ];
-    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
-  }
-  if (!localStorage.getItem(ANNOUNCEMENTS_KEY)) {
-    const announcements = [
-      { id: 'ANN-001', title: 'Annual General Assembly & Budget Transparency Forum', category: 'meeting', content: 'Join us for a detailed review of the upcoming fiscal year projects. We will discuss waste management enhancements and new youth recreational facilities.', date: '2024-10-24' },
-      { id: 'ANN-002', title: 'Community Vaccination Drive: Seniors & Children', category: 'health', content: 'Mandatory flu and pneumonia shots available at the Barangay Health Center. Please bring valid IDs and vaccination cards.', date: '2024-10-22' },
-      { id: 'ANN-003', title: "All Saints' Day: Office Operations Advisory", category: 'holiday', content: 'The Barangay Hall will be closed for non-emergency services. Garbage collection schedule remains unchanged.', date: '2024-10-31' },
-      { id: 'ANN-004', title: 'Street Lighting Committee Update', category: 'meeting', content: 'Review of solar lighting installation progress along Block 5 and 6. Resident feedback on placement is highly encouraged.', date: '2024-10-18' },
-      { id: 'ANN-005', title: 'Drainage System Maintenance Program', category: 'infrastructure', content: 'Expect minor road diversions near the marketplace as we perform annual desilting to prevent monsoon flooding.', date: '2024-10-15' },
-    ];
-    localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(announcements));
-  }
-}
+// ===================== SUPABASE DB HELPERS =====================
+// These call the functions defined in supabase-config.js (dbFetch, dbInsert, dbUpdate, dbDelete)
 
-function loadState() {
-  state.users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-  state.residents = JSON.parse(localStorage.getItem(RESIDENTS_KEY) || '[]');
-  state.documents = JSON.parse(localStorage.getItem(DOCUMENTS_KEY) || '[]');
-  state.complaints = JSON.parse(localStorage.getItem(COMPLAINTS_KEY) || '[]');
-  state.projects = JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]');
-  state.announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || '[]');
-  state.session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
-}
-
-function save(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
+async function sbLoadAll() {
+  try {
+    const [users, residents, documents, complaints, projects, announcements] = await Promise.all([
+      dbFetch('users'),
+      dbFetch('residents'),
+      dbFetch('documents'),
+      dbFetch('complaints'),
+      dbFetch('projects'),
+      dbFetch('announcements'),
+    ]);
+    state.users = users || [];
+    state.residents = residents || [];
+    state.documents = documents || [];
+    state.complaints = complaints || [];
+    state.projects = projects || [];
+    state.announcements = announcements || [];
+    console.log('✅ All data loaded from Supabase');
+  } catch (err) {
+    console.warn('⚠️ Supabase load failed, offline mode:', err.message);
+    throw new Error('offline');
+  }
 }
 
 // ===================== AUTH =====================
 async function login() {
-  let loginInput = document.getElementById('login-email').value.trim();
+  const loginInput = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   const errorEl = document.getElementById('login-error');
   errorEl.textContent = '';
 
   if (!loginInput || !password) {
-    errorEl.textContent = 'Please enter email/username and password.';
+    errorEl.textContent = 'Please enter your username/email and password.';
     return;
   }
 
-  // Resolve username to email if possible
-  const matchedLocalUser = state.users.find(u => u.username === loginInput || u.email === loginInput);
-  const email = matchedLocalUser ? matchedLocalUser.email : loginInput;
+  // Show loading state
+  const btn = document.getElementById('login-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
 
   try {
-    const authData = await sbAuthenticateUser(email, password);
+    const authData = await sbAuthenticateUser(loginInput, password);
     const user = authData.user;
 
     if (user.status === 'Suspended') {
       errorEl.textContent = 'Your account has been suspended. Contact the administrator.';
+      if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
       return;
     }
 
-    // AuthData.session is the JWT session
+    // Load all data from Supabase before showing the app
+    try {
+      await sbLoadAll();
+    } catch (e) {
+      // offline fallback — continue with empty state, user still logged in
+      console.warn('Offline: proceeding with empty state');
+    }
+
     state.session = { ...user, token: authData.session.access_token };
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
 
@@ -141,24 +90,8 @@ async function login() {
     initApp();
     startSessionTimeout();
   } catch (error) {
-    if (error.message === 'offline') {
-      // Offline fallback
-      const user = matchedLocalUser || state.users.find(u => u.email === email);
-      // In offline mode, if a user exists with this email, let them in (since we removed passwords for security)
-      // Note: This is an insecure offline fallback for demonstration/dev purposes
-      if (!user) {
-        errorEl.textContent = 'Invalid email/username (Offline Mode).';
-        return;
-      }
-      state.session = user;
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('main-app').style.display = 'flex';
-      initApp();
-      startSessionTimeout();
-    } else {
-      errorEl.textContent = error.message || 'Invalid email or password.';
-    }
+    errorEl.textContent = error.message || 'Invalid username or password.';
+    if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
   }
 }
 
@@ -166,10 +99,18 @@ function logout() {
   clearSessionTimeout();
   sessionStorage.removeItem(SESSION_KEY);
   state.session = null;
+  state.users = [];
+  state.residents = [];
+  state.documents = [];
+  state.complaints = [];
+  state.projects = [];
+  state.announcements = [];
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('login-username').value = '';
-  document.getElementById('login-password').value = '';
+  const emailEl = document.getElementById('login-email');
+  const pwEl = document.getElementById('login-password');
+  if (emailEl) emailEl.value = '';
+  if (pwEl) pwEl.value = '';
 }
 
 function togglePw() {
@@ -179,9 +120,9 @@ function togglePw() {
   else { inp.type = 'password'; eye.textContent = 'visibility'; }
 }
 
-// ===================== SESSION TIMEOUT (NEW) =====================
-const SESSION_DURATION_MS = 30 * 60 * 1000; // 30 minutes
-const SESSION_WARNING_MS = 25 * 60 * 1000; // warn at 25 minutes
+// ===================== SESSION TIMEOUT =====================
+const SESSION_DURATION_MS = 30 * 60 * 1000;
+const SESSION_WARNING_MS = 25 * 60 * 1000;
 let _sessionWarningHandle = null;
 
 function startSessionTimeout() {
@@ -205,7 +146,6 @@ function resetSessionTimeout() {
 }
 
 function showSessionWarning() {
-  // Inject a persistent warning banner if not already there
   if (document.getElementById('session-warning-banner')) return;
   const banner = document.createElement('div');
   banner.id = 'session-warning-banner';
@@ -229,7 +169,6 @@ function extendSession() {
   toast('Session extended for another 30 minutes.', 'success');
 }
 
-// Reset timeout on any user interaction
 ['click', 'keydown', 'mousemove', 'touchstart'].forEach(evt => {
   document.addEventListener(evt, () => {
     const banner = document.getElementById('session-warning-banner');
@@ -285,13 +224,12 @@ function showPage(page) {
   const pageEl = document.getElementById('page-' + page);
   if (pageEl) pageEl.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(btn => {
-    if (btn.textContent.trim().toLowerCase().startsWith(page === 'dashboard' ? 'dash' : page.slice(0, 4))) btn.classList.add('active');
+    if (btn.textContent.trim().toLowerCase().startsWith(page === 'dashboard' ? 'dash' : page.slice(0, 4)))
+      btn.classList.add('active');
   });
   closeAllDropdowns();
-  // NEW: clear bulk selections when changing pages
   state.selectedDocuments.clear();
   state.selectedComplaints.clear();
-  // Close sidebar on mobile when navigating
   if (window.innerWidth <= 768) {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('open');
@@ -337,21 +275,25 @@ function renderDashboardDocs() {
   const tbody = document.getElementById('dashboard-docs-table');
   if (!tbody) return;
   const recent = [...state.documents].slice(-5).reverse();
-  if (!recent.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:24px;color:var(--on-surface-3)">No recent requests</td></tr>'; return; }
+  if (!recent.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:24px;color:var(--on-surface-3)">No recent requests</td></tr>';
+    return;
+  }
   tbody.innerHTML = recent.map(d => `
     <tr>
       <td><div style="display:flex;align-items:center;gap:8px"><div class="av av-sm" style="background:${avatarColor(d.resident)};color:white">${initials(d.resident)}</div><span>${d.resident}</span></div></td>
       <td><span style="font-size:12px">${d.type}</span></td>
       <td style="color:var(--on-surface-3);font-size:12px">${formatDate(d.date)}</td>
       <td>${statusBadge(d.status)}</td>
-      <td><div class="tbl-actions">${d.status === 'Pending' ? `<button class="tbl-btn" onclick="approveDoc('${d.id}')" title="Approve"><span class="material-symbols-outlined">check_circle</span></button><button class="tbl-btn danger" onclick="rejectDoc('${d.id}')" title="Reject"><span class="material-symbols-outlined">cancel</span></button>` : ''}</div></td>
+      <td><div class="tbl-actions">${d.status === 'Pending'
+      ? `<button class="tbl-btn" onclick="approveDoc('${d.id}')" title="Approve"><span class="material-symbols-outlined">check_circle</span></button>
+           <button class="tbl-btn danger" onclick="rejectDoc('${d.id}')" title="Reject"><span class="material-symbols-outlined">cancel</span></button>`
+      : ''}</div></td>
     </tr>
   `).join('');
 }
 
 // ===================== RESIDENTS =====================
-
-// FIX: robust unique ID using max existing numeric suffix
 function generateResidentId() {
   const nums = state.residents.map(r => {
     const parts = r.id.split('-');
@@ -367,7 +309,6 @@ function renderResidents() {
   const purokF = val('residents-purok');
   let data = state.residents.filter(r => {
     const name = `${r.fname} ${r.lname}`.toLowerCase();
-    // FIX: added purok to global search scope; also search gender & dob for completeness
     if (search && !name.includes(search) && !r.id.toLowerCase().includes(search) && !r.address.toLowerCase().includes(search) && !r.purok.toLowerCase().includes(search)) return false;
     if (statusF && r.status !== statusF) return false;
     if (purokF && r.purok !== purokF) return false;
@@ -383,16 +324,21 @@ function renderResidents() {
   } else {
     tbody.innerHTML = paged.map(r => `
       <tr>
-        <td><div style="display:flex;align-items:center;gap:10px"><div class="av" style="background:${avatarColor(`${r.fname} ${r.lname}`)};color:white;font-size:11px">${initials(`${r.fname} ${r.lname}`)}</div><div><div style="font-weight:700;font-size:13px">${r.lname}, ${r.fname}</div><div style="font-size:11px;color:var(--on-surface-3)">Since ${r.registered}</div></div></div></td>
+        <td><div style="display:flex;align-items:center;gap:10px">
+          <div class="av" style="background:${avatarColor(`${r.fname} ${r.lname}`)};color:white;font-size:11px">${initials(`${r.fname} ${r.lname}`)}</div>
+          <div><div style="font-weight:700;font-size:13px">${r.lname}, ${r.fname}</div><div style="font-size:11px;color:var(--on-surface-3)">Since ${r.registered}</div></div>
+        </div></td>
         <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--on-surface-3)">${r.id}</td>
         <td>${r.purok}</td>
         <td style="font-size:12px;color:var(--on-surface-3)">${r.contact}</td>
-        <td>${r.status === 'Active' ? '<span class="badge badge-active"><span class="badge-dot"></span>Active</span>' : '<span class="badge badge-inactive"><span class="badge-dot"></span>Inactive</span>'}</td>
+        <td>${r.status === 'Active'
+        ? '<span class="badge badge-active"><span class="badge-dot"></span>Active</span>'
+        : '<span class="badge badge-inactive"><span class="badge-dot"></span>Inactive</span>'}</td>
         <td style="font-size:12px;color:var(--on-surface-3)">${r.registered}</td>
         <td><div class="tbl-actions">
-          <button class="tbl-btn view" onclick="openResidentPanel('${r.id}')" title="View Profile"><span class="material-symbols-outlined">person</span></button>
-          <button class="tbl-btn" onclick="printResidentProfile('${r.id}')" title="Print Profile"><span class="material-symbols-outlined">print</span></button>
-          <button class="tbl-btn" onclick="editResident('${r.id}')" title="Edit"><span class="material-symbols-outlined">edit</span></button>
+          <button class="tbl-btn view"   onclick="openResidentPanel('${r.id}')"  title="View Profile"><span class="material-symbols-outlined">person</span></button>
+          <button class="tbl-btn"        onclick="printResidentProfile('${r.id}')" title="Print"><span class="material-symbols-outlined">print</span></button>
+          <button class="tbl-btn"        onclick="editResident('${r.id}')"        title="Edit"><span class="material-symbols-outlined">edit</span></button>
           <button class="tbl-btn danger" onclick="confirmDelete('Resident','Delete this resident record? This cannot be undone.',()=>deleteResident('${r.id}'))" title="Delete"><span class="material-symbols-outlined">delete</span></button>
         </div></td>
       </tr>
@@ -425,36 +371,48 @@ function editResident(id) {
     <div class="form-group"><label>Address</label><input id="er-address" value="${r.address}"/></div>
     <div class="form-group"><label>Notes</label><textarea id="er-notes">${r.notes || ''}</textarea></div>
   `;
-  document.getElementById('edit-modal-save').onclick = () => {
-    r.fname = val('er-fname'); r.lname = val('er-lname');
-    r.contact = val('er-contact'); r.purok = val('er-purok');
-    r.status = val('er-status'); r.address = val('er-address');
-    r.gender = val('er-gender');
-    r.dob = val('er-dob') || 'N/A';
-    r.notes = val('er-notes');
-    save(RESIDENTS_KEY, state.residents);
-    closeModal('edit-modal');
-    renderResidents();
-    toast('Resident updated successfully', 'success');
+  document.getElementById('edit-modal-save').onclick = async () => {
+    const updated = {
+      fname: val('er-fname'),
+      lname: val('er-lname'),
+      contact: val('er-contact'),
+      purok: val('er-purok'),
+      status: val('er-status'),
+      address: val('er-address'),
+      gender: val('er-gender'),
+      dob: val('er-dob') || 'N/A',
+      notes: val('er-notes'),
+    };
+    try {
+      await dbUpdate('residents', id, updated);
+      Object.assign(r, updated);
+      closeModal('edit-modal');
+      renderResidents();
+      toast('Resident updated successfully', 'success');
+    } catch (err) {
+      toast('Failed to update resident: ' + err.message, 'error');
+    }
   };
   openModal('edit-modal');
 }
 
-function deleteResident(id) {
-  state.residents = state.residents.filter(r => r.id !== id);
-  save(RESIDENTS_KEY, state.residents);
-  renderResidents();
-  closeModal('confirm-modal');
-  toast('Resident deleted', 'info');
+async function deleteResident(id) {
+  try {
+    await dbDelete('residents', id);
+    state.residents = state.residents.filter(r => r.id !== id);
+    renderResidents();
+    closeModal('confirm-modal');
+    toast('Resident deleted', 'info');
+  } catch (err) {
+    toast('Failed to delete resident: ' + err.message, 'error');
+  }
 }
 
-function submitResident() {
-  const fname = val('res-fname'), lname = val('res-lname');
-  const purok = val('res-purok');
+async function submitResident() {
+  const fname = val('res-fname'), lname = val('res-lname'), purok = val('res-purok');
   if (!fname || !lname || !purok) { toast('Please fill required fields', 'error'); return; }
-  // FIX: use generateResidentId() instead of fragile length-based approach
   const id = generateResidentId();
-  state.residents.push({
+  const row = {
     id, fname, lname, purok,
     contact: val('res-contact') || 'N/A',
     status: 'Active',
@@ -462,39 +420,36 @@ function submitResident() {
     address: val('res-address') || 'Barangay Payatas',
     gender: val('res-gender') || 'N/A',
     dob: val('res-dob') || 'N/A',
-    notes: val('res-notes')
-  });
-  save(RESIDENTS_KEY, state.residents);
-  closeModal('add-resident-modal');
-  ['res-fname', 'res-lname', 'res-contact', 'res-purok', 'res-address', 'res-notes', 'res-dob'].forEach(clearField);
-  toast(`Resident ${fname} ${lname} added!`, 'success');
-  addNotification('New Resident Added', `${fname} ${lname} registered in ${purok}`, 'person');
-  updateBadges(); updateDashboard();
-  if (document.getElementById('page-residents').classList.contains('active')) renderResidents();
+    notes: val('res-notes'),
+  };
+  try {
+    const inserted = await dbInsert('residents', row);
+    state.residents.push(inserted[0] || row);
+    closeModal('add-resident-modal');
+    ['res-fname', 'res-lname', 'res-contact', 'res-purok', 'res-address', 'res-notes', 'res-dob'].forEach(clearField);
+    toast(`Resident ${fname} ${lname} added!`, 'success');
+    addNotification('New Resident Added', `${fname} ${lname} registered in ${purok}`, 'person');
+    updateBadges(); updateDashboard();
+    if (document.getElementById('page-residents').classList.contains('active')) renderResidents();
+  } catch (err) {
+    toast('Failed to add resident: ' + err.message, 'error');
+  }
 }
 
-// NEW: Print resident profile
 function printResidentProfile(id) {
   const r = state.residents.find(x => x.id === id);
   if (!r) return;
   const fullName = `${r.fname} ${r.lname}`;
   const age = r.dob && r.dob !== 'N/A' ? Math.floor((new Date() - new Date(r.dob)) / 31557600000) + ' years old' : 'N/A';
-  const docs = state.documents.filter(d =>
-    d.resident.toLowerCase().includes(r.fname.toLowerCase()) ||
-    d.resident.toLowerCase().includes(r.lname.toLowerCase())
-  );
-  const cmps = state.complaints.filter(c =>
-    c.complainant.toLowerCase().includes(r.fname.toLowerCase()) ||
-    c.complainant.toLowerCase().includes(r.lname.toLowerCase())
-  );
+  const docs = state.documents.filter(d => d.resident.toLowerCase().includes(r.fname.toLowerCase()) || d.resident.toLowerCase().includes(r.lname.toLowerCase()));
+  const cmps = state.complaints.filter(c => c.complainant.toLowerCase().includes(r.fname.toLowerCase()) || c.complainant.toLowerCase().includes(r.lname.toLowerCase()));
   const w = window.open('', '_blank', 'width=750,height=1000');
   w.document.write(`<!DOCTYPE html><html><head>
     <title>Resident Profile — ${fullName}</title>
     <style>
       body{font-family:Georgia,serif;margin:0;padding:40px;color:#111;font-size:13px}
       .header{text-align:center;border-bottom:3px double #1a56db;padding-bottom:20px;margin-bottom:24px}
-      .header h1{font-size:20px;color:#1a56db;margin:0 0 4px}
-      .header p{font-size:11px;color:#555;margin:0}
+      .header h1{font-size:20px;color:#1a56db;margin:0 0 4px}.header p{font-size:11px;color:#555;margin:0}
       h2{font-size:14px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #e5e7eb;padding-bottom:6px;margin:20px 0 12px;color:#1a56db}
       .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
       .field{background:#f9fafb;border-radius:6px;padding:8px 12px}
@@ -502,14 +457,10 @@ function printResidentProfile(id) {
       .field .v{font-size:13px;font-weight:600}
       .doc-row,.cmp-row{display:flex;justify-content:space-between;padding:7px 10px;background:#f9fafb;border-radius:6px;margin-bottom:5px;font-size:12px}
       .badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
-      .b-active{background:#f0fdf4;color:#16a34a}
-      .b-inactive{background:#f1f5f9;color:#64748b}
-      .b-approved{background:#f0fdf4;color:#16a34a}
-      .b-pending{background:#fffbeb;color:#d97706}
-      .b-rejected{background:#fef2f2;color:#dc2626}
+      .b-active{background:#f0fdf4;color:#16a34a}.b-inactive{background:#f1f5f9;color:#64748b}
+      .b-approved{background:#f0fdf4;color:#16a34a}.b-pending{background:#fffbeb;color:#d97706}.b-rejected{background:#fef2f2;color:#dc2626}
       .footer{margin-top:60px;display:flex;justify-content:space-between;font-size:11px}
-      .sig{text-align:center}
-      .sig-line{width:180px;border-top:1px solid #111;margin:40px auto 4px}
+      .sig{text-align:center}.sig-line{width:180px;border-top:1px solid #111;margin:40px auto 4px}
       .watermark{text-align:center;margin-top:24px;color:#d1d5db;font-size:10px;letter-spacing:1px}
       @media print{body{padding:20px}}
     </style>
@@ -537,16 +488,13 @@ function printResidentProfile(id) {
       <div class="sig"><div class="sig-line"></div><div>Barangay Captain</div></div>
       <div class="sig"><div class="sig-line"></div><div>Secretary / Records Officer</div></div>
     </div>
-    <div class="watermark">OFFICIAL DOCUMENT — BARANGAY PAYATAS · PAYATAS LEDGER v2.5.0 · Printed: ${new Date().toLocaleString('en-PH')}</div>
+    <div class="watermark">OFFICIAL DOCUMENT — BARANGAY PAYATAS · PAYATAS LEDGER v3.0.0 · Printed: ${new Date().toLocaleString('en-PH')}</div>
   </body></html>`);
-  w.document.close();
-  w.focus();
+  w.document.close(); w.focus();
   setTimeout(() => w.print(), 500);
 }
 
 // ===================== DOCUMENTS =====================
-
-// NEW: render date filter UI (call this once in your HTML or inject it)
 function injectDocDateFilters() {
   const toolbar = document.getElementById('docs-toolbar');
   if (!toolbar || document.getElementById('docs-date-from')) return;
@@ -558,7 +506,7 @@ function injectDocDateFilters() {
       <input type="date" id="docs-date-from" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface)" oninput="onDocDateFilter()"/>
       <span>To</span>
       <input type="date" id="docs-date-to" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface)" oninput="onDocDateFilter()"/>
-      <button class="tbl-btn" onclick="clearDocDateFilter()" title="Clear date filter" style="padding:4px 8px;font-size:11px">Clear</button>
+      <button class="tbl-btn" onclick="clearDocDateFilter()" style="padding:4px 8px;font-size:11px">Clear</button>
     </div>
   `;
   toolbar.appendChild(wrap);
@@ -572,18 +520,16 @@ function onDocDateFilter() {
 }
 
 function clearDocDateFilter() {
-  state.docDateFrom = '';
-  state.docDateTo = '';
+  state.docDateFrom = ''; state.docDateTo = '';
   const f = document.getElementById('docs-date-from');
   const t = document.getElementById('docs-date-to');
-  if (f) f.value = '';
-  if (t) t.value = '';
+  if (f) f.value = ''; if (t) t.value = '';
   state.pagination.documents = 1;
   renderDocuments();
 }
 
 function renderDocuments() {
-  injectDocDateFilters(); // ensure date filters exist
+  injectDocDateFilters();
   const search = val('docs-search').toLowerCase();
   const typeF = val('docs-type');
   const statusF = val('docs-status');
@@ -591,20 +537,15 @@ function renderDocuments() {
     if (search && !d.resident.toLowerCase().includes(search) && !d.ref.toLowerCase().includes(search)) return false;
     if (typeF && d.type !== typeF) return false;
     if (statusF && d.status !== statusF) return false;
-    // NEW: date range filter
     if (state.docDateFrom && d.date < state.docDateFrom) return false;
     if (state.docDateTo && d.date > state.docDateTo) return false;
     return true;
   });
-
-  // NEW: bulk action toolbar
   renderDocBulkBar(data);
-
   const page = state.pagination.documents;
   const total = data.length;
   const paged = data.slice((page - 1) * state.perPage, page * state.perPage);
   const tbody = document.getElementById('documents-table');
-
   if (!paged.length) {
     tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon"><span class="material-symbols-outlined">description</span></div><h4>No requests found</h4><p>Try adjusting your filters</p></div></td></tr>`;
   } else {
@@ -618,8 +559,11 @@ function renderDocuments() {
         <td style="font-size:12px;color:var(--on-surface-3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.purpose || '—'}</td>
         <td>${statusBadge(d.status)}</td>
         <td><div class="tbl-actions">
-          <button class="tbl-btn view" onclick="openDocPanel('${d.id}')" title="View & Edit"><span class="material-symbols-outlined">open_in_new</span></button>
-          ${d.status === 'Pending' ? `<button class="tbl-btn" onclick="approveDoc('${d.id}')" title="Approve"><span class="material-symbols-outlined">check_circle</span></button><button class="tbl-btn danger" onclick="rejectDoc('${d.id}')" title="Reject"><span class="material-symbols-outlined">cancel</span></button>` : ''}
+          <button class="tbl-btn view"   onclick="openDocPanel('${d.id}')" title="View & Edit"><span class="material-symbols-outlined">open_in_new</span></button>
+          ${d.status === 'Pending'
+        ? `<button class="tbl-btn" onclick="approveDoc('${d.id}')" title="Approve"><span class="material-symbols-outlined">check_circle</span></button>
+               <button class="tbl-btn danger" onclick="rejectDoc('${d.id}')" title="Reject"><span class="material-symbols-outlined">cancel</span></button>`
+        : ''}
           <button class="tbl-btn danger" onclick="confirmDelete('Document Request','Delete this document request?',()=>deleteDoc('${d.id}'))" title="Delete"><span class="material-symbols-outlined">delete</span></button>
         </div></td>
       </tr>
@@ -628,14 +572,13 @@ function renderDocuments() {
   renderPagination('documents', total, page, 'renderDocuments');
 }
 
-// NEW: bulk selection helpers for documents
 function toggleDocSelection(id, checked) {
   if (checked) state.selectedDocuments.add(id);
   else state.selectedDocuments.delete(id);
   renderDocBulkBar();
 }
 
-function renderDocBulkBar(filteredData) {
+function renderDocBulkBar() {
   let bar = document.getElementById('doc-bulk-bar');
   if (!bar) {
     bar = document.createElement('div');
@@ -648,52 +591,60 @@ function renderDocBulkBar(filteredData) {
   if (count === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   bar.innerHTML = `
-      <span style="color:var(--primary)">${count} selected</span>
-      <button class="tbl-btn bulk" onclick="bulkApproveDocuments()" title="Approve selected" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;"><span class="material-symbols-outlined" style="font-size:15px;">check_circle</span> Approve All</button>
-      <button class="tbl-btn bulk danger" onclick="bulkRejectDocuments()" title="Reject selected" style="background:#fef2f2;"><span class="material-symbols-outlined" style="font-size:15px;">cancel</span> Reject All</button>
-      <button class="tbl-btn bulk danger" onclick="bulkDeleteDocuments()" title="Delete selected"><span class="material-symbols-outlined" style="font-size:15px;">delete</span> Delete</button>
-      <button class="tbl-btn bulk" onclick="clearDocSelection()">Clear</button>
-    `;
+    <span style="color:var(--primary)">${count} selected</span>
+    <button class="tbl-btn bulk" onclick="bulkApproveDocuments()" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;"><span class="material-symbols-outlined" style="font-size:15px">check_circle</span> Approve All</button>
+    <button class="tbl-btn bulk danger" onclick="bulkRejectDocuments()" style="background:#fef2f2;"><span class="material-symbols-outlined" style="font-size:15px">cancel</span> Reject All</button>
+    <button class="tbl-btn bulk danger" onclick="bulkDeleteDocuments()"><span class="material-symbols-outlined" style="font-size:15px">delete</span> Delete</button>
+    <button class="tbl-btn bulk" onclick="clearDocSelection()">Clear</button>
+  `;
 }
 
-function clearDocSelection() {
-  state.selectedDocuments.clear();
-  renderDocuments();
-}
+function clearDocSelection() { state.selectedDocuments.clear(); renderDocuments(); }
 
-function bulkApproveDocuments() {
-  state.selectedDocuments.forEach(id => {
+async function bulkApproveDocuments() {
+  const ids = [...state.selectedDocuments];
+  for (const id of ids) {
     const d = state.documents.find(x => x.id === id);
     if (d && d.status === 'Pending') {
-      d.status = 'Approved';
-      addNotification('Document Approved', `${d.type} for ${d.resident} has been approved`, 'success');
+      try {
+        await dbUpdate('documents', id, { status: 'Approved' });
+        d.status = 'Approved';
+        addNotification('Document Approved', `${d.type} for ${d.resident} approved`, 'success');
+      } catch (err) { console.warn('Bulk approve error:', err.message); }
     }
-  });
-  save(DOCUMENTS_KEY, state.documents);
+  }
   state.selectedDocuments.clear();
   updateBadges(); updateDashboard(); renderDocuments(); renderDashboardDocs();
   toast('Selected documents approved!', 'success');
 }
 
-function bulkRejectDocuments() {
-  state.selectedDocuments.forEach(id => {
+async function bulkRejectDocuments() {
+  const ids = [...state.selectedDocuments];
+  for (const id of ids) {
     const d = state.documents.find(x => x.id === id);
     if (d && d.status === 'Pending') {
-      d.status = 'Rejected';
-      addNotification('Document Rejected', `${d.type} for ${d.resident} was rejected`, 'warning');
+      try {
+        await dbUpdate('documents', id, { status: 'Rejected' });
+        d.status = 'Rejected';
+        addNotification('Document Rejected', `${d.type} for ${d.resident} rejected`, 'warning');
+      } catch (err) { console.warn('Bulk reject error:', err.message); }
     }
-  });
-  save(DOCUMENTS_KEY, state.documents);
+  }
   state.selectedDocuments.clear();
   updateBadges(); updateDashboard(); renderDocuments(); renderDashboardDocs();
   toast('Selected documents rejected', 'info');
 }
 
-function bulkDeleteDocuments() {
+async function bulkDeleteDocuments() {
   const count = state.selectedDocuments.size;
-  confirmDelete('Selected Documents', `Delete ${count} document request(s)? This cannot be undone.`, () => {
-    state.documents = state.documents.filter(d => !state.selectedDocuments.has(d.id));
-    save(DOCUMENTS_KEY, state.documents);
+  confirmDelete('Selected Documents', `Delete ${count} document request(s)? This cannot be undone.`, async () => {
+    const ids = [...state.selectedDocuments];
+    for (const id of ids) {
+      try {
+        await dbDelete('documents', id);
+        state.documents = state.documents.filter(d => d.id !== id);
+      } catch (err) { console.warn('Bulk delete doc error:', err.message); }
+    }
     state.selectedDocuments.clear();
     closeModal('confirm-modal');
     updateBadges(); updateDashboard(); renderDocuments(); renderDashboardDocs();
@@ -701,52 +652,60 @@ function bulkDeleteDocuments() {
   });
 }
 
-function approveDoc(id) {
+async function approveDoc(id) {
   const d = state.documents.find(x => x.id === id);
-  if (d) {
+  if (!d) return;
+  try {
+    await dbUpdate('documents', id, { status: 'Approved' });
     d.status = 'Approved';
-    save(DOCUMENTS_KEY, state.documents);
     updateBadges(); updateDashboard(); renderDocuments(); renderDashboardDocs();
     toast('Request approved!', 'success');
     addNotification('Document Approved', `${d.type} for ${d.resident} has been approved`, 'success');
-  }
+  } catch (err) { toast('Failed to approve: ' + err.message, 'error'); }
 }
 
-function rejectDoc(id) {
+async function rejectDoc(id) {
   const d = state.documents.find(x => x.id === id);
-  if (d) {
+  if (!d) return;
+  try {
+    await dbUpdate('documents', id, { status: 'Rejected' });
     d.status = 'Rejected';
-    save(DOCUMENTS_KEY, state.documents);
     updateBadges(); updateDashboard(); renderDocuments(); renderDashboardDocs();
     toast('Request rejected', 'info');
     addNotification('Document Rejected', `${d.type} for ${d.resident} was rejected`, 'warning');
-  }
+  } catch (err) { toast('Failed to reject: ' + err.message, 'error'); }
 }
 
-function deleteDoc(id) {
-  state.documents = state.documents.filter(d => d.id !== id);
-  save(DOCUMENTS_KEY, state.documents);
-  closeModal('confirm-modal'); renderDocuments(); renderDashboardDocs(); updateBadges(); updateDashboard();
-  toast('Request deleted', 'info');
+async function deleteDoc(id) {
+  try {
+    await dbDelete('documents', id);
+    state.documents = state.documents.filter(d => d.id !== id);
+    closeModal('confirm-modal');
+    renderDocuments(); renderDashboardDocs(); updateBadges(); updateDashboard();
+    toast('Request deleted', 'info');
+  } catch (err) { toast('Failed to delete: ' + err.message, 'error'); }
 }
 
-function submitRequest() {
+async function submitRequest() {
   const name = val('req-name'), type = val('req-type');
   if (!name || !type) { toast('Please fill required fields', 'error'); return; }
-  const id = 'DOC-' + String(state.documents.length + 1).padStart(3, '0');
-  const ref = 'PAY-' + new Date().getFullYear() + '-' + String(state.documents.length + 1).padStart(3, '0');
-  state.documents.push({ id, resident: name, type, date: today(), status: 'Pending', ref, purpose: val('req-purpose'), contact: val('req-contact') });
-  save(DOCUMENTS_KEY, state.documents);
-  closeModal('new-request-modal');
-  ['req-name', 'req-contact', 'req-type', 'req-purpose'].forEach(clearField);
-  toast(`Document request submitted for ${name}`, 'success');
-  addNotification('New Document Request', `${name} requested a ${type}`, 'doc');
-  updateBadges(); updateDashboard();
-  if (document.getElementById('page-documents').classList.contains('active')) renderDocuments();
+  const num = state.documents.length + 1;
+  const id = 'DOC-' + String(num).padStart(3, '0');
+  const ref = 'PAY-' + new Date().getFullYear() + '-' + String(num).padStart(3, '0');
+  const row = { id, resident: name, type, date: today(), status: 'Pending', ref, purpose: val('req-purpose'), contact: val('req-contact') };
+  try {
+    const inserted = await dbInsert('documents', row);
+    state.documents.push(inserted[0] || row);
+    closeModal('new-request-modal');
+    ['req-name', 'req-contact', 'req-type', 'req-purpose'].forEach(clearField);
+    toast(`Document request submitted for ${name}`, 'success');
+    addNotification('New Document Request', `${name} requested a ${type}`, 'doc');
+    updateBadges(); updateDashboard();
+    if (document.getElementById('page-documents').classList.contains('active')) renderDocuments();
+  } catch (err) { toast('Failed to submit request: ' + err.message, 'error'); }
 }
 
 // ===================== COMPLAINTS =====================
-
 function renderComplaints() {
   const search = val('complaints-search').toLowerCase();
   let data = state.complaints.filter(c => {
@@ -756,7 +715,6 @@ function renderComplaints() {
     if (state.complaintFilter === 'urgent' && c.priority !== 'High') return false;
     return true;
   });
-
   const statsEl = document.getElementById('complaints-stats');
   if (statsEl) {
     const total = state.complaints.length;
@@ -769,10 +727,7 @@ function renderComplaints() {
       <div class="stat-card" style="border-left:3px solid var(--success)"><div class="stat-top"><div class="stat-icon" style="background:var(--success-light)"><span class="material-symbols-outlined" style="color:var(--success)">analytics</span></div></div><div class="stat-label">Resolution Rate</div><div class="stat-value">${rate}%</div></div>
     `;
   }
-
-  // NEW: bulk action toolbar for complaints
   renderComplaintBulkBar();
-
   const page = state.pagination.complaints;
   const total = data.length;
   const paged = data.slice((page - 1) * state.perPage, page * state.perPage);
@@ -787,11 +742,13 @@ function renderComplaints() {
         <td><span style="padding:3px 10px;background:var(--surface);border-radius:99px;font-size:11px;font-weight:600">${c.category}</span></td>
         <td>${priorityBadge(c.priority)}</td>
         <td style="font-size:12px;color:var(--on-surface-3)">${formatDate(c.date)}</td>
-        <td>${c.status === 'Resolved' ? '<span class="badge badge-approved"><span class="badge-dot"></span>Resolved</span>' : '<span class="badge badge-urgent"><span class="badge-dot"></span>Pending</span>'}</td>
+        <td>${c.status === 'Resolved'
+        ? '<span class="badge badge-approved"><span class="badge-dot"></span>Resolved</span>'
+        : '<span class="badge badge-urgent"><span class="badge-dot"></span>Pending</span>'}</td>
         <td><div class="tbl-actions">
           ${c.status !== 'Resolved' ? `<button class="tbl-btn" onclick="resolveComplaint('${c.id}')" title="Mark Resolved"><span class="material-symbols-outlined">check_circle</span></button>` : ''}
-          <button class="tbl-btn" onclick="viewComplaint('${c.id}')" title="View"><span class="material-symbols-outlined">open_in_new</span></button>
-          <button class="tbl-btn" onclick="editComplaint('${c.id}')" title="Edit"><span class="material-symbols-outlined">edit</span></button>
+          <button class="tbl-btn"        onclick="viewComplaint('${c.id}')"   title="View"><span class="material-symbols-outlined">open_in_new</span></button>
+          <button class="tbl-btn"        onclick="editComplaint('${c.id}')"   title="Edit"><span class="material-symbols-outlined">edit</span></button>
           <button class="tbl-btn danger" onclick="confirmDelete('Complaint','Delete this complaint record?',()=>deleteComplaint('${c.id}'))" title="Delete"><span class="material-symbols-outlined">delete</span></button>
         </div></td>
       </tr>
@@ -800,7 +757,6 @@ function renderComplaints() {
   renderPagination('complaints', total, page, 'renderComplaints');
 }
 
-// NEW: bulk selection helpers for complaints
 function toggleComplaintSelection(id, checked) {
   if (checked) state.selectedComplaints.add(id);
   else state.selectedComplaints.delete(id);
@@ -820,37 +776,42 @@ function renderComplaintBulkBar() {
   if (count === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   bar.innerHTML = `
-      <span style="color:var(--primary)">${count} selected</span>
-      <button class="tbl-btn bulk" onclick="bulkResolveComplaints()" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;"><span class="material-symbols-outlined" style="font-size:15px;">check_circle</span> Resolve All</button>
-      <button class="tbl-btn bulk danger" onclick="bulkDeleteComplaints()"><span class="material-symbols-outlined" style="font-size:15px;">delete</span> Delete</button>
-      <button class="tbl-btn bulk" onclick="clearComplaintSelection()">Clear</button>
-    `;
+    <span style="color:var(--primary)">${count} selected</span>
+    <button class="tbl-btn bulk" onclick="bulkResolveComplaints()" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;"><span class="material-symbols-outlined" style="font-size:15px">check_circle</span> Resolve All</button>
+    <button class="tbl-btn bulk danger" onclick="bulkDeleteComplaints()"><span class="material-symbols-outlined" style="font-size:15px">delete</span> Delete</button>
+    <button class="tbl-btn bulk" onclick="clearComplaintSelection()">Clear</button>
+  `;
 }
 
-function clearComplaintSelection() {
-  state.selectedComplaints.clear();
-  renderComplaints();
-}
+function clearComplaintSelection() { state.selectedComplaints.clear(); renderComplaints(); }
 
-function bulkResolveComplaints() {
-  state.selectedComplaints.forEach(id => {
+async function bulkResolveComplaints() {
+  const ids = [...state.selectedComplaints];
+  for (const id of ids) {
     const c = state.complaints.find(x => x.id === id);
     if (c && c.status !== 'Resolved') {
-      c.status = 'Resolved';
-      addNotification('Complaint Resolved', `${c.category} complaint by ${c.complainant} marked resolved`, 'success');
+      try {
+        await dbUpdate('complaints', id, { status: 'Resolved' });
+        c.status = 'Resolved';
+        addNotification('Complaint Resolved', `${c.category} complaint by ${c.complainant} marked resolved`, 'success');
+      } catch (err) { console.warn('Bulk resolve error:', err.message); }
     }
-  });
-  save(COMPLAINTS_KEY, state.complaints);
+  }
   state.selectedComplaints.clear();
   renderComplaints(); updateBadges(); updateDashboard();
   toast('Selected complaints resolved!', 'success');
 }
 
-function bulkDeleteComplaints() {
+async function bulkDeleteComplaints() {
   const count = state.selectedComplaints.size;
-  confirmDelete('Selected Complaints', `Delete ${count} complaint(s)? This cannot be undone.`, () => {
-    state.complaints = state.complaints.filter(c => !state.selectedComplaints.has(c.id));
-    save(COMPLAINTS_KEY, state.complaints);
+  confirmDelete('Selected Complaints', `Delete ${count} complaint(s)? This cannot be undone.`, async () => {
+    const ids = [...state.selectedComplaints];
+    for (const id of ids) {
+      try {
+        await dbDelete('complaints', id);
+        state.complaints = state.complaints.filter(c => c.id !== id);
+      } catch (err) { console.warn('Bulk delete complaint error:', err.message); }
+    }
     state.selectedComplaints.clear();
     closeModal('confirm-modal');
     renderComplaints(); updateBadges(); updateDashboard();
@@ -865,15 +826,16 @@ function filterComplaints(filter, btn) {
   renderComplaints();
 }
 
-function resolveComplaint(id) {
+async function resolveComplaint(id) {
   const c = state.complaints.find(x => x.id === id);
-  if (c) {
+  if (!c) return;
+  try {
+    await dbUpdate('complaints', id, { status: 'Resolved' });
     c.status = 'Resolved';
-    save(COMPLAINTS_KEY, state.complaints);
     renderComplaints(); updateBadges(); updateDashboard();
     toast('Complaint marked as resolved', 'success');
     addNotification('Complaint Resolved', `${c.category} complaint by ${c.complainant} marked resolved`, 'success');
-  }
+  } catch (err) { toast('Failed to resolve: ' + err.message, 'error'); }
 }
 
 function viewComplaint(id) {
@@ -882,7 +844,9 @@ function viewComplaint(id) {
   document.getElementById('edit-modal-title').textContent = `Complaint ${c.id}`;
   document.getElementById('edit-modal-body').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div style="display:flex;gap:8px">${priorityBadge(c.priority)}${c.status === 'Resolved' ? '<span class="badge badge-approved"><span class="badge-dot"></span>Resolved</span>' : '<span class="badge badge-urgent"><span class="badge-dot"></span>Pending</span>'}</div>
+      <div style="display:flex;gap:8px">${priorityBadge(c.priority)}${c.status === 'Resolved'
+      ? '<span class="badge badge-approved"><span class="badge-dot"></span>Resolved</span>'
+      : '<span class="badge badge-urgent"><span class="badge-dot"></span>Pending</span>'}</div>
       <div><div class="text-sm text-muted">Complainant</div><div class="font-bold">${c.complainant}</div></div>
       <div><div class="text-sm text-muted">Category</div><div>${c.category}</div></div>
       <div><div class="text-sm text-muted">Date Filed</div><div>${formatDate(c.date)}</div></div>
@@ -890,11 +854,12 @@ function viewComplaint(id) {
     </div>
   `;
   document.getElementById('edit-modal-save').textContent = c.status !== 'Resolved' ? 'Mark as Resolved' : 'Close';
-  document.getElementById('edit-modal-save').onclick = c.status !== 'Resolved' ? () => { resolveComplaint(c.id); closeModal('edit-modal'); } : () => closeModal('edit-modal');
+  document.getElementById('edit-modal-save').onclick = c.status !== 'Resolved'
+    ? () => { resolveComplaint(c.id); closeModal('edit-modal'); }
+    : () => closeModal('edit-modal');
   openModal('edit-modal');
 }
 
-// NEW: edit complaint details
 function editComplaint(id) {
   const c = state.complaints.find(x => x.id === id);
   if (!c) return;
@@ -916,39 +881,52 @@ function editComplaint(id) {
     <div class="form-group"><label>Description</label><textarea id="ec-desc" style="min-height:90px">${c.desc}</textarea></div>
   `;
   document.getElementById('edit-modal-save').textContent = 'Save Changes';
-  document.getElementById('edit-modal-save').onclick = () => {
-    c.complainant = val('ec-name') || c.complainant;
-    c.category = val('ec-cat');
-    c.priority = val('ec-priority');
-    c.status = val('ec-status');
-    c.desc = val('ec-desc') || c.desc;
-    save(COMPLAINTS_KEY, state.complaints);
-    closeModal('edit-modal');
-    renderComplaints(); updateBadges(); updateDashboard();
-    toast('Complaint updated!', 'success');
+  document.getElementById('edit-modal-save').onclick = async () => {
+    const updated = {
+      complainant: val('ec-name') || c.complainant,
+      category: val('ec-cat'),
+      priority: val('ec-priority'),
+      status: val('ec-status'),
+      description: val('ec-desc') || c.desc,
+    };
+    try {
+      await dbUpdate('complaints', id, updated);
+      Object.assign(c, { ...updated, desc: updated.description });
+      closeModal('edit-modal');
+      renderComplaints(); updateBadges(); updateDashboard();
+      toast('Complaint updated!', 'success');
+    } catch (err) { toast('Failed to update: ' + err.message, 'error'); }
   };
   openModal('edit-modal');
 }
 
-function deleteComplaint(id) {
-  state.complaints = state.complaints.filter(c => c.id !== id);
-  save(COMPLAINTS_KEY, state.complaints);
-  closeModal('confirm-modal'); renderComplaints(); updateBadges(); updateDashboard();
-  toast('Complaint deleted', 'info');
+async function deleteComplaint(id) {
+  try {
+    await dbDelete('complaints', id);
+    state.complaints = state.complaints.filter(c => c.id !== id);
+    closeModal('confirm-modal');
+    renderComplaints(); updateBadges(); updateDashboard();
+    toast('Complaint deleted', 'info');
+  } catch (err) { toast('Failed to delete: ' + err.message, 'error'); }
 }
 
-function submitComplaint() {
+async function submitComplaint() {
   const name = val('cmp-name'), cat = val('cmp-cat'), desc = val('cmp-desc');
   if (!name || !cat || !desc) { toast('Please fill required fields', 'error'); return; }
   const id = 'CMP-' + String(state.complaints.length + 1).padStart(3, '0');
-  state.complaints.push({ id, complainant: name, category: cat, priority: val('cmp-priority') || 'Medium', status: 'Pending', date: today(), desc });
-  save(COMPLAINTS_KEY, state.complaints);
-  closeModal('new-complaint-modal');
-  ['cmp-name', 'cmp-cat', 'cmp-desc'].forEach(clearField);
-  toast('Complaint filed successfully!', 'success');
-  addNotification('New Complaint Filed', `${name} filed a ${cat} complaint`, 'complaint');
-  updateBadges(); updateDashboard();
-  if (document.getElementById('page-complaints').classList.contains('active')) renderComplaints();
+  const row = { id, complainant: name, category: cat, priority: val('cmp-priority') || 'Medium', status: 'Pending', date: today(), description: desc };
+  try {
+    const inserted = await dbInsert('complaints', row);
+    // map description → desc for local state consistency
+    const local = { ...(inserted[0] || row), desc: row.description };
+    state.complaints.push(local);
+    closeModal('new-complaint-modal');
+    ['cmp-name', 'cmp-cat', 'cmp-desc'].forEach(clearField);
+    toast('Complaint filed successfully!', 'success');
+    addNotification('New Complaint Filed', `${name} filed a ${cat} complaint`, 'complaint');
+    updateBadges(); updateDashboard();
+    if (document.getElementById('page-complaints').classList.contains('active')) renderComplaints();
+  } catch (err) { toast('Failed to submit complaint: ' + err.message, 'error'); }
 }
 
 // ===================== PROJECTS =====================
@@ -981,6 +959,7 @@ function renderProjects() {
     const pct = Math.min(100, Math.max(0, p.progress));
     const fillClass = p.status === 'Completed' ? 'fill-success' : pct < 40 ? 'fill-error' : 'fill-primary';
     const statusColor = p.status === 'Completed' ? '#16a34a' : p.status === 'Ongoing' ? '#1a56db' : '#7c3aed';
+    const desc = p.desc || p.description || '';
     return `
       <div class="proj-card">
         <div class="proj-img" style="background:${bg}">
@@ -996,7 +975,7 @@ function renderProjects() {
             <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
           </div>
           <div class="proj-footer">
-            <span style="font-size:11px;color:var(--on-surface-3)">${p.desc.slice(0, 50)}...</span>
+            <span style="font-size:11px;color:var(--on-surface-3)">${desc.slice(0, 50)}...</span>
             <div style="display:flex;gap:4px">
               <button class="tbl-btn" onclick="editProject('${p.id}')" title="Edit"><span class="material-symbols-outlined" style="font-size:16px">edit</span></button>
               <button class="tbl-btn danger" onclick="confirmDelete('Project','Delete this project?',()=>deleteProject('${p.id}'))" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button>
@@ -1016,6 +995,7 @@ function catIcon(cat) {
 function editProject(id) {
   const p = state.projects.find(x => x.id === id);
   if (!p) return;
+  const desc = p.desc || p.description || '';
   document.getElementById('edit-modal-title').textContent = 'Edit Project';
   document.getElementById('edit-modal-body').innerHTML = `
     <div class="form-group"><label>Title</label><input id="ep-title" value="${p.title}"/></div>
@@ -1029,43 +1009,57 @@ function editProject(id) {
       <div class="form-group"><label>Budget (₱)</label><input id="ep-budget" type="number" value="${p.budget}"/></div>
       <div class="form-group"><label>Progress (%)</label><input id="ep-progress" type="number" value="${p.progress}" min="0" max="100"/></div>
     </div>
-    <div class="form-group"><label>Description</label><textarea id="ep-desc">${p.desc}</textarea></div>
+    <div class="form-group"><label>Description</label><textarea id="ep-desc">${desc}</textarea></div>
   `;
-  document.getElementById('edit-modal-save').onclick = () => {
-    p.title = val('ep-title'); p.category = val('ep-cat');
-    p.status = val('ep-status'); p.budget = Number(val('ep-budget'));
-    p.progress = Number(val('ep-progress')); p.desc = val('ep-desc');
-    save(PROJECTS_KEY, state.projects);
-    closeModal('edit-modal'); renderProjects();
-    toast('Project updated!', 'success');
+  document.getElementById('edit-modal-save').onclick = async () => {
+    const updated = {
+      title: val('ep-title'),
+      category: val('ep-cat'),
+      status: val('ep-status'),
+      budget: Number(val('ep-budget')),
+      progress: Number(val('ep-progress')),
+      description: val('ep-desc'),
+    };
+    try {
+      await dbUpdate('projects', id, updated);
+      Object.assign(p, { ...updated, desc: updated.description });
+      closeModal('edit-modal');
+      renderProjects();
+      toast('Project updated!', 'success');
+    } catch (err) { toast('Failed to update project: ' + err.message, 'error'); }
   };
   openModal('edit-modal');
 }
 
-function deleteProject(id) {
-  state.projects = state.projects.filter(p => p.id !== id);
-  save(PROJECTS_KEY, state.projects);
-  closeModal('confirm-modal'); renderProjects(); updateDashboard();
-  toast('Project deleted', 'info');
+async function deleteProject(id) {
+  try {
+    await dbDelete('projects', id);
+    state.projects = state.projects.filter(p => p.id !== id);
+    closeModal('confirm-modal');
+    renderProjects(); updateDashboard();
+    toast('Project deleted', 'info');
+  } catch (err) { toast('Failed to delete project: ' + err.message, 'error'); }
 }
 
-function submitProject() {
+async function submitProject() {
   const title = val('proj-title'), cat = val('proj-cat');
   if (!title || !cat) { toast('Please fill required fields', 'error'); return; }
   const id = 'PRJ-' + String(state.projects.length + 1).padStart(3, '0');
-  state.projects.push({ id, title, category: cat, status: val('proj-status'), budget: Number(val('proj-budget')) || 0, progress: Number(val('proj-progress')) || 0, desc: val('proj-desc') || '' });
-  save(PROJECTS_KEY, state.projects);
-  closeModal('new-project-modal');
-  ['proj-title', 'proj-cat', 'proj-budget', 'proj-progress', 'proj-desc'].forEach(clearField);
-  toast(`Project "${title}" created!`, 'success');
-  addNotification('New Project Created', `"${title}" added to community projects`, 'info');
-  updateDashboard();
-  if (document.getElementById('page-projects').classList.contains('active')) renderProjects();
+  const row = { id, title, category: cat, status: val('proj-status'), budget: Number(val('proj-budget')) || 0, progress: Number(val('proj-progress')) || 0, description: val('proj-desc') || '' };
+  try {
+    const inserted = await dbInsert('projects', row);
+    const local = { ...(inserted[0] || row), desc: row.description };
+    state.projects.push(local);
+    closeModal('new-project-modal');
+    ['proj-title', 'proj-cat', 'proj-budget', 'proj-progress', 'proj-desc'].forEach(clearField);
+    toast(`Project "${title}" created!`, 'success');
+    addNotification('New Project Created', `"${title}" added to community projects`, 'info');
+    updateDashboard();
+    if (document.getElementById('page-projects').classList.contains('active')) renderProjects();
+  } catch (err) { toast('Failed to create project: ' + err.message, 'error'); }
 }
 
 // ===================== ANNOUNCEMENTS =====================
-
-// NEW: sort toggle
 function setAnnSort(sort, btn) {
   state.annSort = sort;
   document.querySelectorAll('#ann-sort-bar .chip').forEach(b => { b.className = b === btn ? 'chip chip-active' : 'chip chip-inactive'; });
@@ -1076,13 +1070,7 @@ function renderAnnouncements() {
   const grid = document.getElementById('announcements-grid');
   if (!grid) return;
   let filtered = state.annFilter === 'all' ? [...state.announcements] : state.announcements.filter(a => a.category === state.annFilter);
-
-  // NEW: sort
-  filtered.sort((a, b) => {
-    if (state.annSort === 'oldest') return new Date(a.date) - new Date(b.date);
-    return new Date(b.date) - new Date(a.date); // newest first (default)
-  });
-
+  filtered.sort((a, b) => state.annSort === 'oldest' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date));
   if (!filtered.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon"><span class="material-symbols-outlined">campaign</span></div><h4>No announcements</h4><p>Publish your first announcement</p></div>`;
     return;
@@ -1131,38 +1119,43 @@ function editAnnouncement(id) {
     </div>
     <div class="form-group"><label>Content</label><textarea id="ea-content" style="min-height:100px">${a.content}</textarea></div>
   `;
-  document.getElementById('edit-modal-save').onclick = () => {
-    a.title = val('ea-title');
-    a.category = val('ea-cat');
-    a.content = val('ea-content');
-    a.date = val('ea-date') || a.date;
-    save(ANNOUNCEMENTS_KEY, state.announcements);
-    closeModal('edit-modal'); renderAnnouncements();
-    toast('Announcement updated!', 'success');
+  document.getElementById('edit-modal-save').onclick = async () => {
+    const updated = { title: val('ea-title'), category: val('ea-cat'), content: val('ea-content'), date: val('ea-date') || a.date };
+    try {
+      await dbUpdate('announcements', id, updated);
+      Object.assign(a, updated);
+      closeModal('edit-modal');
+      renderAnnouncements();
+      toast('Announcement updated!', 'success');
+    } catch (err) { toast('Failed to update: ' + err.message, 'error'); }
   };
   openModal('edit-modal');
 }
 
-function deleteAnnouncement(id) {
-  state.announcements = state.announcements.filter(a => a.id !== id);
-  save(ANNOUNCEMENTS_KEY, state.announcements);
-  closeModal('confirm-modal'); renderAnnouncements();
-  toast('Announcement deleted', 'info');
+async function deleteAnnouncement(id) {
+  try {
+    await dbDelete('announcements', id);
+    state.announcements = state.announcements.filter(a => a.id !== id);
+    closeModal('confirm-modal');
+    renderAnnouncements();
+    toast('Announcement deleted', 'info');
+  } catch (err) { toast('Failed to delete: ' + err.message, 'error'); }
 }
 
-function submitAnnouncement() {
+async function submitAnnouncement() {
   const title = val('ann-title'), content = val('ann-content');
   if (!title || !content) { toast('Please fill required fields', 'error'); return; }
   const id = 'ANN-' + String(state.announcements.length + 1).padStart(3, '0');
-  const cat = val('ann-cat') || 'general';
-  state.announcements.unshift({ id, title, category: cat, content, date: today() });
-  save(ANNOUNCEMENTS_KEY, state.announcements);
-  closeModal('new-announcement-modal');
-  ['ann-title', 'ann-cat', 'ann-content'].forEach(clearField);
-  toast('Announcement published!', 'success');
-  // FIX: was missing addNotification
-  addNotification('New Announcement', `"${title}" published`, 'info');
-  if (document.getElementById('page-announcements').classList.contains('active')) renderAnnouncements();
+  const row = { id, title, category: val('ann-cat') || 'general', content, date: today() };
+  try {
+    const inserted = await dbInsert('announcements', row);
+    state.announcements.unshift(inserted[0] || row);
+    closeModal('new-announcement-modal');
+    ['ann-title', 'ann-cat', 'ann-content'].forEach(clearField);
+    toast('Announcement published!', 'success');
+    addNotification('New Announcement', `"${title}" published`, 'info');
+    if (document.getElementById('page-announcements').classList.contains('active')) renderAnnouncements();
+  } catch (err) { toast('Failed to publish: ' + err.message, 'error'); }
 }
 
 // ===================== USERS =====================
@@ -1183,11 +1176,16 @@ function renderUsers() {
   if (!tbody) return;
   tbody.innerHTML = state.users.map(u => `
     <tr>
-      <td><div style="display:flex;align-items:center;gap:10px"><div class="av" style="background:${avatarColor(u.name)};color:white;font-size:11px">${u.initials || initials(u.name)}</div><div><div style="font-weight:700">${u.name}</div><div style="font-size:11px;color:var(--on-surface-3)">@${u.username}</div></div></div></td>
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <div class="av" style="background:${avatarColor(u.name)};color:white;font-size:11px">${u.initials || initials(u.name)}</div>
+        <div><div style="font-weight:700">${u.name}</div><div style="font-size:11px;color:var(--on-surface-3)">@${u.username}</div></div>
+      </div></td>
       <td>${u.role === 'Admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-staff">Staff</span>'}</td>
       <td style="font-size:12px;color:var(--on-surface-3)">${u.email}</td>
-      <td>${u.status === 'Active' ? '<span class="badge badge-active"><span class="badge-dot"></span>Active</span>' : '<span class="badge badge-suspended"><span class="badge-dot"></span>Suspended</span>'}</td>
-      <td style="font-size:12px;color:var(--on-surface-3)">${u.lastActive || 'N/A'}</td>
+      <td>${u.status === 'Active'
+      ? '<span class="badge badge-active"><span class="badge-dot"></span>Active</span>'
+      : '<span class="badge badge-suspended"><span class="badge-dot"></span>Suspended</span>'}</td>
+      <td style="font-size:12px;color:var(--on-surface-3)">${u.last_active || u.lastActive || 'N/A'}</td>
       <td><div class="tbl-actions">
         <button class="tbl-btn" onclick="editUser(${u.id})" title="Edit"><span class="material-symbols-outlined">edit</span></button>
         <button class="tbl-btn" onclick="toggleUserStatus(${u.id})" title="Toggle Status"><span class="material-symbols-outlined">${u.status === 'Active' ? 'block' : 'check_circle'}</span></button>
@@ -1197,13 +1195,16 @@ function renderUsers() {
   `).join('');
 }
 
-function toggleUserStatus(id) {
+async function toggleUserStatus(id) {
   const u = state.users.find(x => x.id === id);
   if (!u) return;
-  u.status = u.status === 'Active' ? 'Suspended' : 'Active';
-  save(USERS_KEY, state.users);
-  renderUsers();
-  toast(`User ${u.status === 'Active' ? 'activated' : 'suspended'}`, 'info');
+  const newStatus = u.status === 'Active' ? 'Suspended' : 'Active';
+  try {
+    await dbUpdate('users', id, { status: newStatus });
+    u.status = newStatus;
+    renderUsers();
+    toast(`User ${newStatus === 'Active' ? 'activated' : 'suspended'}`, 'info');
+  } catch (err) { toast('Failed to update user status: ' + err.message, 'error'); }
 }
 
 function editUser(id) {
@@ -1221,45 +1222,54 @@ function editUser(id) {
       </select></div>
     </div>
   `;
-  document.getElementById('edit-modal-save').onclick = () => {
-    u.name = val('eu-name'); u.username = val('eu-username');
-    u.email = val('eu-email'); u.role = val('eu-role');
-    u.initials = initials(u.name);
-    // FIX: sync session if editing yourself
-    if (state.session && state.session.id === u.id) {
-      state.session.name = u.name;
-      state.session.username = u.username;
-      state.session.email = u.email;
-      state.session.role = u.role;
-      state.session.initials = u.initials;
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
-      initApp(); // refresh topbar
-    }
-    save(USERS_KEY, state.users);
-    closeModal('edit-modal'); renderUsers();
-    toast('User updated!', 'success');
+  document.getElementById('edit-modal-save').onclick = async () => {
+    const updated = {
+      name: val('eu-name'),
+      username: val('eu-username'),
+      email: val('eu-email'),
+      role: val('eu-role'),
+      initials: initials(val('eu-name')),
+    };
+    try {
+      await dbUpdate('users', id, updated);
+      Object.assign(u, updated);
+      if (state.session && state.session.id === u.id) {
+        Object.assign(state.session, updated);
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
+        initApp();
+      }
+      closeModal('edit-modal');
+      renderUsers();
+      toast('User updated!', 'success');
+    } catch (err) { toast('Failed to update user: ' + err.message, 'error'); }
   };
   openModal('edit-modal');
 }
 
-function deleteUser(id) {
-  state.users = state.users.filter(u => u.id !== id);
-  save(USERS_KEY, state.users);
-  closeModal('confirm-modal'); renderUsers();
-  toast('User deleted', 'info');
+async function deleteUser(id) {
+  try {
+    await dbDelete('users', id);
+    state.users = state.users.filter(u => u.id !== id);
+    closeModal('confirm-modal');
+    renderUsers();
+    toast('User deleted', 'info');
+  } catch (err) { toast('Failed to delete user: ' + err.message, 'error'); }
 }
 
-function submitUser() {
+async function submitUser() {
   const name = val('usr-name'), username = val('usr-username'), email = val('usr-email'), password = val('usr-password');
   if (!name || !username || !email || !password) { toast('Please fill all fields', 'error'); return; }
   if (state.users.find(u => u.username === username)) { toast('Username already exists', 'error'); return; }
   const id = Math.max(...state.users.map(u => u.id), 0) + 1;
-  state.users.push({ id, name, username, email, password, role: val('usr-role'), status: 'Active', lastActive: 'Just now', initials: initials(name) });
-  save(USERS_KEY, state.users);
-  closeModal('add-user-modal');
-  ['usr-name', 'usr-username', 'usr-email', 'usr-password'].forEach(clearField);
-  toast(`User ${name} created!`, 'success');
-  renderUsers();
+  const row = { id, name, username, email, password, role: val('usr-role') || 'Staff', status: 'Active', last_active: 'Just now', initials: initials(name) };
+  try {
+    const inserted = await dbInsert('users', row);
+    state.users.push(inserted[0] || row);
+    closeModal('add-user-modal');
+    ['usr-name', 'usr-username', 'usr-email', 'usr-password'].forEach(clearField);
+    toast(`User ${name} created!`, 'success');
+    renderUsers();
+  } catch (err) { toast('Failed to create user: ' + err.message, 'error'); }
 }
 
 // ===================== SETTINGS =====================
@@ -1267,21 +1277,20 @@ function saveSettings() {
   toast('Settings saved successfully!', 'success');
 }
 
-function changePassword() {
+async function changePassword() {
   const cur = val('s-cur-pw'), nw = val('s-new-pw'), conf = val('s-conf-pw');
   if (!cur || !nw || !conf) { toast('Please fill all password fields', 'error'); return; }
   if (nw !== conf) { toast('New passwords do not match', 'error'); return; }
   const user = state.users.find(u => u.id === state.session?.id);
   if (user && user.password !== cur) { toast('Current password is incorrect', 'error'); return; }
-  if (user) {
+  try {
+    await dbUpdate('users', user.id, { password: nw });
     user.password = nw;
-    save(USERS_KEY, state.users);
-    // FIX: sync the session object with the new password
     state.session.password = nw;
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
-  }
-  ['s-cur-pw', 's-new-pw', 's-conf-pw'].forEach(clearField);
-  toast('Password updated successfully!', 'success');
+    ['s-cur-pw', 's-new-pw', 's-conf-pw'].forEach(clearField);
+    toast('Password updated successfully!', 'success');
+  } catch (err) { toast('Failed to update password: ' + err.message, 'error'); }
 }
 
 // ===================== EMERGENCY =====================
@@ -1295,7 +1304,6 @@ function launchEmergency() {
 }
 
 // ===================== PAGINATION =====================
-// FIX: prevent double ellipsis by tracking whether we already added one on each side
 function renderPagination(key, total, current, renderFn) {
   const el = document.getElementById(`${key}-pagination`);
   if (!el) return;
@@ -1304,20 +1312,13 @@ function renderPagination(key, total, current, renderFn) {
   const start = (current - 1) * state.perPage + 1;
   const end = Math.min(current * state.perPage, total);
   let btns = `<button class="pg-btn" onclick="changePage('${key}','${renderFn}',${current - 1})" ${current === 1 ? 'disabled style="opacity:0.4"' : ''}><span class="material-symbols-outlined">chevron_left</span></button>`;
-  let leftEllipsisDone = false;
-  let rightEllipsisDone = false;
+  let leftDone = false, rightDone = false;
   for (let i = 1; i <= pages; i++) {
     if (i === 1 || i === pages || (i >= current - 1 && i <= current + 1)) {
       btns += `<button class="pg-btn ${i === current ? 'active-pg' : ''}" onclick="changePage('${key}','${renderFn}',${i})">${i}</button>`;
-      leftEllipsisDone = false;
-      rightEllipsisDone = false;
-    } else if (i < current - 1 && !leftEllipsisDone) {
-      btns += `<button class="pg-btn" disabled style="opacity:0.4">…</button>`;
-      leftEllipsisDone = true;
-    } else if (i > current + 1 && !rightEllipsisDone) {
-      btns += `<button class="pg-btn" disabled style="opacity:0.4">…</button>`;
-      rightEllipsisDone = true;
-    }
+      leftDone = false; rightDone = false;
+    } else if (i < current - 1 && !leftDone) { btns += `<button class="pg-btn" disabled style="opacity:0.4">…</button>`; leftDone = true; }
+    else if (i > current + 1 && !rightDone) { btns += `<button class="pg-btn" disabled style="opacity:0.4">…</button>`; rightDone = true; }
   }
   btns += `<button class="pg-btn" onclick="changePage('${key}','${renderFn}',${current + 1})" ${current === pages ? 'disabled style="opacity:0.4"' : ''}><span class="material-symbols-outlined">chevron_right</span></button>`;
   el.innerHTML = `<span class="pg-info">Showing ${start}–${end} of ${total}</span><div class="pg-btns">${btns}</div>`;
@@ -1330,19 +1331,9 @@ function changePage(key, renderFn, page) {
 }
 
 // ===================== MODALS =====================
-function openModal(id) {
-  const el = document.getElementById(id);
-  if (el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-}
-
-function closeModal(id) {
-  const el = document.getElementById(id);
-  if (el) { el.style.display = 'none'; document.body.style.overflow = ''; }
-}
-
-function closeOnOverlay(e, id) {
-  if (e.target.classList.contains('modal-overlay')) closeModal(id);
-}
+function openModal(id) { const el = document.getElementById(id); if (el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; } }
+function closeModal(id) { const el = document.getElementById(id); if (el) { el.style.display = 'none'; document.body.style.overflow = ''; } }
+function closeOnOverlay(e, id) { if (e.target.classList.contains('modal-overlay')) closeModal(id); }
 
 function confirmDelete(noun, message, callback) {
   document.getElementById('confirm-title').textContent = `Delete ${noun}?`;
@@ -1392,7 +1383,7 @@ function toggleNotifications() {
   const profileMenu = document.getElementById('profile-menu');
   if (profileMenu) profileMenu.style.display = 'none';
   if (panel.style.display === 'none' || !panel.style.display) { panel.style.display = 'block'; renderNotifications(); }
-  else { panel.style.display = 'none'; }
+  else panel.style.display = 'none';
 }
 
 // ===================== PROFILE MENU =====================
@@ -1400,10 +1391,9 @@ function showProfileMenu() {
   const menu = document.getElementById('profile-menu');
   const notifPanel = document.getElementById('notif-panel');
   if (notifPanel) notifPanel.style.display = 'none';
-  menu.style.display = menu.style.display === 'none' || !menu.style.display ? 'block' : 'none';
+  menu.style.display = (menu.style.display === 'none' || !menu.style.display) ? 'block' : 'none';
 }
 function closeProfileMenu() { const m = document.getElementById('profile-menu'); if (m) m.style.display = 'none'; }
-
 function closeAllDropdowns() {
   document.getElementById('notif-panel').style.display = 'none';
   document.getElementById('profile-menu').style.display = 'none';
@@ -1419,106 +1409,50 @@ document.addEventListener('click', e => {
 });
 
 // ===================== SEARCH =====================
-// FIX: clear stale search fields before navigating to a page
 function globalSearch(query) {
   if (!query) return;
   const q = query.toLowerCase();
-  // Clear all search fields first
-  ['residents-search', 'docs-search', 'complaints-search'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  const hasRes = state.residents.some(r =>
-    `${r.fname} ${r.lname}`.toLowerCase().includes(q) || r.purok.toLowerCase().includes(q)
-  );
+  ['residents-search', 'docs-search', 'complaints-search'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const hasRes = state.residents.some(r => `${r.fname} ${r.lname}`.toLowerCase().includes(q) || r.purok.toLowerCase().includes(q));
   const hasDocs = state.documents.some(d => d.resident.toLowerCase().includes(q));
   const hasCmp = state.complaints.some(c => c.complainant.toLowerCase().includes(q));
-  if (hasRes) {
-    document.getElementById('residents-search').value = query; showPage('residents');
-  } else if (hasDocs) {
-    document.getElementById('docs-search').value = query; showPage('documents');
-  } else if (hasCmp) {
-    document.getElementById('complaints-search').value = query; showPage('complaints');
-  } else {
-    toast('No results found for "' + query + '"', 'info');
-  }
+  if (hasRes) { document.getElementById('residents-search').value = query; showPage('residents'); }
+  else if (hasDocs) { document.getElementById('docs-search').value = query; showPage('documents'); }
+  else if (hasCmp) { document.getElementById('complaints-search').value = query; showPage('complaints'); }
+  else { toast('No results found for "' + query + '"', 'info'); }
 }
 
 // ===================== EXPORT =====================
 function exportCSV(type) {
   let rows = [], headers = [];
-  if (type === 'residents') {
-    headers = ['ID', 'First Name', 'Last Name', 'Purok', 'Contact', 'Status', 'Registered'];
-    rows = state.residents.map(r => [r.id, r.fname, r.lname, r.purok, r.contact, r.status, r.registered]);
-  } else if (type === 'documents') {
-    headers = ['Reference', 'Resident', 'Type', 'Date', 'Status', 'Purpose'];
-    rows = state.documents.map(d => [d.ref, d.resident, d.type, d.date, d.status, d.purpose || '']);
-  } else if (type === 'complaints') {
-    headers = ['ID', 'Complainant', 'Category', 'Priority', 'Status', 'Date'];
-    rows = state.complaints.map(c => [c.id, c.complainant, c.category, c.priority, c.status, c.date]);
-  } else if (type === 'projects') {
-    headers = ['ID', 'Title', 'Category', 'Status', 'Budget', 'Progress'];
-    rows = state.projects.map(p => [p.id, p.title, p.category, p.status, p.budget, p.progress + '%']);
-  } else if (type === 'users') {
-    headers = ['ID', 'Name', 'Username', 'Email', 'Role', 'Status'];
-    rows = state.users.map(u => [u.id, u.name, u.username, u.email, u.role, u.status]);
-  }
+  if (type === 'residents') { headers = ['ID', 'First Name', 'Last Name', 'Purok', 'Contact', 'Status', 'Registered']; rows = state.residents.map(r => [r.id, r.fname, r.lname, r.purok, r.contact, r.status, r.registered]); }
+  else if (type === 'documents') { headers = ['Reference', 'Resident', 'Type', 'Date', 'Status', 'Purpose']; rows = state.documents.map(d => [d.ref, d.resident, d.type, d.date, d.status, d.purpose || '']); }
+  else if (type === 'complaints') { headers = ['ID', 'Complainant', 'Category', 'Priority', 'Status', 'Date']; rows = state.complaints.map(c => [c.id, c.complainant, c.category, c.priority, c.status, c.date]); }
+  else if (type === 'projects') { headers = ['ID', 'Title', 'Category', 'Status', 'Budget', 'Progress']; rows = state.projects.map(p => [p.id, p.title, p.category, p.status, p.budget, p.progress + '%']); }
+  else if (type === 'users') { headers = ['ID', 'Name', 'Username', 'Email', 'Role', 'Status']; rows = state.users.map(u => [u.id, u.name, u.username, u.email, u.role, u.status]); }
   const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
   downloadFile(csv, `payatas-${type}-${today()}.csv`, 'text/csv');
   toast(`Exported ${type} to CSV`, 'success');
 }
 
-// FIX: exportReport now generates a real CSV summary report
 function exportReport(type) {
   toast('Generating report...', 'info');
   setTimeout(() => {
+    if (type !== 'monthly' && type !== 'summary') { exportCSV(type === 'complaints' ? 'complaints' : 'documents'); return; }
     const now = new Date().toLocaleString('en-PH');
-    let csv = '';
-    if (type === 'monthly' || type === 'summary') {
-      const docs = state.documents;
-      const cmps = state.complaints;
-      const residents = state.residents;
-      const projects = state.projects;
-      const approved = docs.filter(d => d.status === 'Approved').length;
-      const pending = docs.filter(d => d.status === 'Pending').length;
-      const rejected = docs.filter(d => d.status === 'Rejected').length;
-      const resolved = cmps.filter(c => c.status === 'Resolved').length;
-      const cmpPending = cmps.filter(c => c.status === 'Pending').length;
-      const budget = projects.reduce((s, p) => s + p.budget, 0);
-      csv = [
-        [`Barangay Payatas — ${type === 'monthly' ? 'Monthly' : 'Summary'} Report`],
-        [`Generated: ${now}`],
-        [],
-        ['=== RESIDENTS ==='],
-        ['Total Registered', residents.length],
-        ['Active', residents.filter(r => r.status === 'Active').length],
-        ['Inactive', residents.filter(r => r.status === 'Inactive').length],
-        [],
-        ['=== DOCUMENTS ==='],
-        ['Total Requests', docs.length],
-        ['Approved', approved],
-        ['Pending', pending],
-        ['Rejected', rejected],
-        ['Approval Rate', docs.length ? Math.round(approved / docs.length * 100) + '%' : 'N/A'],
-        [],
-        ['=== COMPLAINTS ==='],
-        ['Total Filed', cmps.length],
-        ['Resolved', resolved],
-        ['Pending', cmpPending],
-        ['Resolution Rate', cmps.length ? Math.round(resolved / cmps.length * 100) + '%' : 'N/A'],
-        [],
-        ['=== PROJECTS ==='],
-        ['Total Projects', projects.length],
-        ['Ongoing', projects.filter(p => p.status === 'Ongoing').length],
-        ['Completed', projects.filter(p => p.status === 'Completed').length],
-        ['Planned', projects.filter(p => p.status === 'Planned').length],
-        ['Total Budget', '₱' + budget.toLocaleString()],
-      ].map(r => r.map(c => `"${String(c === undefined ? '' : c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    } else {
-      // fallback: export all complaints or docs as CSV
-      csv = exportCSV(type === 'complaints' ? 'complaints' : 'documents') || '';
-      return; // exportCSV already triggers download
-    }
+    const docs = state.documents, cmps = state.complaints, residents = state.residents, projects = state.projects;
+    const approved = docs.filter(d => d.status === 'Approved').length;
+    const pending = docs.filter(d => d.status === 'Pending').length;
+    const rejected = docs.filter(d => d.status === 'Rejected').length;
+    const resolved = cmps.filter(c => c.status === 'Resolved').length;
+    const budget = projects.reduce((s, p) => s + p.budget, 0);
+    const csv = [
+      [`Barangay Payatas — ${type === 'monthly' ? 'Monthly' : 'Summary'} Report`], [`Generated: ${now}`], [],
+      ['=== RESIDENTS ==='], ['Total Registered', residents.length], ['Active', residents.filter(r => r.status === 'Active').length], ['Inactive', residents.filter(r => r.status === 'Inactive').length], [],
+      ['=== DOCUMENTS ==='], ['Total Requests', docs.length], ['Approved', approved], ['Pending', pending], ['Rejected', rejected], ['Approval Rate', docs.length ? Math.round(approved / docs.length * 100) + '%' : 'N/A'], [],
+      ['=== COMPLAINTS ==='], ['Total Filed', cmps.length], ['Resolved', resolved], ['Pending', cmps.length - resolved], ['Resolution Rate', cmps.length ? Math.round(resolved / cmps.length * 100) + '%' : 'N/A'], [],
+      ['=== PROJECTS ==='], ['Total Projects', projects.length], ['Ongoing', projects.filter(p => p.status === 'Ongoing').length], ['Completed', projects.filter(p => p.status === 'Completed').length], ['Planned', projects.filter(p => p.status === 'Planned').length], ['Total Budget', '₱' + budget.toLocaleString()],
+    ].map(r => r.map(c => `"${String(c === undefined ? '' : c).replace(/"/g, '""')}"`).join(',')).join('\n');
     downloadFile(csv, `payatas-report-${type}-${today()}.csv`, 'text/csv');
     toast('Report downloaded!', 'success');
   }, 800);
@@ -1548,21 +1482,14 @@ function val(id) { const el = document.getElementById(id); return el ? el.value.
 function setVal(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
 function clearField(id) { const el = document.getElementById(id); if (el) el.value = ''; }
 function today() { return new Date().toISOString().split('T')[0]; }
-function formatDate(d) { if (!d) return 'N/A'; const dt = new Date(d); return dt.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }); }
+function formatDate(d) { if (!d) return 'N/A'; return new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }); }
+function initials(name) { if (!name) return '??'; return name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase(); }
 
-function initials(name) {
-  if (!name) return '??';
-  return name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
-}
-
-// FIX: avatarColor — hash can only return values 0..COLORS.length-1 safely
 const COLORS = ['#1a56db', '#16a34a', '#dc2626', '#d97706', '#7c3aed', '#0891b2', '#db2777'];
 function avatarColor(name) {
   if (!name) return COLORS[0];
   let h = 0;
-  for (let i = 0; i < name.length; i++) {
-    h = (h * 31 + name.charCodeAt(i)) >>> 0; // keep unsigned 32-bit
-  }
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
   return COLORS[h % COLORS.length];
 }
 
@@ -1578,15 +1505,24 @@ function priorityBadge(priority) {
 }
 
 // ===================== BOOTSTRAP =====================
-seedData();
-loadState();
-
-if (state.session) {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'flex';
-  initApp();
-  startSessionTimeout();
-}
+// NO seedData() — all data comes from Supabase
+(async () => {
+  state.session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+  if (state.session) {
+    try {
+      await sbLoadAll();
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'flex';
+      initApp();
+      startSessionTimeout();
+    } catch (err) {
+      // Supabase down — clear session and show login
+      sessionStorage.removeItem(SESSION_KEY);
+      state.session = null;
+      toast('Could not connect to database. Please log in again.', 'error');
+    }
+  }
+})();
 
 // ===================== DOCUMENT DETAIL PANEL =====================
 let _panelDocId = null;
@@ -1620,7 +1556,11 @@ function buildTimeline(status) {
   const steps = [
     { label: 'Request Submitted', desc: 'Resident filed the document request', icon: 'upload_file' },
     { label: 'Under Review', desc: 'Staff is verifying the details', icon: 'manage_search' },
-    { label: status === 'Rejected' ? 'Request Rejected' : 'Request Approved', desc: status === 'Rejected' ? 'Document request was declined' : 'Document has been approved', icon: status === 'Rejected' ? 'cancel' : 'check_circle' },
+    {
+      label: status === 'Rejected' ? 'Request Rejected' : 'Request Approved',
+      desc: status === 'Rejected' ? 'Document request was declined' : 'Document has been approved',
+      icon: status === 'Rejected' ? 'cancel' : 'check_circle'
+    },
     { label: 'Ready for Release', desc: 'Document is ready for pickup', icon: 'done_all' },
   ];
   const activeIdx = status === 'Approved' ? 3 : status === 'Rejected' ? 2 : 1;
@@ -1632,29 +1572,26 @@ function buildTimeline(status) {
   }).join('');
 }
 
-function closeDocPanel(e) {
-  if (e && !e.target.classList.contains('doc-panel-overlay')) return;
-  closeDocPanelDirect();
-}
+function closeDocPanel(e) { if (e && !e.target.classList.contains('doc-panel-overlay')) return; closeDocPanelDirect(); }
+function closeDocPanelDirect() { document.getElementById('doc-panel-overlay').classList.remove('open'); document.body.style.overflow = ''; _panelDocId = null; }
 
-function closeDocPanelDirect() {
-  document.getElementById('doc-panel-overlay').classList.remove('open');
-  document.body.style.overflow = '';
-  _panelDocId = null;
-}
-
-function saveDocPanel() {
+async function saveDocPanel() {
   const d = state.documents.find(x => x.id === _panelDocId);
   if (!d) return;
-  d.resident = document.getElementById('dp-edit-name').value.trim() || d.resident;
-  d.contact = document.getElementById('dp-edit-contact').value.trim();
-  d.type = document.getElementById('dp-edit-type').value;
-  d.purpose = document.getElementById('dp-edit-purpose').value.trim();
-  d.status = document.getElementById('dp-edit-status').value;
-  save(DOCUMENTS_KEY, state.documents);
-  openDocPanel(_panelDocId);
-  renderDocuments(); renderDashboardDocs(); updateBadges(); updateDashboard();
-  toast('Document updated successfully!', 'success');
+  const updated = {
+    resident: document.getElementById('dp-edit-name').value.trim() || d.resident,
+    contact: document.getElementById('dp-edit-contact').value.trim(),
+    type: document.getElementById('dp-edit-type').value,
+    purpose: document.getElementById('dp-edit-purpose').value.trim(),
+    status: document.getElementById('dp-edit-status').value,
+  };
+  try {
+    await dbUpdate('documents', _panelDocId, updated);
+    Object.assign(d, updated);
+    openDocPanel(_panelDocId);
+    renderDocuments(); renderDashboardDocs(); updateBadges(); updateDashboard();
+    toast('Document updated successfully!', 'success');
+  } catch (err) { toast('Failed to save document: ' + err.message, 'error'); }
 }
 
 function printDocument() {
@@ -1666,14 +1603,12 @@ function printDocument() {
     <style>
       body{font-family:Georgia,serif;margin:0;padding:40px;color:#111}
       .header{text-align:center;border-bottom:3px double #1a56db;padding-bottom:20px;margin-bottom:24px}
-      .header h1{font-size:22px;color:#1a56db;margin:0 0 4px}
-      .header p{font-size:12px;color:#555;margin:0}
+      .header h1{font-size:22px;color:#1a56db;margin:0 0 4px}.header p{font-size:12px;color:#555;margin:0}
       .doc-title{text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;letter-spacing:2px;margin:20px 0 28px}
       .field{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px}
       .field .lbl{width:160px;font-weight:bold;flex-shrink:0;color:#444}
       .footer{margin-top:60px;display:flex;justify-content:space-between;font-size:12px}
-      .sig{text-align:center}
-      .sig-line{width:180px;border-top:1px solid #111;margin:40px auto 4px}
+      .sig{text-align:center}.sig-line{width:180px;border-top:1px solid #111;margin:40px auto 4px}
       .watermark{text-align:center;margin-top:32px;color:#d1d5db;font-size:11px;letter-spacing:1px}
       @media print{body{padding:20px}}
     </style>
@@ -1690,10 +1625,9 @@ function printDocument() {
       <div class="sig"><div class="sig-line"></div><div>Barangay Captain</div></div>
       <div class="sig"><div class="sig-line"></div><div>Secretary</div></div>
     </div>
-    <div class="watermark">OFFICIAL DOCUMENT — BARANGAY PAYATAS · PAYATAS LEDGER v2.5.0</div>
+    <div class="watermark">OFFICIAL DOCUMENT — BARANGAY PAYATAS · PAYATAS LEDGER v3.0.0</div>
   </body></html>`);
-  w.document.close();
-  w.focus();
+  w.document.close(); w.focus();
   setTimeout(() => w.print(), 500);
 }
 
@@ -1710,12 +1644,14 @@ function openResidentPanel(id) {
   document.getElementById('rp-name').textContent = fullName;
   document.getElementById('rp-id').textContent = r.id;
   document.getElementById('rp-badges').innerHTML = `
-    ${r.status === 'Active' ? '<span class="badge badge-active"><span class="badge-dot"></span>Active</span>' : '<span class="badge badge-inactive"><span class="badge-dot"></span>Inactive</span>'}
+    ${r.status === 'Active'
+      ? '<span class="badge badge-active"><span class="badge-dot"></span>Active</span>'
+      : '<span class="badge badge-inactive"><span class="badge-dot"></span>Inactive</span>'}
     <span class="badge" style="background:var(--surface);color:var(--on-surface-2)">${r.purok}</span>
     <span class="badge" style="background:var(--surface);color:var(--on-surface-2)">Since ${r.registered}</span>
   `;
   const age = r.dob && r.dob !== 'N/A' ? Math.floor((new Date() - new Date(r.dob)) / 31557600000) + ' yrs' : 'N/A';
-  const fields = [
+  document.getElementById('rp-info-grid').innerHTML = [
     { label: 'First Name', val: r.fname },
     { label: 'Last Name', val: r.lname },
     { label: 'Date of Birth', val: r.dob !== 'N/A' ? formatDate(r.dob) : 'N/A' },
@@ -1726,76 +1662,38 @@ function openResidentPanel(id) {
     { label: 'Year Registered', val: r.registered },
     { label: 'Address', val: r.address, full: true },
     { label: 'Notes', val: r.notes || '—', full: true },
-  ];
-  document.getElementById('rp-info-grid').innerHTML = fields.map(f => `
+  ].map(f => `
     <div style="${f.full ? 'grid-column:1/-1;' : ''}background:var(--surface);border-radius:8px;padding:10px 12px">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--on-surface-3);margin-bottom:3px">${f.label}</div>
       <div style="font-size:13px;font-weight:600;color:var(--on-surface-1)">${f.val}</div>
     </div>
   `).join('');
-  const docs = state.documents.filter(d =>
-    d.resident.toLowerCase().includes(r.fname.toLowerCase()) ||
-    d.resident.toLowerCase().includes(r.lname.toLowerCase())
-  );
+  const docs = state.documents.filter(d => d.resident.toLowerCase().includes(r.fname.toLowerCase()) || d.resident.toLowerCase().includes(r.lname.toLowerCase()));
   document.getElementById('rp-doc-history').innerHTML = docs.length
-    ? docs.map(d => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:12px">
-          <div><div style="font-weight:600">${d.type}</div><div style="color:var(--on-surface-3);font-family:'DM Mono',monospace;font-size:10px">${d.ref} · ${formatDate(d.date)}</div></div>
-          ${statusBadge(d.status)}
-        </div>`).join('')
+    ? docs.map(d => `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:12px"><div><div style="font-weight:600">${d.type}</div><div style="color:var(--on-surface-3);font-family:'DM Mono',monospace;font-size:10px">${d.ref} · ${formatDate(d.date)}</div></div>${statusBadge(d.status)}</div>`).join('')
     : '<div style="font-size:13px;color:var(--on-surface-3);padding:10px 0">No document requests found.</div>';
-  const cmps = state.complaints.filter(c =>
-    c.complainant.toLowerCase().includes(r.fname.toLowerCase()) ||
-    c.complainant.toLowerCase().includes(r.lname.toLowerCase())
-  );
+  const cmps = state.complaints.filter(c => c.complainant.toLowerCase().includes(r.fname.toLowerCase()) || c.complainant.toLowerCase().includes(r.lname.toLowerCase()));
   document.getElementById('rp-complaints').innerHTML = cmps.length
-    ? cmps.map(c => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:12px">
-          <div><div style="font-weight:600">${c.category} — ${c.id}</div><div style="color:var(--on-surface-3)">${c.desc.slice(0, 60)}...</div></div>
-          ${priorityBadge(c.priority)}
-        </div>`).join('')
+    ? cmps.map(c => `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:12px"><div><div style="font-weight:600">${c.category} — ${c.id}</div><div style="color:var(--on-surface-3)">${c.desc.slice(0, 60)}...</div></div>${priorityBadge(c.priority)}</div>`).join('')
     : '<div style="font-size:13px;color:var(--on-surface-3);padding:10px 0">No linked complaints found.</div>';
   document.getElementById('resident-panel-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
-// FIX: was checking 'doc-panel-overlay' instead of 'resident-panel-overlay'
-function closeResidentPanel(e) {
-  if (e && !e.target.classList.contains('resident-panel-overlay')) return;
-  closeResidentPanelDirect();
-}
-
-function closeResidentPanelDirect() {
-  document.getElementById('resident-panel-overlay').classList.remove('open');
-  document.body.style.overflow = '';
-  _panelResidentId = null;
-}
-
-function editResidentFromPanel() {
-  const id = _panelResidentId;
-  closeResidentPanelDirect();
-  editResident(id);
-}
-
-// NEW: print from panel
-function printResidentFromPanel() {
-  printResidentProfile(_panelResidentId);
-}
+function closeResidentPanel(e) { if (e && !e.target.classList.contains('resident-panel-overlay')) return; closeResidentPanelDirect(); }
+function closeResidentPanelDirect() { document.getElementById('resident-panel-overlay').classList.remove('open'); document.body.style.overflow = ''; _panelResidentId = null; }
+function editResidentFromPanel() { const id = _panelResidentId; closeResidentPanelDirect(); editResident(id); }
+function printResidentFromPanel() { printResidentProfile(_panelResidentId); }
 
 // ===================== REPORTS =====================
 function renderReports() {
-  const docs = state.documents;
-  const cmps = state.complaints;
-  const residents = state.residents;
-  const projects = state.projects;
-
+  const docs = state.documents, cmps = state.complaints, residents = state.residents, projects = state.projects;
   const approved = docs.filter(d => d.status === 'Approved').length;
   const pending = docs.filter(d => d.status === 'Pending').length;
   const resolved = cmps.filter(c => c.status === 'Resolved').length;
   const resRate = cmps.length ? Math.round(resolved / cmps.length * 100) : 0;
   const approvalRate = docs.length ? Math.round(approved / docs.length * 100) : 0;
   const ongoing = projects.filter(p => p.status === 'Ongoing').length;
-
   const statsEl = document.getElementById('reports-stats');
   if (statsEl) {
     statsEl.innerHTML = `
@@ -1805,7 +1703,6 @@ function renderReports() {
       <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:#fffbeb"><span class="material-symbols-outlined" style="color:#d97706">account_tree</span></div></div><div class="stat-label">Ongoing Projects</div><div class="stat-value">${ongoing}</div></div>
     `;
   }
-
   function barChart(containerId, data, colorMap) {
     const max = Math.max(...data.map(d => d.val), 1);
     const el = document.getElementById(containerId);
@@ -1817,20 +1714,16 @@ function renderReports() {
       </div>
     `).join('');
   }
-
   barChart('chart-doc-types',
     ['Barangay Clearance', 'Certificate of Indigency', 'Business Permit', 'Residency Certificate'].map(t => ({ label: t, val: docs.filter(d => d.type === t).length })),
     { 'Barangay Clearance': '#1a56db', 'Certificate of Indigency': '#16a34a', 'Business Permit': '#d97706', 'Residency Certificate': '#7c3aed' }
   );
-
-  const cmpCats = [...new Set(cmps.map(c => c.category))];
   barChart('chart-cmp-cats',
-    cmpCats.map(cat => ({ label: cat, val: cmps.filter(c => c.category === cat).length })),
+    [...new Set(cmps.map(c => c.category))].map(cat => ({ label: cat, val: cmps.filter(c => c.category === cat).length })),
     { Sanitation: '#dc2626', Noise: '#d97706', 'Public Safety': '#1a56db', Environmental: '#16a34a', Infrastructure: '#7c3aed' }
   );
-
-  const now = new Date();
-  const getAge = dob => dob && dob !== 'N/A' ? Math.floor((now - new Date(dob)) / 31557600000) : null;
+  const now2 = new Date();
+  const getAge = dob => dob && dob !== 'N/A' ? Math.floor((now2 - new Date(dob)) / 31557600000) : null;
   const ages = residents.map(r => getAge(r.dob)).filter(a => a !== null);
   barChart('chart-demographics', [
     { label: 'Youth (0–17)', val: ages.filter(a => a < 18).length },
@@ -1838,13 +1731,11 @@ function renderReports() {
     { label: 'Seniors (60+)', val: ages.filter(a => a >= 60).length },
     { label: 'Unknown', val: residents.length - ages.length },
   ], { 'Youth (0–17)': '#1a56db', 'Adults (18–59)': '#16a34a', 'Seniors (60+)': '#7c3aed', 'Unknown': '#9ca3af' });
-
   barChart('chart-projects', [
     { label: 'Ongoing', val: projects.filter(p => p.status === 'Ongoing').length },
     { label: 'Completed', val: projects.filter(p => p.status === 'Completed').length },
     { label: 'Planned', val: projects.filter(p => p.status === 'Planned').length },
   ], { Ongoing: '#1a56db', Completed: '#16a34a', Planned: '#7c3aed' });
-
   const totalBudget = projects.reduce((s, p) => s + p.budget, 0);
   const summaryEl = document.getElementById('reports-summary-table');
   if (summaryEl) {
@@ -1865,7 +1756,7 @@ function renderReports() {
   }
 }
 
-// ===================== RESPONSIVE HANDLERS =====================
+// ===================== RESPONSIVE =====================
 window.addEventListener('resize', () => {
   if (window.innerWidth > 768) {
     const sidebar = document.getElementById('sidebar');
@@ -1874,28 +1765,3 @@ window.addEventListener('resize', () => {
     if (overlay) overlay.classList.remove('open');
   }
 });
-
-async function sbAuthenticateUser(username, password) {
-  checkClient();
-
-  const { data, error } = await supabaseClient
-    .from('users')
-    .select('*')
-    .or(`username.eq.${username},email.eq.${username}`)
-    .eq('password', password)
-    .single();
-
-  if (error || !data) {
-    throw new Error('Invalid username or password.');
-  }
-
-  // Return shape that matches what app.js expects:
-  // authData.user  → the user object
-  // authData.session.access_token → a token string
-  return {
-    user: data,
-    session: {
-      access_token: 'local-' + data.id + '-' + Date.now()
-    }
-  };
-}
