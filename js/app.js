@@ -613,12 +613,10 @@ async function bulkApproveDocuments() {
     const d = state.documents.find(x => x.id === id);
     if (d && d.status === 'Pending') {
       try {
-        await dbUpdate('documents', id, { 
-          status: 'Approved',
-          remarks: 'Your document request has been approved. You can now claim your copy at the Barangay Hall.'
-        });
+        const remarks = 'please proceed to the main office claim it the clearance';
+        await dbUpdate('documents', id, { status: 'Approved', remarks });
         d.status = 'Approved';
-        d.remarks = 'Your document request has been approved. You can now claim your copy at the Barangay Hall.';
+        d.remarks = remarks;
         addNotification('Document Approved', `${d.type} for ${d.resident} approved`, 'success');
       } catch (err) { console.warn('Bulk approve error:', err.message); }
     }
@@ -634,12 +632,10 @@ async function bulkRejectDocuments() {
     const d = state.documents.find(x => x.id === id);
     if (d && d.status === 'Pending') {
       try {
-        await dbUpdate('documents', id, { 
-          status: 'Rejected',
-          remarks: 'Your request was not approved. Please visit the Barangay Hall for more information.'
-        });
+        const remarks = 'please proceed to the main office for assist for concerns.';
+        await dbUpdate('documents', id, { status: 'Rejected', remarks });
         d.status = 'Rejected';
-        d.remarks = 'Your request was not approved. Please visit the Barangay Hall for more information.';
+        d.remarks = remarks;
         addNotification('Document Rejected', `${d.type} for ${d.resident} rejected`, 'warning');
       } catch (err) { console.warn('Bulk reject error:', err.message); }
     }
@@ -670,7 +666,7 @@ async function approveDoc(id) {
   const d = state.documents.find(x => x.id === id);
   if (!d) return;
   try {
-    const remarks = 'Your document request has been approved. You can now claim your copy at the Barangay Hall.';
+    const remarks = 'please proceed to the main office claim it the clearance';
     await dbUpdate('documents', id, { status: 'Approved', remarks });
     d.status = 'Approved';
     d.remarks = remarks;
@@ -684,7 +680,7 @@ async function rejectDoc(id) {
   const d = state.documents.find(x => x.id === id);
   if (!d) return;
   try {
-    const remarks = 'Your request was not approved. Please visit the Barangay Hall for more information.';
+    const remarks = 'please proceed to the main office for assist for concerns.';
     await dbUpdate('documents', id, { status: 'Rejected', remarks });
     d.status = 'Rejected';
     d.remarks = remarks;

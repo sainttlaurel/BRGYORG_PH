@@ -26,7 +26,7 @@ function toggleMobileMenu() {
   const navWrapper = document.getElementById('nav-links-wrapper');
   const overlay = document.getElementById('mobile-menu-overlay');
   const body = document.body;
-  
+
   if (!navWrapper || !overlay) return;
 
   if (navWrapper.classList.contains('active')) {
@@ -227,12 +227,13 @@ async function doVerify(queryArg) {
             <p style="color:var(--text-muted); margin:4px 0 0; font-size:13px;">REF: ${d.ref || d.id}</p>
           </div>
         </div>
-
+        <div style="display:grid; gap:12px; margin-bottom:24px;">
           <div style="display:flex; justify-content:space-between;"><span>Resident Name:</span><strong>${d.resident || d.resident_name}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Document Type:</span><strong>${d.type || d.document_type}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Date Filed:</span><strong>${new Date(d.date).toLocaleDateString()}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Current Status:</span><span style="font-weight:800; color:${color}">${status}</span></div>
         </div>
+        ${d.remarks ? `<div style="border-top:1px solid var(--border); padding-top:16px;"><p style="margin:0 0 4px; font-size:12px; color:var(--text-muted);">Remarks:</p><p style="margin:0; font-size:14px;">${d.remarks}</p></div>` : ''}
       </div>
     `;
   } catch (err) {
