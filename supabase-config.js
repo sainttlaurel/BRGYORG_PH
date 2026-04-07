@@ -27,11 +27,10 @@ try {
     supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 
     // Test connection
-    supabaseClient.from('users').select('count').limit(1)
+    supabaseClient.from('users').select('*').limit(1)
       .then(({ error }) => {
         if (error) {
-          console.warn('Supabase: Connection failed, switching to offline mode:', error.message);
-          supabaseClient = null;
+          console.warn('Supabase connected but query failed:', error.message);
         } else {
           console.log('✅ Supabase connected successfully!');
         }
@@ -53,11 +52,11 @@ try {
 // ============================================================
 
 const DB_TABLES = {
-  users:         'users',
-  residents:     'residents',
-  documents:     'documents',
-  complaints:    'complaints',
-  projects:      'projects',
+  users: 'users',
+  residents: 'residents',
+  documents: 'documents',
+  complaints: 'complaints',
+  projects: 'projects',
   announcements: 'announcements',
 };
 
@@ -107,27 +106,27 @@ async function sbGetUsers() {
 
 async function sbCreateUser(data) {
   return await dbInsert(DB_TABLES.users, {
-    name:        data.name,
-    username:    data.username,
-    password:    data.password,
-    role:        data.role        || 'Staff',
-    email:       data.email       || '',
-    status:      data.status      || 'Active',
-    last_active: data.lastActive  || 'Just now',
-    initials:    data.initials    || '',
+    name: data.name,
+    username: data.username,
+    password: data.password,
+    role: data.role || 'Staff',
+    email: data.email || '',
+    status: data.status || 'Active',
+    last_active: data.lastActive || 'Just now',
+    initials: data.initials || '',
   });
 }
 
 async function sbUpdateUser(id, data) {
   return await dbUpdate(DB_TABLES.users, id, {
-    name:        data.name,
-    username:    data.username,
-    password:    data.password,
-    role:        data.role,
-    email:       data.email,
-    status:      data.status,
+    name: data.name,
+    username: data.username,
+    password: data.password,
+    role: data.role,
+    email: data.email,
+    status: data.status,
     last_active: data.lastActive,
-    initials:    data.initials,
+    initials: data.initials,
   });
 }
 
@@ -142,7 +141,7 @@ async function sbAuthenticateUser(email, password) {
     password: password
   });
   if (error) throw error;
-  
+
   const { data: profile } = await supabaseClient
     .from(DB_TABLES.users)
     .select('*')
@@ -164,31 +163,31 @@ async function sbGetResidents() {
 
 async function sbCreateResident(data) {
   return await dbInsert(DB_TABLES.residents, {
-    id:         data.id,
-    fname:      data.fname,
-    lname:      data.lname,
-    purok:      data.purok,
-    contact:    data.contact    || 'N/A',
-    status:     data.status     || 'Active',
+    id: data.id,
+    fname: data.fname,
+    lname: data.lname,
+    purok: data.purok,
+    contact: data.contact || 'N/A',
+    status: data.status || 'Active',
     registered: data.registered || new Date().getFullYear().toString(),
-    address:    data.address    || 'Barangay Payatas',
-    gender:     data.gender     || 'N/A',
-    dob:        data.dob        || 'N/A',
-    notes:      data.notes      || '',
+    address: data.address || 'Barangay Payatas',
+    gender: data.gender || 'N/A',
+    dob: data.dob || 'N/A',
+    notes: data.notes || '',
   });
 }
 
 async function sbUpdateResident(id, data) {
   return await dbUpdate(DB_TABLES.residents, id, {
-    fname:   data.fname,
-    lname:   data.lname,
-    purok:   data.purok,
+    fname: data.fname,
+    lname: data.lname,
+    purok: data.purok,
     contact: data.contact,
-    status:  data.status,
+    status: data.status,
     address: data.address,
-    gender:  data.gender,
-    dob:     data.dob,
-    notes:   data.notes,
+    gender: data.gender,
+    dob: data.dob,
+    notes: data.notes,
   });
 }
 
@@ -208,26 +207,26 @@ async function sbGetDocuments() {
 
 async function sbCreateDocument(data) {
   return await dbInsert(DB_TABLES.documents, {
-    id:       data.id,
+    id: data.id,
     resident: data.resident,
-    type:     data.type,
-    date:     data.date,
-    status:   data.status   || 'Pending',
-    ref:      data.ref,
-    purpose:  data.purpose  || '',
-    contact:  data.contact  || '',
+    type: data.type,
+    date: data.date,
+    status: data.status || 'Pending',
+    ref: data.ref,
+    purpose: data.purpose || '',
+    contact: data.contact || '',
   });
 }
 
 async function sbUpdateDocument(id, data) {
   return await dbUpdate(DB_TABLES.documents, id, {
     resident: data.resident,
-    type:     data.type,
-    date:     data.date,
-    status:   data.status,
-    ref:      data.ref,
-    purpose:  data.purpose,
-    contact:  data.contact,
+    type: data.type,
+    date: data.date,
+    status: data.status,
+    ref: data.ref,
+    purpose: data.purpose,
+    contact: data.contact,
   });
 }
 
@@ -247,24 +246,24 @@ async function sbGetComplaints() {
 
 async function sbCreateComplaint(data) {
   return await dbInsert(DB_TABLES.complaints, {
-    id:          data.id,
+    id: data.id,
     complainant: data.complainant,
-    category:    data.category,
-    priority:    data.priority || 'Medium',
-    status:      data.status   || 'Pending',
-    date:        data.date,
-    desc:        data.desc     || '',
+    category: data.category,
+    priority: data.priority || 'Medium',
+    status: data.status || 'Pending',
+    date: data.date,
+    desc: data.desc || '',
   });
 }
 
 async function sbUpdateComplaint(id, data) {
   return await dbUpdate(DB_TABLES.complaints, id, {
     complainant: data.complainant,
-    category:    data.category,
-    priority:    data.priority,
-    status:      data.status,
-    date:        data.date,
-    desc:        data.desc,
+    category: data.category,
+    priority: data.priority,
+    status: data.status,
+    date: data.date,
+    desc: data.desc,
   });
 }
 
@@ -284,24 +283,24 @@ async function sbGetProjects() {
 
 async function sbCreateProject(data) {
   return await dbInsert(DB_TABLES.projects, {
-    id:       data.id,
-    title:    data.title,
+    id: data.id,
+    title: data.title,
     category: data.category,
-    status:   data.status   || 'Planned',
-    budget:   data.budget   || 0,
+    status: data.status || 'Planned',
+    budget: data.budget || 0,
     progress: data.progress || 0,
-    desc:     data.desc     || '',
+    desc: data.desc || '',
   });
 }
 
 async function sbUpdateProject(id, data) {
   return await dbUpdate(DB_TABLES.projects, id, {
-    title:    data.title,
+    title: data.title,
     category: data.category,
-    status:   data.status,
-    budget:   data.budget,
+    status: data.status,
+    budget: data.budget,
     progress: data.progress,
-    desc:     data.desc,
+    desc: data.desc,
   });
 }
 
@@ -320,20 +319,20 @@ async function sbGetAnnouncements() {
 
 async function sbCreateAnnouncement(data) {
   return await dbInsert(DB_TABLES.announcements, {
-    id:       data.id,
-    title:    data.title,
+    id: data.id,
+    title: data.title,
     category: data.category || 'general',
-    content:  data.content  || '',
-    date:     data.date,
+    content: data.content || '',
+    date: data.date,
   });
 }
 
 async function sbUpdateAnnouncement(id, data) {
   return await dbUpdate(DB_TABLES.announcements, id, {
-    title:    data.title,
+    title: data.title,
     category: data.category,
-    content:  data.content,
-    date:     data.date,
+    content: data.content,
+    date: data.date,
   });
 }
 
