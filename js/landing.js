@@ -225,21 +225,30 @@ async function doResidentVerify() {
     const border = isActive ? 'var(--primary)' : '#f59e0b';
 
     resEl.innerHTML = `
-      <div style="background:var(--background); border-radius:24px; padding:32px; border: 2px solid ${border}">
-        <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px;">
-          <div style="width:56px; height:56px; background:${color}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
-            <span class="material-symbols-outlined" style="font-size:32px;">${isActive ? 'person_check' : 'person_search'}</span>
+      <div class="modal-result-card" style="border-left: 4px solid ${border}">
+        <div class="modal-result-header">
+          <div style="width:48px; height:48px; background:${color}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+            <span class="material-symbols-outlined">${isActive ? 'person_check' : 'person_search'}</span>
           </div>
           <div>
-            <h4 style="margin:0; font-size:20px; font-weight:900; color:${color}">${isActive ? 'Verified Resident' : 'Unverified Status'}</h4>
-            <p style="color:var(--text-muted); margin:4px 0 0; font-size:13px;">ID: ${r.id}</p>
+            <h4 style="margin:0; font-size:18px; font-weight:900; color:${color}">${isActive ? 'Verified Resident' : 'Special Status'}</h4>
+            <p style="color:var(--text-muted); margin:2px 0 0; font-size:12px; font-family:'DM Mono',monospace;">ID: ${r.id}</p>
           </div>
         </div>
 
-        <div style="display:grid; gap:12px; margin-bottom:24px;">
-          <div style="display:flex; justify-content:space-between;"><span>Full Name:</span><strong>${r.fname} ${r.lname}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Purok:</span><strong>${r.purok}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Current Status:</span><span style="font-weight:800; color:${color}">${status}</span></div>
+        <div style="display:grid; gap:16px;">
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:8px;">
+            <span style="color:var(--text-muted); font-size:13px;">Full Legal Name</span>
+            <span style="font-weight:700;">${r.fname} ${r.lname}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:8px;">
+            <span style="color:var(--text-muted); font-size:13px;">Assigned Purok</span>
+            <span style="font-weight:700;">${r.purok}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted); font-size:13px;">Current Standing</span>
+            <span style="font-weight:900; color:${color}">${status}</span>
+          </div>
         </div>
       </div>
     `;
@@ -254,12 +263,12 @@ async function doVerify(queryArg) {
   // If no arg, check the main strip input OR the modal input
   const inputMain = document.getElementById('strip-verify-input');
   const inputModal = document.getElementById('verify-query');
-  
+
   const query = queryArg || (inputModal ? inputModal.value.trim() : '') || (inputMain ? inputMain.value.trim() : '');
   if (!query) return;
 
   if (window.openModal) window.openModal('verify');
-  
+
   // Also sync the modal input field if it's not the source
   if (inputModal && inputModal.value.trim().toUpperCase() !== query.toUpperCase()) {
     inputModal.value = query;
@@ -299,43 +308,53 @@ async function doVerify(queryArg) {
 
     let icon = 'pending';
     let color = 'var(--accent)';
-    let title = 'Under Review';
     let border = 'var(--border)';
 
     if (isApproved) {
       icon = 'verified';
-      color = 'var(--primary)';
-      title = 'Authentic Record';
-      border = 'var(--primary)';
+      color = '#10b981';
+      border = '#10b981';
     } else if (isRejected) {
       icon = 'cancel';
-      color = '#e11d48';
-      title = 'Request Rejected';
-      border = '#e11d48';
+      color = '#ef4444';
+      border = '#ef4444';
     }
 
     resEl.innerHTML = `
-      <div style="background:var(--background); border-radius:24px; padding:32px; border: 2px solid ${border}">
-        <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px;">
-          <div style="width:56px; height:56px; background:${color}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
-            <span class="material-symbols-outlined" style="font-size:32px;">${icon}</span>
+      <div class="modal-result-card" style="border-left: 4px solid ${border}">
+        <div class="modal-result-header">
+          <div style="width:48px; height:48px; background:${color}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+            <span class="material-symbols-outlined">${icon}</span>
           </div>
           <div>
-            <h4 style="margin:0; font-size:20px; font-weight:900; color:${color}">${title}</h4>
-            <p style="color:var(--text-muted); margin:4px 0 0; font-size:13px;">REF: ${d.ref || d.id}</p>
+            <h4 style="margin:0; font-size:18px; font-weight:900; color:${color}">${isApproved ? 'Authentic Record' : isRejected ? 'Invalid / Cancelled' : 'Record Pending'}</h4>
+            <p style="color:var(--text-muted); margin:2px 0 0; font-size:12px; font-family:'DM Mono',monospace;">REF: ${d.ref || d.id}</p>
           </div>
         </div>
-        <div style="display:grid; gap:12px; margin-bottom:24px;">
-          <div style="display:flex; justify-content:space-between;"><span>Resident Name:</span><strong>${d.resident || d.resident_name}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Document Type:</span><strong>${d.type || d.document_type}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Date Filed:</span><strong>${new Date(d.date).toLocaleDateString()}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Current Status:</span><span style="font-weight:800; color:${color}">${status}</span></div>
+
+        <div style="display:grid; gap:16px;">
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:8px;">
+            <span style="color:var(--text-muted); font-size:13px;">Document Type</span>
+            <span style="font-weight:700;">${d.type || d.document_type}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:8px;">
+            <span style="color:var(--text-muted); font-size:13px;">Issued To</span>
+            <span style="font-weight:700;">${d.resident || d.resident_name}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted); font-size:13px;">Status</span>
+            <span style="font-weight:900; color:${color}">${status.toUpperCase()}</span>
+          </div>
+          ${d.remarks ? `
+          <div style="background:var(--background); padding:12px; border-radius:12px; font-size:13px; font-style:italic; border-top: 1px dashed var(--border);">
+            " ${d.remarks} "
+          </div>` : ''}
         </div>
-        ${d.remarks ? `<div style="border-top:1px solid var(--border); padding-top:16px;"><p style="margin:0 0 4px; font-size:12px; color:var(--text-muted);">Remarks:</p><p style="margin:0; font-size:14px;">${d.remarks}</p></div>` : ''}
       </div>
     `;
   } catch (err) {
     resEl.innerHTML = `<div style="color:#dc2626; text-align:center; padding:20px;">System Error: Connection failed.</div>`;
+    console.error('Verify Error:', err.message);
   }
 }
 
@@ -431,39 +450,34 @@ async function submitClearance() {
 
   try {
     const docId = await dbGenerateId('documents', 'DOC');
-    const ref = 'PAY-2026-' + Math.floor(100000 + Math.random() * 900000);
-
     const row = {
       id: docId,
-      resident: name,
+      name: name,
+      address: address,
       type: docType,
-      status: 'Pending',
-      ref: ref,
-      date: new Date().toISOString().split('T')[0],
       purpose: purpose,
-      contact: 'Public Gateway'
+      status: 'Pending',
+      date: new Date().toISOString().split('T')[0]
     };
 
     await dbInsert('documents', row);
 
     document.getElementById('request-form-content').style.display = 'none';
-    document.getElementById('modal-title').textContent = 'Submited Successfully';
+    document.getElementById('modal-title').textContent = 'Application Submitted';
 
     resEl.innerHTML = `
       <div style="text-align:center; padding:20px;">
-        <div style="font-size:64px; margin-bottom:24px;">🎉</div>
-        <h3 style="margin-bottom:12px;">Application Received!</h3>
-        <p style="color:var(--text-muted); margin-bottom:24px;">Your request is being processed. Please keep your Control Number for tracking.</p>
-        
-        <div style="background:var(--primary-glow); padding:32px; border-radius:20px; border: 2px dashed var(--primary);">
-          <span style="font-family:monospace; font-size:28px; font-weight:900; color:var(--primary); letter-spacing:2px;">${ref}</span>
+        <div style="font-size:64px; margin-bottom:24px;">📄</div>
+        <h3 style="margin-bottom:12px;">Submitted Successfully</h3>
+        <p style="color:var(--text-muted); margin-bottom:24px;">Your request is being reviewed. Please save your reference number.</p>
+        <div style="background:var(--background); padding:24px; border-radius:16px; font-family:monospace; font-size:18px; font-weight:800; border:1px solid var(--border);">
+          REF: ${docId}
         </div>
-
-        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:32px; width:100%; justify-content:center;">Understood</button>
+        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:32px; width:100%; justify-content:center;">Got it</button>
       </div>
     `;
   } catch (err) {
-    alert('Submission failed. Please try again.');
+    alert('Error submitting application.');
     btn.disabled = false;
     btn.textContent = 'Submit Application';
   }
@@ -477,7 +491,7 @@ async function submitComplaint() {
   const resEl = document.getElementById('modal-result-content');
 
   if (!name || !category || !desc) {
-    alert('Please fill out all fields.');
+    alert('Please complete the form.');
     return;
   }
 
@@ -509,7 +523,7 @@ async function submitComplaint() {
         <div style="background:var(--background); padding:24px; border-radius:16px; font-family:monospace; font-size:18px; font-weight:800; border:1px solid var(--border);">
           ID: ${complaintId}
         </div>
-        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:32px; width:100%; justify-content:center;">Finsh</button>
+        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:32px; width:100%; justify-content:center;">Finish</button>
       </div>
     `;
   } catch (err) {
