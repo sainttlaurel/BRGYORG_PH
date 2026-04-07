@@ -135,16 +135,21 @@ async function sbDeleteUser(id) {
   return await dbDelete(DB_TABLES.users, id);
 }
 
-async function sbAuthenticateUser(username, password) {
+async function sbAuthenticateUser(email, password) {
   if (!supabaseClient) throw new Error('offline');
-  const { data, error } = await supabaseClient
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+  if (error) throw error;
+  
+  const { data: profile } = await supabaseClient
     .from(DB_TABLES.users)
     .select('*')
-    .eq('username', username)
-    .eq('password', password)
+    .eq('email', email)
     .single();
-  if (error) throw error;
-  return data;
+
+  return { session: data.session, user: profile || data.user };
 }
 
 // ============================================================

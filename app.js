@@ -32,9 +32,9 @@ let state = {
 function seedData() {
   if (!localStorage.getItem(USERS_KEY)) {
     const users = [
-      { id: 1, name: 'Admin Payatas', username: 'admin', password: 'admin123', role: 'Admin', email: 'admin@payatas.gov.ph', status: 'Active', lastActive: '2 mins ago', initials: 'AP' },
-      { id: 2, name: 'Elena Garcia', username: 'egarcia', password: 'staff123', role: 'Staff', email: 'elena.garcia@payatas.gov.ph', status: 'Active', lastActive: '1 hour ago', initials: 'EG' },
-      { id: 3, name: 'Roberto Santos', username: 'rsantos', password: 'staff123', role: 'Staff', email: 'roberto.santos@payatas.gov.ph', status: 'Active', lastActive: '3 days ago', initials: 'RS' }
+      { id: 1, name: 'Admin Payatas', username: 'admin', role: 'Admin', email: 'admin@payatas.gov.ph', status: 'Active', lastActive: '2 mins ago', initials: 'AP' },
+      { id: 2, name: 'Elena Garcia', username: 'egarcia', role: 'Staff', email: 'elena.garcia@payatas.gov.ph', status: 'Active', lastActive: '1 hour ago', initials: 'EG' },
+      { id: 3, name: 'Roberto Santos', username: 'rsantos', role: 'Staff', email: 'roberto.santos@payatas.gov.ph', status: 'Active', lastActive: '3 days ago', initials: 'RS' }
     ];
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
   }
@@ -108,21 +108,58 @@ function save(key, data) {
 }
 
 // ===================== AUTH =====================
-function login() {
-  const username = document.getElementById('login-username').value.trim();
+async function login() {
+  let loginInput = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   const errorEl = document.getElementById('login-error');
   errorEl.textContent = '';
-  if (!username || !password) { errorEl.textContent = 'Please enter username and password.'; return; }
-  const user = state.users.find(u => u.username === username && u.password === password);
-  if (!user) { errorEl.textContent = 'Invalid username or password.'; return; }
-  if (user.status === 'Suspended') { errorEl.textContent = 'Your account has been suspended. Contact the administrator.'; return; }
-  state.session = user;
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'flex';
-  initApp();
-  startSessionTimeout(); // NEW: start session timeout on login
+  
+  if (!loginInput || !password) { 
+    errorEl.textContent = 'Please enter email/username and password.'; 
+    return; 
+  }
+
+  // Resolve username to email if possible
+  const matchedLocalUser = state.users.find(u => u.username === loginInput || u.email === loginInput);
+  const email = matchedLocalUser ? matchedLocalUser.email : loginInput;
+
+  try {
+    const authData = await sbAuthenticateUser(email, password);
+    const user = authData.user;
+    
+    if (user.status === 'Suspended') { 
+      errorEl.textContent = 'Your account has been suspended. Contact the administrator.'; 
+      return; 
+    }
+    
+    // AuthData.session is the JWT session
+    state.session = { ...user, token: authData.session.access_token };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
+    
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'flex';
+    initApp();
+    startSessionTimeout();
+  } catch (error) {
+    if (error.message === 'offline') {
+      // Offline fallback
+      const user = matchedLocalUser || state.users.find(u => u.email === email);
+      // In offline mode, if a user exists with this email, let them in (since we removed passwords for security)
+      // Note: This is an insecure offline fallback for demonstration/dev purposes
+      if (!user) { 
+        errorEl.textContent = 'Invalid email/username (Offline Mode).'; 
+        return; 
+      }
+      state.session = user;
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'flex';
+      initApp();
+      startSessionTimeout();
+    } else {
+      errorEl.textContent = error.message || 'Invalid email or password.';
+    }
+  }
 }
 
 function logout() {
