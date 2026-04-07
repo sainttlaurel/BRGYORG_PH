@@ -1293,3 +1293,161 @@ footer {
     font-size: 16px;
   }
 }
+
+/* --- SOCIAL HUB UI: REACTIONS & ENGAGEMENT --- */
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.reactions-group {
+  display: flex;
+  gap: 12px;
+}
+
+.reaction-btn {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.reaction-btn span {
+  font-size: 18px;
+}
+
+.reaction-btn .count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.reaction-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  background: var(--primary-glow);
+}
+
+.reaction-btn.active.like {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.reaction-btn.active.like .count { color: white; }
+
+.reaction-btn.active.heart {
+  background: #f43f5e;
+  border-color: #f43f5e;
+  color: white;
+}
+
+.reaction-btn.active.heart .count { color: white; }
+
+/* SOCIAL SHARING */
+.share-toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.share-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.share-btn:hover {
+  background: var(--background);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.1);
+}
+
+/* --- CITIZENS' VOICE & POLLS --- */
+.suggestions-list {
+  display: grid;
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.suggestion-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+
+.suggestion-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.suggestion-qa {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+}
+
+.admin-badge {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* BUSINESS REGISTRY PLACEHOLDER */
+.registry-maintenance {
+  text-align: center;
+  padding: 80px 20px;
+  background: var(--background);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border);
+}
+
+.maintenance-icon {
+  font-size: 64px;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+
+/* VOLUNTEER FORM */
+.volunteer-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.condition-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--primary-glow);
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 12px;
+  border: 1px solid var(--primary-dark);
+}

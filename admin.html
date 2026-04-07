@@ -93,6 +93,11 @@
           <span class="material-symbols-outlined">campaign</span>
           <span>Announcements</span>
         </button>
+        <button class="nav-item" onclick="showPage('community')">
+          <span class="material-symbols-outlined">hub</span>
+          <span>Community Hub</span>
+          <span class="nav-badge" id="badge-community"></span>
+        </button>
         <button class="nav-item" onclick="showPage('reports')">
           <span class="material-symbols-outlined">analytics</span>
           <span>Reports</span>
@@ -488,6 +493,85 @@
             </div>
           </div>
           <div class="ann-grid" id="announcements-grid"></div>
+          <div class="ann-grid" id="announcements-grid"></div>
+        </div>
+
+        <!-- ===================== COMMUNITY HUB ===================== -->
+        <div id="page-community" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>Community Presence Hub</h2>
+              <p>Moderate resident engagement, volunteer applications, and polls</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-secondary" onclick="exportVolunteers()"><span class="material-symbols-outlined"
+                  style="font-size:16px">download</span> Export Volunteers</button>
+              <button class="btn-primary" onclick="openModal('new-poll-modal')"><span
+                  class="material-symbols-outlined" style="font-size:16px">how_to_vote</span> Create New Poll</button>
+            </div>
+          </div>
+
+          <div class="filter-bar mb-4">
+            <div class="filter-chips" id="community-tabs">
+              <button class="chip chip-active" onclick="switchCommunityTab('suggestions', this)">Citizens' Voice <span id="badge-tab-suggestions" class="dot-badge" style="display:none"></span></button>
+              <button class="chip chip-inactive" onclick="switchCommunityTab('volunteers', this)">Volunteer Roster</button>
+              <button class="chip chip-inactive" onclick="switchCommunityTab('polls', this)">Community Polls</button>
+              <button class="chip chip-inactive" onclick="switchCommunityTab('businesses', this)">Business Registry</button>
+            </div>
+          </div>
+
+          <!-- Suggestions Tab -->
+          <div id="com-tab-suggestions" class="com-tab-content">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Resident</th>
+                    <th>Suggestion / Question</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="suggestions-table"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Volunteers Tab -->
+          <div id="com-tab-volunteers" class="com-tab-content" style="display:none">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Volunteer Name</th>
+                    <th>Contact</th>
+                    <th>Body Conditions</th>
+                    <th>Status</th>
+                    <th>Signed Up</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="volunteers-table"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Polls Tab -->
+          <div id="com-tab-polls" class="com-tab-content" style="display:none">
+            <div id="polls-admin-grid" class="grid-3">
+              <!-- Polls loaded here -->
+            </div>
+          </div>
+
+          <!-- Business Tab (Maintenance View) -->
+          <div id="com-tab-businesses" class="com-tab-content" style="display:none">
+            <div style="text-align:center; padding:60px; background:var(--primary-glow); border-radius:16px; border:1px solid var(--primary-light);">
+              <span class="material-symbols-outlined" style="font-size:48px; color:var(--primary); margin-bottom:16px;">construction</span>
+              <h4>Registry Manager Under Maintenance</h4>
+              <p>The business directory management tools are currently being refined. Pending applications are still stored securely.</p>
+            </div>
+          </div>
         </div>
 
         <!-- ===================== REPORTS ===================== -->

@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initVerifyBtn();
   loadAnnouncements();
   loadProjects();
+  loadSuggestions(); // Citizens' Voice
 });
 
 // --- NAVBAR ---
@@ -95,57 +96,74 @@ function initScrollAnimations() {
 // --- MODALS ---
 function initModals() {
   const overlay = document.querySelector('.modal-overlay');
-
   if (!overlay) return;
 
   const closeModal = () => {
-    overlay.style.display = 'none';
+    overlay.classList.remove('active');
     document.body.style.overflow = '';
+    
+    // Reset modal state
+    const modal = document.querySelector('.modal');
+    if (modal) modal.classList.remove('active');
 
-    // Clear forms
-    document.querySelectorAll('.form-control').forEach(el => el.value = '');
-    const resEl = document.getElementById('modal-result-content');
-    if (resEl) resEl.innerHTML = '';
+    // Clear and Hide Forms
+    const reqForm = document.getElementById('request-form-content');
+    const compForm = document.getElementById('complaint-form-content');
+    const volForm = document.getElementById('volunteer-form-content');
+    const resContent = document.getElementById('modal-result-content');
+    
+    if (reqForm) reqForm.style.display = 'none';
+    if (compForm) compForm.style.display = 'none';
+    if (volForm) volForm.style.display = 'none';
+    if (resContent) {
+      resContent.style.display = 'none';
+      resContent.innerHTML = '';
+    }
+  };
+
+  const openModal = (type) => {
+    const modal = document.querySelector('.modal');
+    const title = document.getElementById('modal-title');
+    
+    const reqForm = document.getElementById('request-form-content');
+    const compForm = document.getElementById('complaint-form-content');
+    const volForm = document.getElementById('volunteer-form-content');
+    const resContent = document.getElementById('modal-result-content');
+
+    // Clear previous
+    if (reqForm) reqForm.style.display = 'none';
+    if (compForm) compForm.style.display = 'none';
+    if (volForm) volForm.style.display = 'none';
+    if (resContent) resContent.style.display = 'none';
+
+    if (type === 'clearance') {
+      title.textContent = 'Document Application';
+      if (reqForm) reqForm.style.display = 'block';
+    } else if (type === 'complaint') {
+      title.textContent = 'File a Complaint';
+      if (compForm) compForm.style.display = 'block';
+    } else if (type === 'volunteer') {
+      title.textContent = 'Volunteer Registry';
+      if (volForm) volForm.style.display = 'block';
+    } else if (type === 'verify') {
+      title.textContent = 'Verification Results';
+      if (resContent) resContent.style.display = 'block';
+    }
+
+    overlay.classList.add('active');
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
   };
 
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) closeModal();
   });
 
-  window.openModal = (type) => {
-    overlay.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-
-    const requestForm = document.getElementById('request-form-content');
-    const complaintForm = document.getElementById('complaint-form-content');
-    const verifyForm = document.getElementById('verify-form-content');
-    const title = document.getElementById('modal-title');
-    const resEl = document.getElementById('modal-result-content');
-
-    if (resEl) resEl.innerHTML = '';
-
-    if (type === 'apply') {
-      title.textContent = 'Clearance Application';
-      if (requestForm) requestForm.style.display = 'block';
-      if (complaintForm) complaintForm.style.display = 'none';
-      if (verifyForm) verifyForm.style.display = 'none';
-    } else if (type === 'complaint') {
-      title.textContent = 'Submit a Complaint';
-      if (requestForm) requestForm.style.display = 'none';
-      if (complaintForm) complaintForm.style.display = 'block';
-      if (verifyForm) verifyForm.style.display = 'none';
-    } else if (type === 'verify') {
-      title.textContent = 'Verify Document';
-      if (requestForm) requestForm.style.display = 'none';
-      if (complaintForm) complaintForm.style.display = 'none';
-      if (verifyForm) verifyForm.style.display = 'block';
-    }
-  };
-
+  window.openModal = openModal;
   window.closeModal = closeModal;
 }
 
-// --- VERIFY LOGIC ---
+// --- VERIFY & TABS LOGIC ---
 function initVerifyBtn() {
   const stripBtn = document.getElementById('strip-verify-btn');
   if (stripBtn) {
@@ -162,11 +180,6 @@ function initVerifyBtn() {
       doResidentVerify();
     });
   }
-
-  // EXPOSURE
-  window.switchVerifyTab = switchVerifyTab;
-  window.doResidentVerify = doResidentVerify;
-  window.doVerify = doVerify;
 }
 
 function switchVerifyTab(tabId) {
@@ -377,14 +390,37 @@ async function loadAnnouncements() {
       return;
     }
 
-    listEl.innerHTML = alerts.map(a => `
-      <div class="announcement-card">
-        <span class="ann-tag ${a.category?.toLowerCase() || 'general'}">${a.category || 'General'}</span>
-        <h4 class="ann-title">${a.title}</h4>
-        <p class="ann-content">${a.content}</p>
-        <span class="ann-date">Posted — ${new Date(a.date).toLocaleDateString()}</span>
-      </div>
-    `).join('');
+    listEl.innerHTML = alerts.map(a => {
+      const reactions = a.reactions || { likes: 0, hearts: 0 };
+      const hasLiked = localStorage.getItem(`reacted_announcement_${a.id}_like`);
+      const hasHearted = localStorage.getItem(`reacted_announcement_${a.id}_heart`);
+      
+      return `
+        <div class="announcement-card" id="ann-${a.id}">
+          <span class="ann-tag ${a.category?.toLowerCase() || 'general'}">${a.category || 'General'}</span>
+          <h4 class="ann-title">${a.title}</h4>
+          <p class="ann-content">${a.content}</p>
+          <span class="ann-date">Posted — ${new Date(a.date).toLocaleDateString()}</span>
+          
+          <div class="card-actions">
+            <div class="reactions-group">
+              <button class="reaction-btn ${hasLiked ? 'active like' : ''}" onclick="handleReaction('announcement', '${a.id}', 'like')">
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="count">${reactions.likes || 0}</span>
+              </button>
+              <button class="reaction-btn ${hasHearted ? 'active heart' : ''}" onclick="handleReaction('announcement', '${a.id}', 'heart')">
+                <span class="material-symbols-outlined">favorite</span>
+                <span class="count">${reactions.hearts || 0}</span>
+              </button>
+            </div>
+            <div class="share-toolbar">
+              <button class="share-btn" onclick="shareContent('facebook', '${a.title}', 'ann-${a.id}')" title="Share to Facebook"><span class="material-symbols-outlined">share</span></button>
+              <button class="share-btn" onclick="shareContent('instagram', '${a.title}', 'ann-${a.id}')" title="Share to Instagram"><span class="material-symbols-outlined">photo_camera</span></button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   } catch (err) {
     listEl.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#dc2626;">Network error. Please refresh.</p>`;
   }
@@ -409,23 +445,46 @@ async function loadProjects() {
       return;
     }
 
-    listEl.innerHTML = projects.map(p => `
-      <div class="project-card">
-        <h4 class="proj-title">${p.title}</h4>
-        <span class="proj-cat">${p.category}</span>
-        <div class="progress-container">
-          <div class="progress-meta">
-            <span>Progress</span>
-            <span>${p.progress}%</span>
+    listEl.innerHTML = projects.map(p => {
+      const reactions = p.reactions || { likes: 0, hearts: 0 };
+      const hasLiked = localStorage.getItem(`reacted_project_${p.id}_like`);
+      const hasHearted = localStorage.getItem(`reacted_project_${p.id}_heart`);
+
+      return `
+        <div class="project-card" id="proj-${p.id}">
+          <h4 class="proj-title">${p.title}</h4>
+          <span class="proj-cat">${p.category}</span>
+          <div class="progress-container">
+            <div class="progress-meta">
+              <span>Progress</span>
+              <span>${p.progress}%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: ${p.progress}%"></div>
+            </div>
           </div>
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" style="width: ${p.progress}%"></div>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">${p.description || ''}</p>
+          <span class="proj-status status-${p.status.toLowerCase()}">${p.status}</span>
+          
+          <div class="card-actions">
+            <div class="reactions-group">
+              <button class="reaction-btn ${hasLiked ? 'active like' : ''}" onclick="handleReaction('project', '${p.id}', 'like')">
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="count">${reactions.likes || 0}</span>
+              </button>
+              <button class="reaction-btn ${hasHearted ? 'active heart' : ''}" onclick="handleReaction('project', '${p.id}', 'heart')">
+                <span class="material-symbols-outlined">favorite</span>
+                <span class="count">${reactions.hearts || 0}</span>
+              </button>
+            </div>
+            <div class="share-toolbar">
+              <button class="share-btn" onclick="shareContent('facebook', '${p.title}', 'proj-${p.id}')" title="Share to Facebook"><span class="material-symbols-outlined">share</span></button>
+              <button class="share-btn" onclick="shareContent('tiktok', '${p.title}', 'proj-${p.id}')" title="Share to TikTok"><span class="material-symbols-outlined">play_circle</span></button>
+            </div>
           </div>
         </div>
-        <p style="font-size:14px; color:var(--text-muted);">${p.description || ''}</p>
-        <span class="proj-status status-${p.status.toLowerCase()}">${p.status}</span>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   } catch (err) {
     listEl.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#dc2626;">Network error.</p>`;
   }
@@ -533,10 +592,275 @@ async function submitComplaint() {
   }
 }
 
+// --- SOCIAL HUB: REACTIONS ---
+async function handleReaction(targetType, targetId, reactionType) {
+  const storageKey = `reacted_${targetType}_${targetId}_${reactionType}`;
+  if (localStorage.getItem(storageKey)) {
+    alert("You've already reacted to this!");
+    return;
+  }
+
+  try {
+    const table = targetType === 'announcement' ? 'announcements' : 'projects';
+    const { data: item, error: fetchErr } = await supabaseClient.from(table).select('reactions').eq('id', targetId).single();
+    if (fetchErr) throw fetchErr;
+
+    const reactions = item.reactions || { likes: 0, hearts: 0 };
+    if (reactionType === 'like') reactions.likes = (reactions.likes || 0) + 1;
+    if (reactionType === 'heart') reactions.hearts = (reactions.hearts || 0) + 1;
+
+    const { error: upErr } = await supabaseClient.from(table).update({ reactions }).eq('id', targetId);
+    if (upErr) throw upErr;
+
+    localStorage.setItem(storageKey, 'true');
+    
+    // UI Feedback (Silent reload or local update)
+    if (targetType === 'announcement') loadAnnouncements();
+    else loadProjects();
+  } catch (err) {
+    console.error('Reaction Error:', err.message);
+  }
+}
+
+function shareContent(platform, title, id) {
+  const url = window.location.href + '#' + id;
+  const text = `Check out this from Barangay Payatas: ${title}`;
+  
+  if (platform === 'facebook') {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+  } else if (platform === 'instagram') {
+    // Note: Direct sharing to Feed via web is limited; we'll copy link or suggest mobile share
+    navigator.clipboard.writeText(url).then(() => alert('Link copied for Instagram sharing!'));
+  } else if (platform === 'tiktok') {
+    navigator.clipboard.writeText(url).then(() => alert('Link copied for TikTok sharing!'));
+  }
+}
+
+// --- CITIZENS' VOICE LOGIC ---
+async function loadSuggestions() {
+  const list = document.getElementById('suggestions-list');
+  if (!list) return;
+
+  try {
+    const { data, error } = await supabaseClient.from('suggestions').select('*').eq('status', 'published').order('created_at', { ascending: false });
+    if (error) throw error;
+
+    if (data.length === 0) return;
+
+    list.innerHTML = data.map(s => `
+      <div class="suggestion-card">
+        <div class="suggestion-meta">
+          <span class="material-symbols-outlined">person</span>
+          <strong>${s.name || 'Anonymous Resident'}</strong>
+          <span>• ${new Date(s.created_at).toLocaleDateString()}</span>
+        </div>
+        <p style="margin:0; font-size:15px; line-height:1.6;">${s.content}</p>
+        ${s.admin_reply ? `
+        <div class="suggestion-qa">
+          <div class="suggestion-meta">
+            <span class="admin-badge">Official Reply</span>
+          </div>
+          <p style="margin:0; font-style:italic; color:var(--text-main);">${s.admin_reply}</p>
+        </div>` : ''}
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Suggestions Load Error:', err.message);
+  }
+}
+
+async function submitSuggestion() {
+  const name = document.getElementById('voice-name').value.trim();
+  const content = document.getElementById('voice-content').value.trim();
+  if (!content) return alert('Please enter your suggestion.');
+
+  // Simplified usage tracking with fingerprint or local session id
+  let userId = localStorage.getItem('payatas_voice_id');
+  if (!userId) {
+    userId = 'anon_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('payatas_voice_id', userId);
+  }
+
+  try {
+    // Check quota
+    const { data: limitData } = await supabaseClient.from('suggestion_limits').select('*').eq('identifier', userId).single();
+    const isVerified = limitData?.is_verified || false;
+    const count = limitData?.count || 0;
+    const max = isVerified ? 5 : 2;
+
+    if (count >= max) {
+      alert(`Limit reached! Guests can submit up to 2 items. Verified residents up to 5.`);
+      return;
+    }
+
+    const { error: subErr } = await supabaseClient.from('suggestions').insert({
+      name: name || 'Anonymous',
+      content: content,
+      status: 'pending'
+    });
+    if (subErr) throw subErr;
+
+    // Update quota
+    if (!limitData) {
+      await supabaseClient.from('suggestion_limits').insert({ identifier: userId, count: 1 });
+    } else {
+      await supabaseClient.from('suggestion_limits').update({ count: count + 1 }).eq('identifier', userId);
+    }
+
+    alert('Your suggestion has been submitted for moderation. Thank you for your input!');
+    document.getElementById('voice-content').value = '';
+    document.getElementById('voice-name').value = '';
+  } catch (err) {
+    console.error('Submission Error:', err.message);
+  }
+}
+
+// --- VOLUNTEER LOGIC ---
+async function submitVolunteer() {
+  const name = document.getElementById('vol-name').value.trim();
+  const contact = document.getElementById('vol-contact').value.trim();
+  const conditions = document.getElementById('vol-conditions').value.trim();
+  const btn = document.getElementById('submit-vol-btn');
+
+  if (!name || !contact) return alert('Please provide your name and contact info.');
+
+// --- POLLS LOGIC ---
+async function loadPolls() {
+  const list = document.getElementById('polls-list');
+  if (!list) return;
+
+  try {
+    const { data: polls, error } = await supabaseClient.from('polls').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+
+    if (!polls || polls.length === 0) {
+      list.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-muted);">No active polls at this time.</p>';
+      return;
+    }
+
+    list.innerHTML = polls.map(p => {
+      const hasVoted = localStorage.getItem(`voted_poll_${p.id}`);
+      const votes = p.votes || {};
+      const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0) || 1;
+
+      return `
+        <div class="poll-card card" id="poll-${p.id}" style="padding:24px; margin-bottom:16px;">
+          <h5 style="margin-bottom:16px; font-size:17px;">${p.question}</h5>
+          <div style="display:grid; gap:12px;">
+            ${p.options.map((opt, i) => {
+              const count = votes[i] || 0;
+              const perc = Math.round((count / totalVotes) * 100);
+              
+              if (hasVoted) {
+                return `
+                  <div>
+                    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;">
+                      <span>${opt}</span>
+                      <strong>${perc}%</strong>
+                    </div>
+                    <div class="progress-bar-bg" style="height:8px;">
+                      <div class="progress-bar-fill" style="width:${perc}%; height:100%; background:var(--primary);"></div>
+                    </div>
+                  </div>
+                `;
+              } else {
+                return `
+                  <button class="btn btn-secondary" style="text-align:left; justify-content:flex-start; padding:12px 20px;" onclick="votePoll('${p.id}', ${i})">
+                    ${opt}
+                  </button>
+                `;
+              }
+            }).join('')}
+          </div>
+          ${hasVoted ? `<p style="margin-top:16px; font-size:11px; color:var(--text-muted); text-align:center;">You have already voted in this poll.</p>` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Polls Load Error:', err.message);
+  }
+}
+
+async function votePoll(pollId, optionIndex) {
+  const storageKey = `voted_poll_${pollId}`;
+  if (localStorage.getItem(storageKey)) return;
+
+  try {
+    const { data: poll, error: fetchErr } = await supabaseClient.from('polls').select('votes').eq('id', pollId).single();
+    if (fetchErr) throw fetchErr;
+
+    const votes = poll.votes || {};
+    votes[optionIndex] = (votes[optionIndex] || 0) + 1;
+
+    const { error: upErr } = await supabaseClient.from('polls').update({ votes }).eq('id', pollId);
+    if (upErr) throw upErr;
+
+    localStorage.setItem(storageKey, 'true');
+    loadPolls(); // Refresh UI
+  } catch (err) {
+    console.error('Voting Error:', err.message);
+  }
+}
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+  initModals();
+  initVerifyBtn();
+  loadAnnouncements();
+  loadProjects();
+  loadSuggestions();
+  loadPolls();
+});
+
+// Window Exports
+window.submitSuggestion = submitSuggestion;
+window.submitVolunteer = submitVolunteer;
+window.handleReaction = handleReaction;
+window.shareContent = shareContent;
+window.votePoll = votePoll;
+window.switchVerifyTab = switchVerifyTab;
+  btn.textContent = 'Processing Application...';
+
+  try {
+    const { error } = await supabaseClient.from('volunteer_signups').insert({
+      full_name: name,
+      contact: contact,
+      body_conditions: conditions
+    });
+    if (error) throw error;
+
+    document.getElementById('volunteer-form-content').innerHTML = `
+      <div style="text-align:center; padding:20px;">
+        <span class="material-symbols-outlined" style="font-size:64px; color:var(--primary); margin-bottom:24px;">volunteer_activism</span>
+        <h3 style="margin-bottom:12px;">Application Logged</h3>
+        <p style="color:var(--text-muted); margin-bottom:24px;">Thank you for your willingness to serve! Please proceed to the Barangay Hall for your personal walk-in and physical check-in.</p>
+        <button onclick="closeModal()" class="btn btn-primary" style="width:100%; justify-content:center;">Understood</button>
+      </div>
+    `;
+  } catch (err) {
+    alert('Error submitting application. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Apply to Volunteer';
+  }
+}
+
 // Global exports
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.doVerify = doVerify;
 window.submitClearance = submitClearance;
 window.submitComplaint = submitComplaint;
+window.submitSuggestion = submitSuggestion;
+window.submitVolunteer = submitVolunteer;
+window.handleReaction = handleReaction;
+window.shareContent = shareContent;
 window.toggleMobileMenu = toggleMobileMenu;
+window.switchVerifyTab = switchVerifyTab;
+window.doResidentVerify = doResidentVerify;
+window.toggleTheme = () => {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('payatas-theme', newTheme);
+};

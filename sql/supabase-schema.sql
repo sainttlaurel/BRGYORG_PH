@@ -210,5 +210,93 @@ CREATE INDEX idx_clearance_verification ON clearance_requests(verification_code)
 CREATE INDEX idx_clearance_created ON clearance_requests(created_at DESC);
 
 -- ============================================================
--- END OF MERGED SCHEMA
+-- COMMUNITY HUB & SOCIAL FEATURES
+-- ============================================================
+
+-- BUSINESS REGISTRY
+CREATE TABLE business_registry (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    owner VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    contact VARCHAR(50),
+    address TEXT,
+    description TEXT,
+    status VARCHAR(20) DEFAULT 'pending', -- 'pending' | 'approved' | 'rejected'
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- CITIZENS' VOICE (Suggestions & Q&A)
+CREATE TABLE suggestions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name VARCHAR(100) DEFAULT 'Anonymous',
+    resident_id VARCHAR(20), -- Optional linkage to residents table
+    content TEXT NOT NULL,
+    admin_reply TEXT,
+    status VARCHAR(20) DEFAULT 'pending', -- 'pending' | 'published' | 'archived'
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- COMMUNITY POLLS
+CREATE TABLE polls (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    question TEXT NOT NULL,
+    options JSONB NOT NULL, -- Array: ["Option A", "Option B"]
+    votes JSONB DEFAULT '{}', -- Object mapping indices to counts: {"0": 12, "1": 5}
+    status VARCHAR(20) DEFAULT 'active', -- 'active' | 'closed'
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    expires_at TIMESTAMPTZ
+);
+
+-- VOLUNTEER SIGN-UPS
+CREATE TABLE volunteer_signups (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    project_id VARCHAR(20), -- Linkage to projects if applicable
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    contact VARCHAR(50) NOT NULL,
+    body_conditions TEXT, -- User-disclosed physical status
+    status VARCHAR(20) DEFAULT 'pending', -- 'pending' | 'accepted' | 'completed'
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- REACTION TRACKING (Optimized aggregate)
+-- We'll also add columns to announcements and projects for instant read access
+ALTER TABLE announcements ADD COLUMN reactions JSONB DEFAULT '{"likes": 0, "hearts": 0}';
+ALTER TABLE projects ADD COLUMN reactions JSONB DEFAULT '{"likes": 0, "hearts": 0}';
+
+-- ============================================================
+-- ADDITIONAL RLS POLICIES
+-- ============================================================
+ALTER TABLE business_registry ENABLE ROW LEVEL SECURITY;
+ALTER TABLE suggestions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE polls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE volunteer_signups ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "allow_all_business" ON business_registry FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_suggestions" ON suggestions FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_polls" ON polls FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_volunteers" ON volunteer_signups FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================================
+-- ADDITIONAL INDEXES
+-- ============================================================
+CREATE INDEX idx_business_status ON business_registry(status);
+CREATE INDEX idx_suggestions_status ON suggestions(status);
+CREATE INDEX idx_polls_status ON polls(status);
+CREATE INDEX idx_volunteers_project ON volunteer_signups(project_id);
+
+-- SUGGESTION LIMITS TRACKING
+CREATE TABLE suggestion_limits (
+    identifier TEXT PRIMARY KEY, -- Can be IP, Fingerprint, or Resident ID
+    count INTEGER DEFAULT 0,
+    last_reset TIMESTAMPTZ DEFAULT NOW(),
+    is_verified BOOLEAN DEFAULT FALSE
+);
+
+ALTER TABLE suggestion_limits ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all_limits" ON suggestion_limits FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================================
+-- END OF EXTENDED SCHEMA
 -- ============================================================

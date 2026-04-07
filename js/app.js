@@ -9,11 +9,15 @@ let state = {
   projects: [],
   announcements: [],
   users: [],
+  suggestions: [],
+  volunteers: [],
+  polls: [],
   complaintFilter: 'all',
   annFilter: 'all',
   annSort: 'newest',
+  communityTab: 'suggestions',
   confirmCallback: null,
-  pagination: { residents: 1, documents: 1, complaints: 1 },
+  pagination: { residents: 1, documents: 1, complaints: 1, suggestions: 1, volunteers: 1 },
   perPage: 8,
   selectedDocuments: new Set(),
   selectedComplaints: new Set(),
@@ -27,13 +31,16 @@ let state = {
 
 async function sbLoadAll() {
   try {
-    const [users, residents, documents, complaints, projects, announcements] = await Promise.all([
+    const [users, residents, documents, complaints, projects, announcements, suggestions, volunteers, polls] = await Promise.all([
       dbFetch('users'),
       dbFetch('residents'),
       dbFetch('documents'),
       dbFetch('complaints'),
       dbFetch('projects'),
       dbFetch('announcements'),
+      dbFetch('suggestions'),
+      dbFetch('volunteer_signups'),
+      dbFetch('polls'),
     ]);
     state.users = users || [];
     state.residents = residents || [];
@@ -41,6 +48,9 @@ async function sbLoadAll() {
     state.complaints = complaints || [];
     state.projects = projects || [];
     state.announcements = announcements || [];
+    state.suggestions = suggestions || [];
+    state.volunteers = volunteers || [];
+    state.polls = polls || [];
     console.log('✅ All data loaded from Supabase');
   } catch (err) {
     console.warn('⚠️ Supabase load failed, offline mode:', err.message);
@@ -241,6 +251,7 @@ function showPage(page) {
     case 'complaints': renderComplaints(); break;
     case 'projects': renderProjects(); break;
     case 'announcements': renderAnnouncements(); break;
+    case 'community': renderCommunityHub(); break;
     case 'reports': renderReports(); break;
     case 'users': renderUsers(); break;
   }
@@ -1821,6 +1832,168 @@ function renderReports() {
     `).join('');
   }
 }
+
+// ===================== COMMUNITY HUB =====================
+function switchCommunityTab(tab, btn) {
+  state.communityTab = tab;
+  document.querySelectorAll('#community-tabs .chip').forEach(c => {
+    c.classList.remove('chip-active');
+    c.classList.add('chip-inactive');
+  });
+  btn.classList.remove('chip-inactive');
+  btn.classList.add('chip-active');
+
+  const tabs = document.querySelectorAll('.com-tab-content');
+  tabs.forEach(t => t.style.display = 'none');
+  const target = document.getElementById('com-tab-' + tab);
+  if (target) target.style.display = 'block';
+
+  renderCommunityHub();
+}
+
+function renderCommunityHub() {
+  const tab = state.communityTab || 'suggestions';
+  if (tab === 'suggestions') renderSuggestions();
+  else if (tab === 'volunteers') renderVolunteers();
+  else if (tab === 'polls') renderAdminPolls();
+  
+  // Update badge if any pending suggestions
+  const pending = state.suggestions.filter(s => s.status === 'pending').length;
+  const b = document.getElementById('badge-tab-suggestions');
+  if (b) {
+    b.style.display = pending > 0 ? 'inline-block' : 'none';
+    b.textContent = pending;
+  }
+}
+
+function renderSuggestions() {
+  const tbody = document.getElementById('suggestions-table');
+  if (!tbody) return;
+
+  const data = state.suggestions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No resident suggestions found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(s => `
+    <tr>
+      <td><strong>${s.name || 'Anonymous'}</strong><div style="font-size:11px;color:var(--on-surface-3)">${s.resident_id || 'Guest'}</div></td>
+      <td style="max-width:300px; white-space:normal;">${s.content}</td>
+      <td style="font-size:12px;color:var(--on-surface-3)">${formatDate(s.created_at)}</td>
+      <td>${statusBadge(s.status)}</td>
+      <td><div class="tbl-actions">
+        ${s.status === 'pending' ? `<button class="tbl-btn" onclick="publishSuggestionUI('${s.id}')" title="Reply & Publish"><span class="material-symbols-outlined">publish</span></button>` : ''}
+        <button class="tbl-btn danger" onclick="confirmDelete('Suggestion','Remove this suggestion?',()=>deleteSuggestion('${s.id}'))" title="Delete"><span class="material-symbols-outlined">delete</span></button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+function renderVolunteers() {
+  const tbody = document.getElementById('volunteers-table');
+  if (!tbody) return;
+
+  const data = state.volunteers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No volunteer applications yet.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(v => `
+    <tr>
+      <td><strong>${v.full_name}</strong></td>
+      <td>${v.contact}<div style="font-size:11px;color:var(--on-surface-3)">${v.email || 'No email'}</div></td>
+      <td style="font-size:12px;max-width:200px;">${v.body_conditions || 'None stated'}</td>
+      <td>${statusBadge(v.status || 'pending')}</td>
+      <td style="font-size:12px;">${formatDate(v.created_at)}</td>
+      <td><div class="tbl-actions">
+        <button class="tbl-btn" onclick="confirmUpdateVolunteer('${v.id}', 'accepted')" title="Accept"><span class="material-symbols-outlined">check_circle</span></button>
+        <button class="tbl-btn danger" onclick="confirmDelete('Volunteer','Remove application?',()=>deleteVolunteer('${v.id}'))" title="Delete"><span class="material-symbols-outlined">delete</span></button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+function renderAdminPolls() {
+  const grid = document.getElementById('polls-admin-grid');
+  if (!grid) return;
+
+  if (state.polls.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--on-surface-3);">No active polls. Create one to start gathering feedback.</div>';
+    return;
+  }
+
+  grid.innerHTML = state.polls.map(p => `
+    <div class="card">
+      <div class="card-header"><span class="card-title">${p.question}</span></div>
+      <div class="card-body">
+        <div style="display:grid; gap:10px;">
+          ${p.options.map((opt, i) => {
+            const votes = p.votes?.[i] || 0;
+            const total = Object.values(p.votes || {}).reduce((a, b) => a + b, 0) || 1;
+            const perc = Math.round((votes / total) * 100);
+            return `
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                  <span>${opt}</span>
+                  <strong>${votes} votes (${perc}%)</strong>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${perc}%"></div></div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div style="margin-top:20px; display:flex; gap:10px;">
+          <button class="btn-secondary" style="font-size:11px; padding:6px 12px;" onclick="closePoll('${p.id}')">Close Poll</button>
+          <button class="btn-secondary danger" style="font-size:11px; padding:6px 12px;" onclick="deletePoll('${p.id}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- COMMUNITY ACTIONS ---
+async function publishSuggestionUI(id) {
+  const s = state.suggestions.find(x => x.id === id);
+  if (!s) return;
+  const reply = prompt(`Reply to: "${s.content}"\n\nEnter official response to publish:`, "Thank you for your suggestion. We will look into this.");
+  if (reply === null) return;
+
+  try {
+    const updated = await dbUpdate('suggestions', id, { admin_reply: reply, status: 'published' });
+    state.suggestions = state.suggestions.map(x => x.id === id ? updated[0] : x);
+    renderSuggestions();
+    toast('Suggestion published to public hub!', 'success');
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+async function deleteSuggestion(id) {
+  try {
+    await dbDelete('suggestions', id);
+    state.suggestions = state.suggestions.filter(x => x.id !== id);
+    renderSuggestions();
+    closeModal('confirm-modal');
+    toast('Suggestion removed', 'info');
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+function exportVolunteers() {
+  const headers = ['Full Name', 'Contact', 'Email', 'Body Conditions', 'Status', 'Signed Up'];
+  const rows = state.volunteers.map(v => [v.full_name, v.contact, v.email || '', v.body_conditions || 'None', v.status || 'pending', formatDate(v.created_at)]);
+  exportToCSV(rows, 'volunteer_list', headers);
+}
+
+// Export functions to window
+window.switchCommunityTab = switchCommunityTab;
+window.publishSuggestionUI = publishSuggestionUI;
+window.deleteSuggestion = deleteSuggestion;
+window.exportVolunteers = exportVolunteers;
+window.renderCommunityHub = renderCommunityHub;
 
 // ===================== RESPONSIVE =====================
 window.addEventListener('resize', () => {

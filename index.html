@@ -167,45 +167,59 @@
     </div>
   </section>
 
-  <!-- VERIFY SECTION -->
-  <section id="verify" class="section">
-    <div class="section-header">
-      <div class="hero-tag">Real-time Verification</div>
-      <h3>Public Registry & Documents</h3>
-      <p>Verify the authenticity of barangay documents or check resident registration status.</p>
-    </div>
-
-    <div class="verify-tabs-container">
-      <div class="verify-tabs">
-        <button class="verify-tab active" data-tab="docs" onclick="switchVerifyTab('docs')">
-          <span class="material-symbols-outlined">description</span> Documents
-        </button>
-        <button class="verify-tab" data-tab="resident" onclick="switchVerifyTab('resident')">
-          <span class="material-symbols-outlined">groups</span> Residents
-        </button>
-      </div>
-
-      <!-- Document Verify -->
-      <div id="tab-docs" class="verify-tab-content active">
-        <div class="verify-form-group">
-          <div class="verify-input-wrapper">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" id="strip-verify-input" placeholder="Enter Reference Number (e.g. PAY-2026-XXXXXX)" />
+  </section>
+  
+  <!-- COMMUNITY HUB: POLLS & VOICE -->
+  <section id="community-hub" class="section" style="background:var(--primary-glow); border-radius:32px; padding:80px 40px; margin:40px 20px;">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:60px;">
+      
+      <!-- CITIZENS' VOICE -->
+      <div id="voice-section">
+        <div class="hero-tag">Citizens' Voice</div>
+        <h3>Common Concerns & Q&A</h3>
+        <p style="color:var(--text-muted); margin-bottom:32px;">Official responses to resident suggestions and frequently asked questions.</p>
+        
+        <div id="suggestions-list" class="voice-list">
+          <div style="text-align:center; padding:40px; background:var(--background); border-radius:24px; border:1px dashed var(--border);">
+             <span class="material-symbols-outlined" style="font-size:32px; color:var(--text-muted); margin-bottom:12px;">forum</span>
+             <p style="font-size:14px; color:var(--text-muted);">No published topics yet. Be the first to speak out!</p>
           </div>
-          <button id="strip-verify-btn" class="btn btn-primary">Verify Document</button>
+        </div>
+
+        <div class="voice-box card" style="margin-top:24px; padding:24px;">
+           <h5 style="margin-bottom:12px;">Submit a Suggestion</h5>
+           <div style="display:grid; gap:12px;">
+             <input type="text" id="voice-name" placeholder="Name (Optional)" class="form-control" style="background:var(--background);"/>
+             <textarea id="voice-content" placeholder="Share your suggestions, questions, or concerns..." class="form-control" style="background:var(--background); min-height:80px;"></textarea>
+             <button class="btn btn-primary" onclick="submitSuggestion()">Post to Moderator</button>
+           </div>
         </div>
       </div>
 
-      <!-- Resident Verify -->
-      <div id="tab-resident" class="verify-tab-content">
-        <div class="verify-form-group">
-          <div class="verify-input-wrapper">
-            <span class="material-symbols-outlined">person_search</span>
-            <input type="text" id="resident-verify-input" placeholder="Enter Full Name or Resident ID" />
+      <!-- POLLS & VOLUNTEER -->
+      <div>
+        <div id="active-polls-section" style="margin-bottom:60px;">
+          <div class="hero-tag">Community Vote</div>
+          <h3>Active Polls</h3>
+          <p style="color:var(--text-muted); margin-bottom:32px;">Your opinion helps shape the future of our barangay.</p>
+          <div id="polls-list" class="polls-container">
+             <!-- Polls injected here -->
+             <div class="loading-state" style="text-align:center; padding:40px; opacity:0.5;">
+               <span class="material-symbols-outlined" style="animation: spin 2s linear infinite;">sync</span>
+             </div>
           </div>
-          <button id="resident-verify-btn" class="btn btn-primary">Verify Resident</button>
+        </div>
+
+        <div id="volunteer-cta" class="card" style="padding:32px; background:linear-gradient(135deg, var(--primary), #7c3aed); color:white; border:none; position:relative; overflow:hidden;">
+           <div style="position:relative; z-index:1;">
+             <h4 style="color:white; margin-bottom:8px;">Become a Volunteer</h4>
+             <p style="margin-bottom:24px; opacity:0.9; font-size:15px;">Join our community responders and help in times of need or during barangay events.</p>
+             <button class="btn" style="background:white; color:var(--primary); font-weight:800;" onclick="openModal('volunteer')">Register Now</button>
+           </div>
+           <span class="material-symbols-outlined" style="position:absolute; right:-20px; bottom:-20px; font-size:160px; opacity:0.1; transform:rotate(-15deg);">volunteer_activism</span>
         </div>
       </div>
+
     </div>
   </section>
 
@@ -317,9 +331,30 @@
             </select>
           </div>
           <button id="submit-req-btn" onclick="submitClearance()" class="btn btn-primary"
-            style="width:100%; justify-content:center; margin-top:20px;">
-            Submit Application
-          </button>
+            style="width:100%; justify-content:center; margin-top:24px;">Submit Application</button>
+        </div>
+
+        <!-- Volunteer Form -->
+        <div id="volunteer-form-content" style="display:none;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="vol-name" class="form-control" placeholder="Juan Dela Cruz" />
+            </div>
+            <div class="form-group">
+              <label>Contact Number</label>
+              <input type="text" id="vol-contact" class="form-control" placeholder="09XX XXX XXXX" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Physical / Body Conditions</label>
+            <textarea id="vol-conditions" class="form-control" placeholder="Any health concerns we should know? (e.g. Asthma, Knee Injury)"></textarea>
+          </div>
+          <div class="condition-check">
+            <span class="material-symbols-outlined">health_and_safety</span>
+            <p style="margin:0; font-size:12px; color:var(--primary-dark); font-weight:700;">Important: Acceptance is subject to manual verification and a physical check-in at the barangay hall.</p>
+          </div>
+          <button id="submit-vol-btn" onclick="submitVolunteer()" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:24px;">Apply to Volunteer</button>
         </div>
 
         <div id="complaint-form-content" style="display:none">
