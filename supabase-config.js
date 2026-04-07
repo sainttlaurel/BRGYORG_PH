@@ -161,34 +161,23 @@ async function debugSupabase() {
   }
 }
 
-async function sbAuthenticateUser(email, password) {
+async function sbAuthenticateUser(username, password) {
   checkClient();
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
+  // Try matching by username first, then email
+  const { data, error } = await supabaseClient
+    .from('users')
+    .select('*')
+    .or(`username.eq.${username},email.eq.${username}`)
+    .eq('password', password)
+    .single();
 
-  if (error) {
-    throw error;
+  if (error || !data) {
+    throw new Error('Invalid username or password.');
   }
 
-  // Also fetch the custom user profile from the 'users' table
-  try {
-    const { data: profile } = await supabaseClient
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single();
-
-    if (profile) {
-      data.user = { ...data.user, ...profile };
-    }
-  } catch (err) {
-    console.warn('Could not fetch user profile details:', err.message);
-  }
-
-  return data;
+  // Return in the same shape as Supabase Auth would
+  return { user: data };
 }
 
 // expose globally (optional)
