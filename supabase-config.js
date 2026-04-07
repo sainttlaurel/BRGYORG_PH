@@ -163,6 +163,7 @@ async function debugSupabase() {
 
 // expose globally (optional)
 window.debugSupabase = debugSupabase;
+window.sbAuthenticateUser = sbAuthenticateUser;
 
 // ============================================================
 // STATUS LOG
