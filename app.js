@@ -113,10 +113,10 @@ async function login() {
   const password = document.getElementById('login-password').value;
   const errorEl = document.getElementById('login-error');
   errorEl.textContent = '';
-  
-  if (!loginInput || !password) { 
-    errorEl.textContent = 'Please enter email/username and password.'; 
-    return; 
+
+  if (!loginInput || !password) {
+    errorEl.textContent = 'Please enter email/username and password.';
+    return;
   }
 
   // Resolve username to email if possible
@@ -126,16 +126,16 @@ async function login() {
   try {
     const authData = await sbAuthenticateUser(email, password);
     const user = authData.user;
-    
-    if (user.status === 'Suspended') { 
-      errorEl.textContent = 'Your account has been suspended. Contact the administrator.'; 
-      return; 
+
+    if (user.status === 'Suspended') {
+      errorEl.textContent = 'Your account has been suspended. Contact the administrator.';
+      return;
     }
-    
+
     // AuthData.session is the JWT session
     state.session = { ...user, token: authData.session.access_token };
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
-    
+
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'flex';
     initApp();
@@ -146,9 +146,9 @@ async function login() {
       const user = matchedLocalUser || state.users.find(u => u.email === email);
       // In offline mode, if a user exists with this email, let them in (since we removed passwords for security)
       // Note: This is an insecure offline fallback for demonstration/dev purposes
-      if (!user) { 
-        errorEl.textContent = 'Invalid email/username (Offline Mode).'; 
-        return; 
+      if (!user) {
+        errorEl.textContent = 'Invalid email/username (Offline Mode).';
+        return;
       }
       state.session = user;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
@@ -181,7 +181,7 @@ function togglePw() {
 
 // ===================== SESSION TIMEOUT (NEW) =====================
 const SESSION_DURATION_MS = 30 * 60 * 1000; // 30 minutes
-const SESSION_WARNING_MS  = 25 * 60 * 1000; // warn at 25 minutes
+const SESSION_WARNING_MS = 25 * 60 * 1000; // warn at 25 minutes
 let _sessionWarningHandle = null;
 
 function startSessionTimeout() {
@@ -414,7 +414,7 @@ function editResident(id) {
         ${['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 5'].map(p => `<option ${r.purok === p ? 'selected' : ''}>${p}</option>`).join('')}
       </select></div>
       <div class="form-group"><label>Gender</label><select id="er-gender">
-        ${['Male','Female','Other','N/A'].map(g=>`<option ${r.gender===g?'selected':''}>${g}</option>`).join('')}
+        ${['Male', 'Female', 'Other', 'N/A'].map(g => `<option ${r.gender === g ? 'selected' : ''}>${g}</option>`).join('')}
       </select></div>
       <div class="form-group"><label>Date of Birth</label><input type="date" id="er-dob" value="${r.dob !== 'N/A' ? r.dob : ''}"/></div>
       <div class="form-group"><label>Status</label><select id="er-status">
@@ -530,9 +530,9 @@ function printResidentProfile(id) {
       ${r.notes ? `<div class="field" style="grid-column:1/-1"><div class="lbl">Notes</div><div class="v">${r.notes}</div></div>` : ''}
     </div>
     <h2>Document History (${docs.length})</h2>
-    ${docs.length ? docs.map(d=>`<div class="doc-row"><div><strong>${d.type}</strong><span style="color:#888;margin-left:8px;font-family:monospace;font-size:11px">${d.ref}</span></div><div style="display:flex;gap:8px;align-items:center"><span style="color:#888">${formatDate(d.date)}</span><span class="badge ${d.status==='Approved'?'b-approved':d.status==='Pending'?'b-pending':'b-rejected'}">${d.status}</span></div></div>`).join('') : '<p style="color:#888;font-size:12px">No document requests on record.</p>'}
+    ${docs.length ? docs.map(d => `<div class="doc-row"><div><strong>${d.type}</strong><span style="color:#888;margin-left:8px;font-family:monospace;font-size:11px">${d.ref}</span></div><div style="display:flex;gap:8px;align-items:center"><span style="color:#888">${formatDate(d.date)}</span><span class="badge ${d.status === 'Approved' ? 'b-approved' : d.status === 'Pending' ? 'b-pending' : 'b-rejected'}">${d.status}</span></div></div>`).join('') : '<p style="color:#888;font-size:12px">No document requests on record.</p>'}
     <h2>Complaint History (${cmps.length})</h2>
-    ${cmps.length ? cmps.map(c=>`<div class="cmp-row"><div><strong>${c.category}</strong> — <span style="color:#888">${c.id}</span><div style="color:#888;font-size:11px">${c.desc.slice(0,80)}...</div></div><span class="badge ${c.status==='Resolved'?'b-approved':'b-pending'}">${c.status}</span></div>`).join('') : '<p style="color:#888;font-size:12px">No complaints on record.</p>'}
+    ${cmps.length ? cmps.map(c => `<div class="cmp-row"><div><strong>${c.category}</strong> — <span style="color:#888">${c.id}</span><div style="color:#888;font-size:11px">${c.desc.slice(0, 80)}...</div></div><span class="badge ${c.status === 'Resolved' ? 'b-approved' : 'b-pending'}">${c.status}</span></div>`).join('') : '<p style="color:#888;font-size:12px">No complaints on record.</p>'}
     <div class="footer">
       <div class="sig"><div class="sig-line"></div><div>Barangay Captain</div></div>
       <div class="sig"><div class="sig-line"></div><div>Secretary / Records Officer</div></div>
@@ -566,14 +566,14 @@ function injectDocDateFilters() {
 
 function onDocDateFilter() {
   state.docDateFrom = val('docs-date-from');
-  state.docDateTo   = val('docs-date-to');
+  state.docDateTo = val('docs-date-to');
   state.pagination.documents = 1;
   renderDocuments();
 }
 
 function clearDocDateFilter() {
   state.docDateFrom = '';
-  state.docDateTo   = '';
+  state.docDateTo = '';
   const f = document.getElementById('docs-date-from');
   const t = document.getElementById('docs-date-to');
   if (f) f.value = '';
@@ -585,7 +585,7 @@ function clearDocDateFilter() {
 function renderDocuments() {
   injectDocDateFilters(); // ensure date filters exist
   const search = val('docs-search').toLowerCase();
-  const typeF   = val('docs-type');
+  const typeF = val('docs-type');
   const statusF = val('docs-status');
   let data = state.documents.filter(d => {
     if (search && !d.resident.toLowerCase().includes(search) && !d.ref.toLowerCase().includes(search)) return false;
@@ -593,14 +593,14 @@ function renderDocuments() {
     if (statusF && d.status !== statusF) return false;
     // NEW: date range filter
     if (state.docDateFrom && d.date < state.docDateFrom) return false;
-    if (state.docDateTo   && d.date > state.docDateTo)   return false;
+    if (state.docDateTo && d.date > state.docDateTo) return false;
     return true;
   });
 
   // NEW: bulk action toolbar
   renderDocBulkBar(data);
 
-  const page  = state.pagination.documents;
+  const page = state.pagination.documents;
   const total = data.length;
   const paged = data.slice((page - 1) * state.perPage, page * state.perPage);
   const tbody = document.getElementById('documents-table');
@@ -759,10 +759,10 @@ function renderComplaints() {
 
   const statsEl = document.getElementById('complaints-stats');
   if (statsEl) {
-    const total   = state.complaints.length;
-    const urgent  = state.complaints.filter(c => c.priority === 'High' && c.status === 'Pending').length;
+    const total = state.complaints.length;
+    const urgent = state.complaints.filter(c => c.priority === 'High' && c.status === 'Pending').length;
     const resolved = state.complaints.filter(c => c.status === 'Resolved').length;
-    const rate    = total ? Math.round(resolved / total * 100) : 0;
+    const rate = total ? Math.round(resolved / total * 100) : 0;
     statsEl.innerHTML = `
       <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:#eef2ff"><span class="material-symbols-outlined" style="color:#1a56db">inbox</span></div></div><div class="stat-label">Total Cases</div><div class="stat-value">${total}</div></div>
       <div class="stat-card" style="border-left:3px solid var(--error)"><div class="stat-top"><div class="stat-icon" style="background:var(--error-light)"><span class="material-symbols-outlined" style="color:var(--error)">priority_high</span></div></div><div class="stat-label" style="color:var(--error)">Urgent</div><div class="stat-value">${urgent}</div></div>
@@ -773,7 +773,7 @@ function renderComplaints() {
   // NEW: bulk action toolbar for complaints
   renderComplaintBulkBar();
 
-  const page  = state.pagination.complaints;
+  const page = state.pagination.complaints;
   const total = data.length;
   const paged = data.slice((page - 1) * state.perPage, page * state.perPage);
   const tbody = document.getElementById('complaints-table');
@@ -903,14 +903,14 @@ function editComplaint(id) {
     <div class="form-group"><label>Complainant Name</label><input id="ec-name" value="${c.complainant}"/></div>
     <div class="form-grid-2">
       <div class="form-group"><label>Category</label><select id="ec-cat">
-        ${['Sanitation','Noise','Public Safety','Infrastructure','Environmental','Other'].map(ct=>`<option ${c.category===ct?'selected':''}>${ct}</option>`).join('')}
+        ${['Sanitation', 'Noise', 'Public Safety', 'Infrastructure', 'Environmental', 'Other'].map(ct => `<option ${c.category === ct ? 'selected' : ''}>${ct}</option>`).join('')}
       </select></div>
       <div class="form-group"><label>Priority</label><select id="ec-priority">
-        ${['High','Medium','Low'].map(p=>`<option ${c.priority===p?'selected':''}>${p}</option>`).join('')}
+        ${['High', 'Medium', 'Low'].map(p => `<option ${c.priority === p ? 'selected' : ''}>${p}</option>`).join('')}
       </select></div>
       <div class="form-group"><label>Status</label><select id="ec-status">
-        <option ${c.status==='Pending'?'selected':''}>Pending</option>
-        <option ${c.status==='Resolved'?'selected':''}>Resolved</option>
+        <option ${c.status === 'Pending' ? 'selected' : ''}>Pending</option>
+        <option ${c.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
       </select></div>
     </div>
     <div class="form-group"><label>Description</label><textarea id="ec-desc" style="min-height:90px">${c.desc}</textarea></div>
@@ -918,10 +918,10 @@ function editComplaint(id) {
   document.getElementById('edit-modal-save').textContent = 'Save Changes';
   document.getElementById('edit-modal-save').onclick = () => {
     c.complainant = val('ec-name') || c.complainant;
-    c.category    = val('ec-cat');
-    c.priority    = val('ec-priority');
-    c.status      = val('ec-status');
-    c.desc        = val('ec-desc') || c.desc;
+    c.category = val('ec-cat');
+    c.priority = val('ec-priority');
+    c.status = val('ec-status');
+    c.desc = val('ec-desc') || c.desc;
     save(COMPLAINTS_KEY, state.complaints);
     closeModal('edit-modal');
     renderComplaints(); updateBadges(); updateDashboard();
@@ -953,15 +953,15 @@ function submitComplaint() {
 
 // ===================== PROJECTS =====================
 const catColors = { Infrastructure: '#1a56db', Healthcare: '#16a34a', Education: '#7c3aed', Environment: '#0891b2', 'Public Safety': '#d97706', Sanitation: '#dc2626' };
-const catBg     = { Infrastructure: '#eef2ff', Healthcare: '#f0fdf4', Education: '#f5f3ff', Environment: '#ecfeff', 'Public Safety': '#fffbeb', Sanitation: '#fef2f2' };
+const catBg = { Infrastructure: '#eef2ff', Healthcare: '#f0fdf4', Education: '#f5f3ff', Environment: '#ecfeff', 'Public Safety': '#fffbeb', Sanitation: '#fef2f2' };
 
 function renderProjects() {
   const statsEl = document.getElementById('projects-stats');
   if (statsEl) {
-    const budget    = state.projects.reduce((s, p) => s + p.budget, 0);
-    const ongoing   = state.projects.filter(p => p.status === 'Ongoing').length;
+    const budget = state.projects.reduce((s, p) => s + p.budget, 0);
+    const ongoing = state.projects.filter(p => p.status === 'Ongoing').length;
     const completed = state.projects.filter(p => p.status === 'Completed').length;
-    const planned   = state.projects.filter(p => p.status === 'Planned').length;
+    const planned = state.projects.filter(p => p.status === 'Planned').length;
     statsEl.innerHTML = `
       <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:#eef2ff"><span class="material-symbols-outlined" style="color:#1a56db">payments</span></div></div><div class="stat-label">Total Budget</div><div class="stat-value">₱${(budget / 1000000).toFixed(1)}M</div></div>
       <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:#fffbeb"><span class="material-symbols-outlined" style="color:#d97706">construction</span></div></div><div class="stat-label">Ongoing</div><div class="stat-value">${ongoing}</div></div>
@@ -976,10 +976,10 @@ function renderProjects() {
     return;
   }
   grid.innerHTML = state.projects.map(p => {
-    const color       = catColors[p.category] || '#1a56db';
-    const bg          = catBg[p.category]     || '#eef2ff';
-    const pct         = Math.min(100, Math.max(0, p.progress));
-    const fillClass   = p.status === 'Completed' ? 'fill-success' : pct < 40 ? 'fill-error' : 'fill-primary';
+    const color = catColors[p.category] || '#1a56db';
+    const bg = catBg[p.category] || '#eef2ff';
+    const pct = Math.min(100, Math.max(0, p.progress));
+    const fillClass = p.status === 'Completed' ? 'fill-success' : pct < 40 ? 'fill-error' : 'fill-primary';
     const statusColor = p.status === 'Completed' ? '#16a34a' : p.status === 'Ongoing' ? '#1a56db' : '#7c3aed';
     return `
       <div class="proj-card">
@@ -1032,8 +1032,8 @@ function editProject(id) {
     <div class="form-group"><label>Description</label><textarea id="ep-desc">${p.desc}</textarea></div>
   `;
   document.getElementById('edit-modal-save').onclick = () => {
-    p.title    = val('ep-title'); p.category = val('ep-cat');
-    p.status   = val('ep-status'); p.budget  = Number(val('ep-budget'));
+    p.title = val('ep-title'); p.category = val('ep-cat');
+    p.status = val('ep-status'); p.budget = Number(val('ep-budget'));
     p.progress = Number(val('ep-progress')); p.desc = val('ep-desc');
     save(PROJECTS_KEY, state.projects);
     closeModal('edit-modal'); renderProjects();
@@ -1088,7 +1088,7 @@ function renderAnnouncements() {
     return;
   }
   const catColors2 = { meeting: '#1a56db', health: '#dc2626', holiday: '#7c3aed', infrastructure: '#d97706', general: '#16a34a' };
-  const catLabels  = { meeting: 'Meeting', health: 'Health', holiday: 'Holiday', infrastructure: 'Infrastructure', general: 'General' };
+  const catLabels = { meeting: 'Meeting', health: 'Health', holiday: 'Holiday', infrastructure: 'Infrastructure', general: 'General' };
   grid.innerHTML = filtered.map(a => `
     <div class="ann-card">
       <div class="ann-img" style="background:${catBg2(a.category)}">
@@ -1132,10 +1132,10 @@ function editAnnouncement(id) {
     <div class="form-group"><label>Content</label><textarea id="ea-content" style="min-height:100px">${a.content}</textarea></div>
   `;
   document.getElementById('edit-modal-save').onclick = () => {
-    a.title    = val('ea-title');
+    a.title = val('ea-title');
     a.category = val('ea-cat');
-    a.content  = val('ea-content');
-    a.date     = val('ea-date') || a.date;
+    a.content = val('ea-content');
+    a.date = val('ea-date') || a.date;
     save(ANNOUNCEMENTS_KEY, state.announcements);
     closeModal('edit-modal'); renderAnnouncements();
     toast('Announcement updated!', 'success');
@@ -1170,7 +1170,7 @@ function renderUsers() {
   const statsEl = document.getElementById('users-stats');
   if (statsEl) {
     const admins = state.users.filter(u => u.role === 'Admin').length;
-    const staff  = state.users.filter(u => u.role === 'Staff').length;
+    const staff = state.users.filter(u => u.role === 'Staff').length;
     const active = state.users.filter(u => u.status === 'Active').length;
     statsEl.innerHTML = `
       <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:#eef2ff"><span class="material-symbols-outlined" style="color:#1a56db">people</span></div></div><div class="stat-label">Total Users</div><div class="stat-value">${state.users.length}</div></div>
@@ -1222,15 +1222,15 @@ function editUser(id) {
     </div>
   `;
   document.getElementById('edit-modal-save').onclick = () => {
-    u.name     = val('eu-name'); u.username = val('eu-username');
-    u.email    = val('eu-email'); u.role    = val('eu-role');
+    u.name = val('eu-name'); u.username = val('eu-username');
+    u.email = val('eu-email'); u.role = val('eu-role');
     u.initials = initials(u.name);
     // FIX: sync session if editing yourself
     if (state.session && state.session.id === u.id) {
-      state.session.name     = u.name;
+      state.session.name = u.name;
       state.session.username = u.username;
-      state.session.email    = u.email;
-      state.session.role     = u.role;
+      state.session.email = u.email;
+      state.session.role = u.role;
       state.session.initials = u.initials;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
       initApp(); // refresh topbar
@@ -1302,14 +1302,14 @@ function renderPagination(key, total, current, renderFn) {
   const pages = Math.ceil(total / state.perPage);
   if (pages <= 1) { el.innerHTML = `<span class="pg-info">Showing ${total} of ${total}</span>`; return; }
   const start = (current - 1) * state.perPage + 1;
-  const end   = Math.min(current * state.perPage, total);
+  const end = Math.min(current * state.perPage, total);
   let btns = `<button class="pg-btn" onclick="changePage('${key}','${renderFn}',${current - 1})" ${current === 1 ? 'disabled style="opacity:0.4"' : ''}><span class="material-symbols-outlined">chevron_left</span></button>`;
-  let leftEllipsisDone  = false;
+  let leftEllipsisDone = false;
   let rightEllipsisDone = false;
   for (let i = 1; i <= pages; i++) {
     if (i === 1 || i === pages || (i >= current - 1 && i <= current + 1)) {
       btns += `<button class="pg-btn ${i === current ? 'active-pg' : ''}" onclick="changePage('${key}','${renderFn}',${i})">${i}</button>`;
-      leftEllipsisDone  = false;
+      leftEllipsisDone = false;
       rightEllipsisDone = false;
     } else if (i < current - 1 && !leftEllipsisDone) {
       btns += `<button class="pg-btn" disabled style="opacity:0.4">…</button>`;
@@ -1360,12 +1360,12 @@ let notifications = [
 
 function addNotification(title, text, type) {
   const configs = {
-    warning:   { color: 'var(--error-light)',   iconColor: 'var(--error)',   icon: 'warning'      },
-    success:   { color: 'var(--success-light)', iconColor: 'var(--success)', icon: 'check_circle' },
-    info:      { color: '#eef2ff',              iconColor: 'var(--primary)', icon: 'info'         },
-    doc:       { color: '#fffbeb',              iconColor: '#d97706',        icon: 'description'  },
-    person:    { color: '#f5f3ff',              iconColor: '#7c3aed',        icon: 'person'       },
-    complaint: { color: 'var(--error-light)',   iconColor: 'var(--error)',   icon: 'gavel'        },
+    warning: { color: 'var(--error-light)', iconColor: 'var(--error)', icon: 'warning' },
+    success: { color: 'var(--success-light)', iconColor: 'var(--success)', icon: 'check_circle' },
+    info: { color: '#eef2ff', iconColor: 'var(--primary)', icon: 'info' },
+    doc: { color: '#fffbeb', iconColor: '#d97706', icon: 'description' },
+    person: { color: '#f5f3ff', iconColor: '#7c3aed', icon: 'person' },
+    complaint: { color: 'var(--error-light)', iconColor: 'var(--error)', icon: 'gavel' },
   };
   const cfg = configs[type] || configs.info;
   notifications.unshift({ id: Date.now(), title, text, icon: cfg.icon, color: cfg.color, iconColor: cfg.iconColor, time: 'just now', read: false });
@@ -1424,7 +1424,7 @@ function globalSearch(query) {
   if (!query) return;
   const q = query.toLowerCase();
   // Clear all search fields first
-  ['residents-search','docs-search','complaints-search'].forEach(id => {
+  ['residents-search', 'docs-search', 'complaints-search'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1432,7 +1432,7 @@ function globalSearch(query) {
     `${r.fname} ${r.lname}`.toLowerCase().includes(q) || r.purok.toLowerCase().includes(q)
   );
   const hasDocs = state.documents.some(d => d.resident.toLowerCase().includes(q));
-  const hasCmp  = state.complaints.some(c => c.complainant.toLowerCase().includes(q));
+  const hasCmp = state.complaints.some(c => c.complainant.toLowerCase().includes(q));
   if (hasRes) {
     document.getElementById('residents-search').value = query; showPage('residents');
   } else if (hasDocs) {
@@ -1475,16 +1475,16 @@ function exportReport(type) {
     const now = new Date().toLocaleString('en-PH');
     let csv = '';
     if (type === 'monthly' || type === 'summary') {
-      const docs      = state.documents;
-      const cmps      = state.complaints;
+      const docs = state.documents;
+      const cmps = state.complaints;
       const residents = state.residents;
-      const projects  = state.projects;
-      const approved  = docs.filter(d => d.status === 'Approved').length;
-      const pending   = docs.filter(d => d.status === 'Pending').length;
-      const rejected  = docs.filter(d => d.status === 'Rejected').length;
-      const resolved  = cmps.filter(c => c.status === 'Resolved').length;
+      const projects = state.projects;
+      const approved = docs.filter(d => d.status === 'Approved').length;
+      const pending = docs.filter(d => d.status === 'Pending').length;
+      const rejected = docs.filter(d => d.status === 'Rejected').length;
+      const resolved = cmps.filter(c => c.status === 'Resolved').length;
       const cmpPending = cmps.filter(c => c.status === 'Pending').length;
-      const budget    = projects.reduce((s, p) => s + p.budget, 0);
+      const budget = projects.reduce((s, p) => s + p.budget, 0);
       csv = [
         [`Barangay Payatas — ${type === 'monthly' ? 'Monthly' : 'Summary'} Report`],
         [`Generated: ${now}`],
@@ -1513,7 +1513,7 @@ function exportReport(type) {
         ['Completed', projects.filter(p => p.status === 'Completed').length],
         ['Planned', projects.filter(p => p.status === 'Planned').length],
         ['Total Budget', '₱' + budget.toLocaleString()],
-      ].map(r => r.map(c => `"${String(c === undefined ? '' : c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      ].map(r => r.map(c => `"${String(c === undefined ? '' : c).replace(/"/g, '""')}"`).join(',')).join('\n');
     } else {
       // fallback: export all complaints or docs as CSV
       csv = exportCSV(type === 'complaints' ? 'complaints' : 'documents') || '';
@@ -1526,8 +1526,8 @@ function exportReport(type) {
 
 function downloadFile(content, filename, mimeType) {
   const blob = new Blob([content], { type: mimeType });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
@@ -1607,11 +1607,11 @@ function openDocPanel(id) {
   stTag.textContent = d.status;
   stTag.className = 'cert-status-tag ' + d.status.toLowerCase();
   buildTimeline(d.status);
-  document.getElementById('dp-edit-name').value    = d.resident;
+  document.getElementById('dp-edit-name').value = d.resident;
   document.getElementById('dp-edit-contact').value = d.contact || '';
-  document.getElementById('dp-edit-type').value    = d.type;
+  document.getElementById('dp-edit-type').value = d.type;
   document.getElementById('dp-edit-purpose').value = d.purpose || '';
-  document.getElementById('dp-edit-status').value  = d.status;
+  document.getElementById('dp-edit-status').value = d.status;
   document.getElementById('doc-panel-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1646,11 +1646,11 @@ function closeDocPanelDirect() {
 function saveDocPanel() {
   const d = state.documents.find(x => x.id === _panelDocId);
   if (!d) return;
-  d.resident = document.getElementById('dp-edit-name').value.trim()    || d.resident;
-  d.contact  = document.getElementById('dp-edit-contact').value.trim();
-  d.type     = document.getElementById('dp-edit-type').value;
-  d.purpose  = document.getElementById('dp-edit-purpose').value.trim();
-  d.status   = document.getElementById('dp-edit-status').value;
+  d.resident = document.getElementById('dp-edit-name').value.trim() || d.resident;
+  d.contact = document.getElementById('dp-edit-contact').value.trim();
+  d.type = document.getElementById('dp-edit-type').value;
+  d.purpose = document.getElementById('dp-edit-purpose').value.trim();
+  d.status = document.getElementById('dp-edit-status').value;
   save(DOCUMENTS_KEY, state.documents);
   openDocPanel(_panelDocId);
   renderDocuments(); renderDashboardDocs(); updateBadges(); updateDashboard();
@@ -1716,16 +1716,16 @@ function openResidentPanel(id) {
   `;
   const age = r.dob && r.dob !== 'N/A' ? Math.floor((new Date() - new Date(r.dob)) / 31557600000) + ' yrs' : 'N/A';
   const fields = [
-    { label: 'First Name',       val: r.fname },
-    { label: 'Last Name',        val: r.lname },
-    { label: 'Date of Birth',    val: r.dob !== 'N/A' ? formatDate(r.dob) : 'N/A' },
-    { label: 'Age',              val: age },
-    { label: 'Gender',           val: r.gender || 'N/A' },
-    { label: 'Contact',          val: r.contact },
-    { label: 'Purok',            val: r.purok },
-    { label: 'Year Registered',  val: r.registered },
-    { label: 'Address',          val: r.address, full: true },
-    { label: 'Notes',            val: r.notes || '—', full: true },
+    { label: 'First Name', val: r.fname },
+    { label: 'Last Name', val: r.lname },
+    { label: 'Date of Birth', val: r.dob !== 'N/A' ? formatDate(r.dob) : 'N/A' },
+    { label: 'Age', val: age },
+    { label: 'Gender', val: r.gender || 'N/A' },
+    { label: 'Contact', val: r.contact },
+    { label: 'Purok', val: r.purok },
+    { label: 'Year Registered', val: r.registered },
+    { label: 'Address', val: r.address, full: true },
+    { label: 'Notes', val: r.notes || '—', full: true },
   ];
   document.getElementById('rp-info-grid').innerHTML = fields.map(f => `
     <div style="${f.full ? 'grid-column:1/-1;' : ''}background:var(--surface);border-radius:8px;padding:10px 12px">
@@ -1784,17 +1784,17 @@ function printResidentFromPanel() {
 
 // ===================== REPORTS =====================
 function renderReports() {
-  const docs      = state.documents;
-  const cmps      = state.complaints;
+  const docs = state.documents;
+  const cmps = state.complaints;
   const residents = state.residents;
-  const projects  = state.projects;
+  const projects = state.projects;
 
-  const approved     = docs.filter(d => d.status === 'Approved').length;
-  const pending      = docs.filter(d => d.status === 'Pending').length;
-  const resolved     = cmps.filter(c => c.status === 'Resolved').length;
-  const resRate      = cmps.length ? Math.round(resolved / cmps.length * 100) : 0;
+  const approved = docs.filter(d => d.status === 'Approved').length;
+  const pending = docs.filter(d => d.status === 'Pending').length;
+  const resolved = cmps.filter(c => c.status === 'Resolved').length;
+  const resRate = cmps.length ? Math.round(resolved / cmps.length * 100) : 0;
   const approvalRate = docs.length ? Math.round(approved / docs.length * 100) : 0;
-  const ongoing      = projects.filter(p => p.status === 'Ongoing').length;
+  const ongoing = projects.filter(p => p.status === 'Ongoing').length;
 
   const statsEl = document.getElementById('reports-stats');
   if (statsEl) {
@@ -1808,7 +1808,7 @@ function renderReports() {
 
   function barChart(containerId, data, colorMap) {
     const max = Math.max(...data.map(d => d.val), 1);
-    const el  = document.getElementById(containerId);
+    const el = document.getElementById(containerId);
     if (!el) return;
     el.innerHTML = data.map(d => `
       <div class="mb-3">
@@ -1831,22 +1831,22 @@ function renderReports() {
 
   const now = new Date();
   const getAge = dob => dob && dob !== 'N/A' ? Math.floor((now - new Date(dob)) / 31557600000) : null;
-  const ages  = residents.map(r => getAge(r.dob)).filter(a => a !== null);
+  const ages = residents.map(r => getAge(r.dob)).filter(a => a !== null);
   barChart('chart-demographics', [
-    { label: 'Youth (0–17)',   val: ages.filter(a => a < 18).length },
+    { label: 'Youth (0–17)', val: ages.filter(a => a < 18).length },
     { label: 'Adults (18–59)', val: ages.filter(a => a >= 18 && a < 60).length },
     { label: 'Seniors (60+)', val: ages.filter(a => a >= 60).length },
-    { label: 'Unknown',        val: residents.length - ages.length },
+    { label: 'Unknown', val: residents.length - ages.length },
   ], { 'Youth (0–17)': '#1a56db', 'Adults (18–59)': '#16a34a', 'Seniors (60+)': '#7c3aed', 'Unknown': '#9ca3af' });
 
   barChart('chart-projects', [
-    { label: 'Ongoing',   val: projects.filter(p => p.status === 'Ongoing').length },
+    { label: 'Ongoing', val: projects.filter(p => p.status === 'Ongoing').length },
     { label: 'Completed', val: projects.filter(p => p.status === 'Completed').length },
-    { label: 'Planned',   val: projects.filter(p => p.status === 'Planned').length },
+    { label: 'Planned', val: projects.filter(p => p.status === 'Planned').length },
   ], { Ongoing: '#1a56db', Completed: '#16a34a', Planned: '#7c3aed' });
 
   const totalBudget = projects.reduce((s, p) => s + p.budget, 0);
-  const summaryEl   = document.getElementById('reports-summary-table');
+  const summaryEl = document.getElementById('reports-summary-table');
   if (summaryEl) {
     summaryEl.innerHTML = [
       ['Registered Residents', residents.length, `${residents.filter(r => r.status === 'Active').length} active, ${residents.filter(r => r.status === 'Inactive').length} inactive`],
@@ -1874,3 +1874,28 @@ window.addEventListener('resize', () => {
     if (overlay) overlay.classList.remove('open');
   }
 });
+
+async function sbAuthenticateUser(username, password) {
+  checkClient();
+
+  const { data, error } = await supabaseClient
+    .from('users')
+    .select('*')
+    .or(`username.eq.${username},email.eq.${username}`)
+    .eq('password', password)
+    .single();
+
+  if (error || !data) {
+    throw new Error('Invalid username or password.');
+  }
+
+  // Return shape that matches what app.js expects:
+  // authData.user  → the user object
+  // authData.session.access_token → a token string
+  return {
+    user: data,
+    session: {
+      access_token: 'local-' + data.id + '-' + Date.now()
+    }
+  };
+}
