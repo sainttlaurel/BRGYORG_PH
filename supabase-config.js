@@ -161,6 +161,36 @@ async function debugSupabase() {
   }
 }
 
+async function sbAuthenticateUser(email, password) {
+  checkClient();
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  // Also fetch the custom user profile from the 'users' table
+  try {
+    const { data: profile } = await supabaseClient
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (profile) {
+      data.user = { ...data.user, ...profile };
+    }
+  } catch (err) {
+    console.warn('Could not fetch user profile details:', err.message);
+  }
+
+  return data;
+}
+
 // expose globally (optional)
 window.debugSupabase = debugSupabase;
 window.sbAuthenticateUser = sbAuthenticateUser;
