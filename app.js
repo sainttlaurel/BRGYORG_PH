@@ -1721,8 +1721,15 @@ function renderReports() {
     `).join('');
   }
   barChart('chart-doc-types',
-    ['Barangay Clearance', 'Certificate of Indigency', 'Business Permit', 'Residency Certificate'].map(t => ({ label: t, val: docs.filter(d => d.type === t).length })),
-    { 'Barangay Clearance': '#1a56db', 'Certificate of Indigency': '#16a34a', 'Business Permit': '#d97706', 'Residency Certificate': '#7c3aed' }
+    ['Barangay Clearance', 'Barangay Certificate of Residency', 'Barangay Certificate of Indigency', 'Barangay Business Clearance', 'Certificate of Good Moral Character', 'Barangay Permit'].map(t => ({ label: t, val: docs.filter(d => d.type === t).length })),
+    { 
+      'Barangay Clearance': '#1a56db', 
+      'Barangay Certificate of Residency': '#16a34a', 
+      'Barangay Certificate of Indigency': '#d97706', 
+      'Barangay Business Clearance': '#7c3aed',
+      'Certificate of Good Moral Character': '#db2777',
+      'Barangay Permit': '#0891b2'
+    }
   );
   barChart('chart-cmp-cats',
     [...new Set(cmps.map(c => c.category))].map(cat => ({ label: cat, val: cmps.filter(c => c.category === cat).length })),
