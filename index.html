@@ -5,11 +5,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Barangay Payatas — Official Digital Portal</title>
-  <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+  <link rel="icon" href="img/logo-payatas.png" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/landing.css" />
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -18,19 +17,31 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <a href="#" class="brand">
-      <div class="logo-circle">🏛️</div>
+      <img src="img/logo-payatas.png" alt="Payatas Logo" class="logo-img" />
       <div class="brand-text">
         <h1>Payatas</h1>
         <p>Official Portal</p>
       </div>
     </a>
+    
     <ul class="nav-links">
       <li><a href="#services">Services</a></li>
       <li><a href="#verify">Verification</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="admin.html">Admin Portal</a></li>
+      <li>
+        <div class="theme-switch" id="theme-toggle">
+          <div class="theme-switch-thumb">
+            <span class="material-symbols-outlined theme-switch-icon" id="theme-icon">light_mode</span>
+          </div>
+        </div>
+      </li>
     </ul>
-    <a href="#services" class="nav-cta" onclick="openModal('apply')">Apply for Documents</a>
+
+    <a href="javascript:void(0)" class="nav-cta" onclick="openModal('apply')">
+      <span class="material-symbols-outlined">description</span>
+      Apply for Documents
+    </a>
   </nav>
 
   <!-- HERO -->
@@ -41,7 +52,7 @@
       <p>Providing fast, secure, and transparent civic services. Apply for your official documents and track community
         progress in real-time.</p>
       <div class="hero-actions">
-        <a href="#services" class="btn btn-primary" onclick="openModal('apply')">
+        <a href="javascript:void(0)" class="btn btn-primary" onclick="openModal('apply')">
           <span class="material-symbols-outlined">description</span> Start Application
         </a>
         <a href="#verify" class="btn btn-secondary">
@@ -51,7 +62,7 @@
     </div>
   </header>
 
-  <!-- FLOATING STATS BRIDGE -->
+  <!-- STATS BRIDGE -->
   <section class="stats">
     <div class="stat-item">
       <span class="number">12k+</span>
@@ -74,7 +85,7 @@
   <!-- SERVICES -->
   <section id="services" class="section">
     <div class="section-header">
-      <div class="hero-tag" style="background:#f0fdf4; color:#166534;">Public Services</div>
+      <div class="hero-tag">Public Services</div>
       <h3>Civic Solutions</h3>
       <p>Access essential barangay documents and services directly from your device.</p>
     </div>
@@ -83,45 +94,39 @@
         <div class="service-icon"><span class="material-symbols-outlined">edit_document</span></div>
         <h4>Apply for Documents</h4>
         <p>Submit your application for Barangay Clearance, Indigency, or Residency certificates.</p>
-        <span class="service-link">Get Started <span class="material-symbols-outlined"
-            style="font-size:16px">arrow_forward_ios</span></span>
+        <span class="service-link">Get Started <span class="material-symbols-outlined">arrow_forward</span></span>
       </a>
       <a href="#verify" class="service-card">
         <div class="service-icon"><span class="material-symbols-outlined">verified_user</span></div>
         <h4>Verify Authenticity</h4>
         <p>Check the validity of any document issued by Barangay Payatas using its control number.</p>
-        <span class="service-link">Check Record <span class="material-symbols-outlined"
-            style="font-size:16px">arrow_forward_ios</span></span>
+        <span class="service-link">Check Record <span class="material-symbols-outlined">arrow_forward</span></span>
       </a>
       <a href="#alerts" class="service-card">
         <div class="service-icon"><span class="material-symbols-outlined">campaign</span></div>
         <h4>Community Alerts</h4>
         <p>Stay updated with the latest announcements, health advisories, and local news.</p>
-        <span class="service-link">View Board <span class="material-symbols-outlined"
-            style="font-size:16px">arrow_forward_ios</span></span>
+        <span class="service-link">View Board <span class="material-symbols-outlined">arrow_forward</span></span>
       </a>
       <a href="javascript:void(0)" class="service-card" onclick="openModal('complaint')">
         <div class="service-icon"><span class="material-symbols-outlined">gavel</span></div>
         <h4>File a Complaint</h4>
         <p>Report community issues or formal grievances directly to the barangay office.</p>
-        <span class="service-link">Submit Report <span class="material-symbols-outlined"
-            style="font-size:16px">arrow_forward_ios</span></span>
+        <span class="service-link">Submit Report <span class="material-symbols-outlined">arrow_forward</span></span>
       </a>
     </div>
   </section>
 
   <!-- ANNOUNCEMENTS -->
-  <section id="alerts" class="section" style="background: var(--white);">
+  <section id="alerts" class="section">
     <div class="section-header">
-      <div class="hero-tag" style="background:var(--primary-light); color:var(--primary-dark);">Community Board</div>
+      <div class="hero-tag">Community Board</div>
       <h3>Latest Announcements</h3>
       <p>Official news and important updates from your local government.</p>
     </div>
     <div id="announcements-list" class="grid-3">
-      <div class="loading-state"
-        style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
-        <span class="material-symbols-outlined"
-          style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">downloading</span>
+      <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
+        <span class="material-symbols-outlined" style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">downloading</span>
         Loading latest updates...
       </div>
     </div>
@@ -130,21 +135,19 @@
   <!-- PROJECTS -->
   <section id="projects" class="section">
     <div class="section-header">
-      <div class="hero-tag" style="background:#fff7ed; color:#9a3412;">Project Tracking</div>
+      <div class="hero-tag">Project Tracking</div>
       <h3>Community Development</h3>
       <p>Direct tracking of the infrastructure and social improvements in Payatas.</p>
     </div>
     <div id="projects-list" class="grid-3">
-      <div class="loading-state"
-        style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
-        <span class="material-symbols-outlined"
-          style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">engineering</span>
+      <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
+        <span class="material-symbols-outlined" style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">engineering</span>
         Fetching project data...
       </div>
     </div>
   </section>
 
-  <!-- QUICK VERIFY STRIP -->
+  <!-- VERIFY STRIP -->
   <section id="verify" class="verify-strip">
     <div class="verify-content">
       <div class="verify-text">
@@ -152,12 +155,9 @@
         <p>Check the authenticity of any clearance by its record number.</p>
       </div>
       <div class="verify-form">
-        <div
-          style="display:flex; gap:12px; background:rgba(255,255,255,0.05); padding:8px; border-radius:16px; border:1px solid rgba(255,255,255,0.1);">
-          <input type="text" id="strip-verify-input" class="verify-input"
-            placeholder="Enter Control Number (e.g. PAY-2026-XXXXXX)"
-            style="background:transparent; border:none; border-radius:0;" />
-          <button id="strip-verify-btn" class="verify-btn" style="height:54px; border-radius:12px;">Verify</button>
+        <div style="display:flex; gap:12px; background:rgba(255,255,255,0.05); padding:8px; border-radius:16px; border:1px solid rgba(255,255,255,0.1);">
+          <input type="text" id="strip-verify-input" class="form-control verify-input" placeholder="Enter Control Number (e.g. PAY-2026-XXXXXX)" />
+          <button id="strip-verify-btn" class="btn btn-primary verify-btn">Verify</button>
         </div>
       </div>
     </div>
@@ -165,43 +165,28 @@
 
   <!-- ABOUT -->
   <section id="about" class="section">
-    <div style="display:grid; grid-template-columns: 1fr 1fr; align-items:center; gap:100px;">
-      <div style="position:relative;">
-        <div class="hero-tag" style="background:#f1f5f9; color:#475569;">Our Mission</div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; align-items:center; gap:80px;">
+      <div>
+        <div class="hero-tag">Our Mission</div>
         <h3 style="font-size:56px; margin-bottom:24px; line-height:1.1;">Integrity in Public Service</h3>
-        <p style="color:var(--text-muted); font-size:18px; margin-bottom:32px;">Barangay Payatas is committed to
-          modernizing governmental services. By embracing digital transformation, we ensure transparency and faster
-          processing for every resident.</p>
+        <p style="color:var(--text-muted); font-size:20px; margin-bottom:32px;">Barangay Payatas is committed to modernizing governmental services. By embracing digital transformation, we ensure transparency and faster processing for every resident.</p>
         <div style="display:grid; gap:20px;">
           <div style="display:flex; align-items:center; gap:15px;">
-            <div
-              style="width:40px; height:40px; background:var(--primary-light); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
-              <span class="material-symbols-outlined" style="font-size:20px;">check</span>
+            <div style="width:40px; height:40px; background:var(--primary-glow); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
+              <span class="material-symbols-outlined">check</span>
             </div>
-            <span style="font-weight:600; font-size:16px;">Transparent Transactions</span>
+            <span style="font-weight:700;">Transparent Transactions</span>
           </div>
           <div style="display:flex; align-items:center; gap:15px;">
-            <div
-              style="width:40px; height:40px; background:var(--primary-light); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
-              <span class="material-symbols-outlined" style="font-size:20px;">check</span>
+            <div style="width:40px; height:40px; background:var(--primary-glow); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
+              <span class="material-symbols-outlined">check</span>
             </div>
-            <span style="font-weight:600; font-size:16px;">Efficient Processing</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:15px;">
-            <div
-              style="width:40px; height:40px; background:var(--primary-light); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
-              <span class="material-symbols-outlined" style="font-size:20px;">check</span>
-            </div>
-            <span style="font-weight:600; font-size:16px;">24/7 Portal Access</span>
+            <span style="font-weight:700;">Efficient Processing</span>
           </div>
         </div>
       </div>
-      <div
-        style="height:600px; background:linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius:var(--radius-lg); display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; text-align:center; box-shadow:var(--shadow-xl);">
-        <span class="material-symbols-outlined"
-          style="font-size:160px; opacity:0.2; margin-bottom:20px;">account_balance</span>
-        <h4 style="font-size:24px; font-weight:800; text-transform:uppercase; letter-spacing:4px;">Official Seal</h4>
-        <p style="opacity:0.6; font-size:14px; margin-top:8px;">Barangay Payatas, Quezon City</p>
+      <div style="position:relative; display:flex; justify-content:center;">
+        <img src="img/logo-payatas.png" alt="Payatas Seal" style="width:400px; height:auto; opacity:0.8; filter: drop-shadow(0 20px 40px var(--primary-glow));" />
       </div>
     </div>
   </section>
@@ -211,8 +196,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <h3>Payatas Ledger</h3>
-        <p>The official civic management system of Barangay Payatas, Quezon City. Dedicated to modernizing community
-          services.</p>
+        <p>The official civic management system of Barangay Payatas, Quezon City. Dedicated to modernizing community services.</p>
       </div>
       <div class="footer-links">
         <h5>Quick Links</h5>
@@ -220,20 +204,20 @@
           <li><a href="#services">Services</a></li>
           <li><a href="#verify">Verify Clearance</a></li>
           <li><a href="admin.html">Admin Portal</a></li>
-          <li><a href="#">Privacy Policy</a></li>
         </ul>
       </div>
       <div class="footer-links">
         <h5>Contact Us</h5>
         <ul>
-          <li><a href="#">Litex Road, Quezon City</a></li>
-          <li><a href="#">+63 2 8123 4567</a></li>
-          <li><a href="#">support@payatas.ph</a></li>
+          <li><a>Litex Road, Quezon City</a></li>
+          <li><a>+63 2 8123 4567</a></li>
+          <li><a>support@payatas.ph</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      &copy; 2026 Barangay Payatas. All rights reserved. Powered by Payatas Ledger.
+      <span>&copy; 2026 Barangay Payatas. All rights reserved.</span>
+      <span>Powered by Payatas Ledger</span>
     </div>
   </footer>
 
@@ -242,13 +226,11 @@
     <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-title">Document Application</h3>
-        <button class="btn-secondary" onclick="closeModal()" style="padding:6px 12px;border-radius:8px;">
+        <button class="btn-secondary" onclick="closeModal()" style="padding:8px; border-radius:12px;">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
       <div class="modal-body">
-
-        <!-- Request Form -->
         <div id="request-form-content">
           <div class="form-group">
             <label>Full Legal Name</label>
@@ -256,8 +238,7 @@
           </div>
           <div class="form-group">
             <label>Complete Address</label>
-            <input type="text" id="req-address" class="form-control" placeholder="Block 1, Purok 2, Barangay Payatas"
-              required />
+            <input type="text" id="req-address" class="form-control" placeholder="Block 1, Purok 2, Barangay Payatas" required />
           </div>
           <div class="form-group">
             <label>Document Type</label>
@@ -282,13 +263,11 @@
               <option>Other</option>
             </select>
           </div>
-          <button id="submit-req-btn" onclick="submitClearance()" class="btn btn-primary"
-            style="width:100%;justify-content:center;margin-top:10px;">
+          <button id="submit-req-btn" onclick="submitClearance()" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:20px;">
             Submit Application
           </button>
         </div>
 
-        <!-- Complaint Form -->
         <div id="complaint-form-content" style="display:none">
           <div class="form-group">
             <label>Your Full Name</label>
@@ -309,36 +288,28 @@
           </div>
           <div class="form-group">
             <label>Description of Issue</label>
-            <textarea id="comp-desc" class="form-control" rows="4"
-              placeholder="Please provide specific details about your concern..." style="resize:none"
-              required></textarea>
+            <textarea id="comp-desc" class="form-control" rows="4" placeholder="Detail your concern..." style="resize:none" required></textarea>
           </div>
-          <button id="submit-comp-btn" onclick="submitComplaint()" class="btn btn-primary"
-            style="width:100%;justify-content:center;margin-top:10px;">
+          <button id="submit-comp-btn" onclick="submitComplaint()" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:20px;">
             Submit Complaint
           </button>
         </div>
 
-        <!-- Verify Content -->
         <div id="verify-form-content" style="display:none">
           <div class="form-group">
             <label>Control Number or Record ID</label>
-            <div style="display:flex;gap:8px;">
-              <input type="text" id="verify-query" class="form-control" placeholder="e.g. PAY-2026-000001"
-                style="text-transform:uppercase" />
+            <div style="display:flex; gap:12px;">
+              <input type="text" id="verify-query" class="form-control" placeholder="e.g. PAY-2026-000001" style="text-transform:uppercase" />
               <button onclick="doVerify()" class="btn btn-primary">Check</button>
             </div>
           </div>
         </div>
 
-        <!-- Shared Result Area -->
-        <div id="modal-result-content" style="margin-top:20px;"></div>
-
+        <div id="modal-result-content" style="margin-top:24px;"></div>
       </div>
     </div>
   </div>
 
-  <!-- SCRIPTS -->
   <script src="supabase-config.js"></script>
   <script src="js/landing.js"></script>
 </body>

@@ -1,11 +1,13 @@
 /**
- * Payatas Landing - Public Services Logic
- * Handles Navbar, Modals, and Supabase Integration
+ * Payatas Landing — Premium Public Services Logic
+ * Handles Navbar, Modals, Dark Mode, and Supabase Integration
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
   initModals();
+  initDarkMode();
+  initScrollAnimations();
   initVerifyBtn();
   loadAnnouncements();
   loadProjects();
@@ -15,20 +17,77 @@ document.addEventListener('DOMContentLoaded', () => {
 function initNavbar() {
   const nav = document.querySelector('.navbar');
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) nav.classList.add('scrolled');
+    if (window.scrollY > 20) nav.classList.add('scrolled');
     else nav.classList.remove('scrolled');
   });
+}
+
+// --- DARK MODE ---
+function initDarkMode() {
+  const toggle = document.getElementById('theme-toggle');
+  const icon = document.getElementById('theme-icon');
+  const html = document.documentElement;
+
+  // Check saved theme
+  const savedTheme = localStorage.getItem('payatas-theme') || 'light';
+  html.setAttribute('data-theme', savedTheme);
+  updateThemeIcon(savedTheme);
+
+  toggle.addEventListener('click', () => {
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('payatas-theme', newTheme);
+    updateThemeIcon(newTheme);
+  });
+
+  function updateThemeIcon(theme) {
+    if (icon) {
+      icon.textContent = theme === 'light' ? 'light_mode' : 'dark_mode';
+    }
+  }
+}
+
+// --- SCROLL ANIMATIONS ---
+function initScrollAnimations() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('reveal-active');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.section, .stat-item, .service-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+    observer.observe(el);
+  });
+  
+  // Custom reveal class logic
+  const style = document.createElement('style');
+  style.textContent = `
+    .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }
+  `;
+  document.head.appendChild(style);
 }
 
 // --- MODALS ---
 function initModals() {
   const overlay = document.querySelector('.modal-overlay');
+  
+  if (!overlay) return;
+
   const closeModal = () => {
     overlay.style.display = 'none';
     document.body.style.overflow = '';
+    
     // Clear forms
     document.querySelectorAll('.form-control').forEach(el => el.value = '');
-    document.getElementById('modal-result-content').innerHTML = '';
+    const resEl = document.getElementById('modal-result-content');
+    if (resEl) resEl.innerHTML = '';
   };
 
   overlay.addEventListener('click', (e) => {
@@ -39,30 +98,29 @@ function initModals() {
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     
-    // Switch content based on type
     const requestForm = document.getElementById('request-form-content');
     const complaintForm = document.getElementById('complaint-form-content');
     const verifyForm = document.getElementById('verify-form-content');
     const title = document.getElementById('modal-title');
+    const resEl = document.getElementById('modal-result-content');
 
-    // Reset shared content
-    document.getElementById('modal-result-content').innerHTML = '';
+    if (resEl) resEl.innerHTML = '';
 
     if (type === 'apply') {
       title.textContent = 'Clearance Application';
-      requestForm.style.display = 'block';
-      complaintForm.style.display = 'none';
-      verifyForm.style.display = 'none';
+      if (requestForm) requestForm.style.display = 'block';
+      if (complaintForm) complaintForm.style.display = 'none';
+      if (verifyForm) verifyForm.style.display = 'none';
     } else if (type === 'complaint') {
       title.textContent = 'Submit a Complaint';
-      requestForm.style.display = 'none';
-      complaintForm.style.display = 'block';
-      verifyForm.style.display = 'none';
-    } else {
+      if (requestForm) requestForm.style.display = 'none';
+      if (complaintForm) complaintForm.style.display = 'block';
+      if (verifyForm) verifyForm.style.display = 'none';
+    } else if (type === 'verify') {
       title.textContent = 'Verify Document';
-      requestForm.style.display = 'none';
-      complaintForm.style.display = 'none';
-      verifyForm.style.display = 'block';
+      if (requestForm) requestForm.style.display = 'none';
+      if (complaintForm) complaintForm.style.display = 'none';
+      if (verifyForm) verifyForm.style.display = 'block';
     }
   };
 
@@ -79,8 +137,11 @@ function initVerifyBtn() {
       const val = input.value.trim();
       if (!val) return;
       openModal('verify');
-      document.getElementById('verify-query').value = val;
-      doVerify(val);
+      const verifyInput = document.getElementById('verify-query');
+      if (verifyInput) {
+        verifyInput.value = val;
+        doVerify(val);
+      }
     });
   }
 }
@@ -88,16 +149,14 @@ function initVerifyBtn() {
 async function doVerify(queryArg) {
   const query = queryArg || document.getElementById('verify-query').value.trim().toUpperCase();
   const resEl = document.getElementById('modal-result-content');
-  if (!query) return;
+  if (!query || !resEl) return;
 
-  resEl.innerHTML = `<div class="loading-state">Searching records...</div>`;
+  resEl.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">
+    <span class="material-symbols-outlined" style="font-size:32px; animation: spin 2s linear infinite;">sync</span>
+    <p>Searching records...</p>
+  </div>`;
 
   try {
-    // We check both ref and verification_code (if exists)
-    // Actually, in the clearance system MD, it uses 'ref' or 'verification_code'
-    // Based on the schema search: residents(id, name, address, purok, phone, status)
-    // and documents(id, resident_name, document_type, status, ref, date)
-    
     const { data: docs, error } = await supabaseClient
       .from('documents')
       .select('*')
@@ -108,10 +167,10 @@ async function doVerify(queryArg) {
 
     if (!docs || docs.length === 0) {
       resEl.innerHTML = `
-        <div style="text-align:center;padding:20px;">
-          <div style="font-size:40px;margin-bottom:10px;">❌</div>
-          <h4 style="color:#dc2626;margin-bottom:5px;">Record Not Found</h4>
-          <p style="font-size:13px;color:#64748b;">We couldn't find any clearance matching "${query}". Please check the control number.</p>
+        <div style="text-align:center; padding:40px; background:var(--background); border-radius:16px;">
+          <span class="material-symbols-outlined" style="font-size:64px; color:#dc2626; margin-bottom:16px;">error</span>
+          <h4 style="color:#dc2626; margin-bottom:8px; font-size:20px;">Record Not Found</h4>
+          <p style="font-size:14px; color:var(--text-muted);">We couldn't find any documents matching "${query}".</p>
         </div>
       `;
       return;
@@ -121,29 +180,30 @@ async function doVerify(queryArg) {
     const isValid = d.status === 'Approved';
 
     resEl.innerHTML = `
-      <div style="background:#f8fafc;border-radius:12px;padding:20px;border:1px solid ${isValid ? '#22c55e' : '#e2e8f0'}">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:15px;">
-          <div style="font-size:24px;">${isValid ? '✅' : '⏳'}</div>
+      <div style="background:var(--background); border-radius:24px; padding:32px; border: 2px solid ${isValid ? 'var(--primary)' : 'var(--border)'}">
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px;">
+          <div style="width:56px; height:56px; background:${isValid ? 'var(--primary)' : 'var(--accent)'}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+            <span class="material-symbols-outlined" style="font-size:32px;">${isValid ? 'verified' : 'pending'}</span>
+          </div>
           <div>
-            <h4 style="margin:0;font-size:16px;">${isValid ? 'Authentic Document' : 'Pending Review'}</h4>
-            <small style="color:#64748b;">Control No: ${d.ref || d.id}</small>
+            <h4 style="margin:0; font-size:22px;">${isValid ? 'Authentic Record' : 'Under Review'}</h4>
+            <p style="color:var(--text-muted); margin:0;">REF: ${d.ref || d.id}</p>
           </div>
         </div>
-        <div style="font-size:13px;display:grid;gap:8px;">
-          <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Issued To:</span><strong style="color:#0f172a;">${d.resident || d.resident_name}</strong></div>
-          <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Type:</span><strong style="color:#0f172a;">${d.type || d.document_type}</strong></div>
-          <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Date:</span><strong style="color:#0f172a;">${new Date(d.date).toLocaleDateString()}</strong></div>
-          <div style="display:flex;justify-content:space-between;"><span style="color:#64748b;">Status:</span><span style="font-weight:700;color:${isValid ? '#16a34a' : '#d97706'}">${d.status}</span></div>
+        <div style="display:grid; gap:12px; font-size:15px; border-top: 1px solid var(--border); padding-top:24px;">
+          <div style="display:flex; justify-content:space-between;"><span>Resident Name:</span><strong>${d.resident || d.resident_name}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Document Type:</span><strong>${d.type || d.document_type}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Date Filed:</span><strong>${new Date(d.date).toLocaleDateString()}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Current Status:</span><span style="font-weight:800; color:${isValid ? 'var(--primary)' : 'var(--accent)'}">${d.status}</span></div>
         </div>
       </div>
     `;
   } catch (err) {
-    console.error('Verify error:', err);
-    resEl.innerHTML = `<div style="color:#dc2626;font-size:13px;text-align:center;">Error connecting to database. Please try again.</div>`;
+    resEl.innerHTML = `<div style="color:#dc2626; text-align:center; padding:20px;">System Error: Connection failed.</div>`;
   }
 }
 
-// --- ANNOUNCEMENTS LOGIC ---
+// --- ANNOUNCEMENTS ---
 async function loadAnnouncements() {
   const listEl = document.getElementById('announcements-list');
   if (!listEl) return;
@@ -158,25 +218,24 @@ async function loadAnnouncements() {
     if (error) throw error;
 
     if (!alerts || alerts.length === 0) {
-      listEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);">No current alerts.</div>`;
+      listEl.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--text-muted);">No current announcements.</p>`;
       return;
     }
 
     listEl.innerHTML = alerts.map(a => `
       <div class="announcement-card">
-        <span class="ann-tag ${a.category || 'general'}">${a.category || 'General'}</span>
+        <span class="ann-tag ${a.category?.toLowerCase() || 'general'}">${a.category || 'General'}</span>
         <h4 class="ann-title">${a.title}</h4>
         <p class="ann-content">${a.content}</p>
-        <span class="ann-date">Posted on ${new Date(a.date).toLocaleDateString()}</span>
+        <span class="ann-date">Posted — ${new Date(a.date).toLocaleDateString()}</span>
       </div>
     `).join('');
   } catch (err) {
-    console.warn('Failed to load announcements:', err);
-    listEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#dc2626;">System is temporarily offline.</div>`;
+    listEl.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#dc2626;">Network error. Please refresh.</p>`;
   }
 }
 
-// --- PROJECTS LOGIC ---
+// --- PROJECTS ---
 async function loadProjects() {
   const listEl = document.getElementById('projects-list');
   if (!listEl) return;
@@ -184,14 +243,14 @@ async function loadProjects() {
   try {
     const { data: projects, error } = await supabaseClient
       .from('projects')
-      .select('id, title, category, status, progress, description')
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(3);
 
     if (error) throw error;
 
     if (!projects || projects.length === 0) {
-      listEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);">No active projects listed.</div>`;
+      listEl.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--text-muted);">No active projects listed.</p>`;
       return;
     }
 
@@ -201,24 +260,23 @@ async function loadProjects() {
         <span class="proj-cat">${p.category}</span>
         <div class="progress-container">
           <div class="progress-meta">
-            <span>Overall Progress</span>
+            <span>Progress</span>
             <span>${p.progress}%</span>
           </div>
           <div class="progress-bar-bg">
             <div class="progress-bar-fill" style="width: ${p.progress}%"></div>
           </div>
         </div>
-        <p style="font-size:13px;color:var(--text-muted);">${p.description || ''}</p>
+        <p style="font-size:14px; color:var(--text-muted);">${p.description || ''}</p>
         <span class="proj-status status-${p.status.toLowerCase()}">${p.status}</span>
       </div>
     `).join('');
   } catch (err) {
-    console.warn('Failed to load projects:', err);
-    listEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#dc2626;">System is temporarily offline.</div>`;
+    listEl.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#dc2626;">Network error.</p>`;
   }
 }
 
-// --- REQUEST LOGIC ---
+// --- SUBMISSIONS ---
 async function submitClearance() {
   const name = document.getElementById('req-name').value.trim();
   const address = document.getElementById('req-address').value.trim();
@@ -228,17 +286,16 @@ async function submitClearance() {
   const resEl = document.getElementById('modal-result-content');
 
   if (!name || !address || !docType || !purpose) {
-    alert('Please fill out all required fields.');
+    alert('Please complete the form.');
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = 'Submitting...';
+  btn.textContent = 'Processing Application...';
 
   try {
-    // Generate document ID and truncate date to 10 chars (YYYY-MM-DD)
     const docId = await dbGenerateId('documents', 'DOC');
-    const ref = 'PAY-' + new Date().getFullYear() + '-' + Math.floor(100000 + Math.random() * 900000);
+    const ref = 'PAY-2026-' + Math.floor(100000 + Math.random() * 900000);
     
     const row = {
       id: docId,
@@ -248,41 +305,34 @@ async function submitClearance() {
       ref: ref,
       date: new Date().toISOString().split('T')[0],
       purpose: purpose,
-      contact: 'Public Link' // Placeholder for public submissions
+      contact: 'Public Gateway'
     };
 
-    const data = await dbInsert('documents', row);
+    await dbInsert('documents', row);
 
     document.getElementById('request-form-content').style.display = 'none';
-    document.getElementById('modal-title').textContent = 'Request Successful';
+    document.getElementById('modal-title').textContent = 'Submited Successfully';
     
     resEl.innerHTML = `
-      <div style="text-align:center;padding:20px;">
-        <div style="font-size:50px;margin-bottom:15px;">✅</div>
-        <h3 style="margin-bottom:10px;">Request Submitted!</h3>
-        <p style="font-size:14px;color:#64748b;margin-bottom:20px;">Your clearance request has been sent to the barangay office for review. Please save your reference number for tracking.</p>
+      <div style="text-align:center; padding:20px;">
+        <div style="font-size:64px; margin-bottom:24px;">🎉</div>
+        <h3 style="margin-bottom:12px;">Application Received!</h3>
+        <p style="color:var(--text-muted); margin-bottom:24px;">Your request is being processed. Please keep your Control Number for tracking.</p>
         
-        <div style="position:relative;background:#f1f5f9;padding:20px 15px;border-radius:12px;border:1px dashed #cbd5e1;">
-          <div style="font-family:monospace;font-size:22px;font-weight:800;color:#1e40af;letter-spacing:1.5px;margin-bottom:10px;">
-            ${ref}
-          </div>
-          <button onclick="copyToClipboard('${ref}', this)" style="background:#1e40af;color:white;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:600;">
-            <span class="material-symbols-outlined" style="font-size:16px">content_copy</span> Copy Number
-          </button>
+        <div style="background:var(--primary-glow); padding:32px; border-radius:20px; border: 2px dashed var(--primary);">
+          <span style="font-family:monospace; font-size:28px; font-weight:900; color:var(--primary); letter-spacing:2px;">${ref}</span>
         </div>
 
-        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:25px;width:100%;justify-content:center;">Got it, thank you</button>
+        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:32px; width:100%; justify-content:center;">Understood</button>
       </div>
     `;
   } catch (err) {
-    console.error('Submit error:', err);
-    alert('Submission failed. Your message: ' + err.message);
+    alert('Submission failed. Please try again.');
     btn.disabled = false;
-    btn.textContent = 'Submit Request';
+    btn.textContent = 'Submit Application';
   }
 }
 
-// --- COMPLAINT LOGIC ---
 async function submitComplaint() {
   const name = document.getElementById('comp-name').value.trim();
   const category = document.getElementById('comp-category').value;
@@ -296,7 +346,7 @@ async function submitComplaint() {
   }
 
   btn.disabled = true;
-  btn.textContent = 'Sending...';
+  btn.textContent = 'Sending Report...';
 
   try {
     const complaintId = await dbGenerateId('complaints', 'CMP');
@@ -313,41 +363,29 @@ async function submitComplaint() {
     await dbInsert('complaints', row);
 
     document.getElementById('complaint-form-content').style.display = 'none';
-    document.getElementById('modal-title').textContent = 'Report Filed';
+    document.getElementById('modal-title').textContent = 'Complaint Filed';
     
     resEl.innerHTML = `
-      <div style="text-align:center;padding:20px;">
-        <div style="font-size:50px;margin-bottom:15px;">📥</div>
-        <h3 style="margin-bottom:10px;">Complaint Received</h3>
-        <p style="font-size:14px;color:#64748b;margin-bottom:20px;">Thank you for bringing this to our attention. Our team will review the issue and take action as needed.</p>
-        <div style="background:#f1f5f9;padding:15px;border-radius:12px;font-family:monospace;font-size:18px;font-weight:700;color:#1e40af;border:1px dashed #cbd5e1;">
-          TRACKING ID: ${complaintId}
+      <div style="text-align:center; padding:20px;">
+        <div style="font-size:64px; margin-bottom:24px;">📥</div>
+        <h3 style="margin-bottom:12px;">Report Logged</h3>
+        <p style="color:var(--text-muted); margin-bottom:24px;">Thank you for your feedback. We will investigate this concern immediately.</p>
+        <div style="background:var(--background); padding:24px; border-radius:16px; font-family:monospace; font-size:18px; font-weight:800; border:1px solid var(--border);">
+          ID: ${complaintId}
         </div>
-        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:25px;width:100%;justify-content:center;">Understood</button>
+        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:32px; width:100%; justify-content:center;">Finsh</button>
       </div>
     `;
   } catch (err) {
-    console.error('Complaint error:', err);
-    alert('Failed to submit complaint. Please try again later.');
+    alert('Error submitting report.');
     btn.disabled = false;
     btn.textContent = 'Submit Complaint';
   }
 }
 
-// Helper: Copy to Clipboard
-function copyToClipboard(text, btn) {
-  navigator.clipboard.writeText(text).then(() => {
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px">check</span> Copied!`;
-    btn.style.background = '#16a34a';
-    setTimeout(() => {
-      btn.innerHTML = originalContent;
-      btn.style.background = '#1e40af';
-    }, 2000);
-  });
-}
-
 // Global exports
+window.openModal = openModal;
+window.closeModal = closeModal;
 window.doVerify = doVerify;
 window.submitClearance = submitClearance;
 window.submitComplaint = submitComplaint;
