@@ -1856,6 +1856,18 @@ function switchCommunityTab(tab, btn) {
   const target = document.getElementById('com-tab-' + tab);
   if (target) target.style.display = 'block';
 
+  // Context-sensitive action buttons
+  const actionsEl = document.getElementById('community-pg-actions');
+  if (actionsEl) {
+    if (tab === 'volunteers') {
+      actionsEl.innerHTML = `<button class="btn-secondary" onclick="exportVolunteers()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export Volunteers</button>`;
+    } else if (tab === 'polls') {
+      actionsEl.innerHTML = `<button class="btn-primary" onclick="openModal('new-poll-modal')"><span class="material-symbols-outlined" style="font-size:16px">how_to_vote</span> Create New Poll</button>`;
+    } else {
+      actionsEl.innerHTML = '';
+    }
+  }
+
   renderCommunityHub();
 }
 

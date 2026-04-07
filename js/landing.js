@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initVerifyBtn();
   loadAnnouncements();
   loadProjects();
-  loadSuggestions(); // Citizens' Voice
+  loadSuggestions();
+  loadPolls();
 });
 
 // --- NAVBAR ---
@@ -717,12 +718,45 @@ async function submitSuggestion() {
 
 // --- VOLUNTEER LOGIC ---
 async function submitVolunteer() {
-  const name = document.getElementById('vol-name').value.trim();
-  const contact = document.getElementById('vol-contact').value.trim();
-  const conditions = document.getElementById('vol-conditions').value.trim();
+  const name = document.getElementById('vol-name')?.value.trim();
+  const contact = document.getElementById('vol-contact')?.value.trim();
+  const conditions = document.getElementById('vol-conditions')?.value.trim();
   const btn = document.getElementById('submit-vol-btn');
 
   if (!name || !contact) return alert('Please provide your name and contact info.');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Processing Application...';
+  }
+
+  try {
+    const { error } = await supabaseClient.from('volunteer_signups').insert({
+      full_name: name,
+      contact: contact,
+      body_conditions: conditions || ''
+    });
+    if (error) throw error;
+
+    const volForm = document.getElementById('volunteer-form-content');
+    if (volForm) {
+      volForm.innerHTML = `
+        <div style="text-align:center; padding:20px;">
+          <span class="material-symbols-outlined" style="font-size:64px; color:var(--primary); margin-bottom:24px; display:block;">volunteer_activism</span>
+          <h3 style="margin-bottom:12px;">Application Logged!</h3>
+          <p style="color:var(--text-muted); margin-bottom:24px;">Thank you for your willingness to serve! Please proceed to the Barangay Hall for your personal walk-in and physical check-in.</p>
+          <button onclick="closeModal()" class="btn btn-primary" style="width:100%; justify-content:center;">Understood</button>
+        </div>
+      `;
+    }
+  } catch (err) {
+    alert('Error submitting application. Please try again.');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Apply to Volunteer';
+    }
+  }
+}
 
 // --- POLLS LOGIC ---
 async function loadPolls() {
@@ -730,11 +764,15 @@ async function loadPolls() {
   if (!list) return;
 
   try {
-    const { data: polls, error } = await supabaseClient.from('polls').select('*').order('created_at', { ascending: false });
+    const { data: polls, error } = await supabaseClient
+      .from('polls')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
     if (error) throw error;
 
     if (!polls || polls.length === 0) {
-      list.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-muted);">No active polls at this time.</p>';
+      list.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-muted);">No active polls at this time. Check back soon!</p>';
       return;
     }
 
@@ -744,40 +782,34 @@ async function loadPolls() {
       const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0) || 1;
 
       return `
-        <div class="poll-card card" id="poll-${p.id}" style="padding:24px; margin-bottom:16px;">
-          <h5 style="margin-bottom:16px; font-size:17px;">${p.question}</h5>
-          <div style="display:grid; gap:12px;">
+        <div class="poll-card" id="poll-${p.id}">
+          <h5 style="margin-bottom:16px; font-size:17px; font-weight:700;">${p.question}</h5>
+          <div style="display:grid; gap:10px;">
             ${p.options.map((opt, i) => {
               const count = votes[i] || 0;
               const perc = Math.round((count / totalVotes) * 100);
-              
               if (hasVoted) {
                 return `
                   <div>
-                    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;">
-                      <span>${opt}</span>
-                      <strong>${perc}%</strong>
+                    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                      <span>${opt}</span><strong>${perc}%</strong>
                     </div>
-                    <div class="progress-bar-bg" style="height:8px;">
-                      <div class="progress-bar-fill" style="width:${perc}%; height:100%; background:var(--primary);"></div>
+                    <div class="progress-bar-bg" style="height:8px; background:var(--border); border-radius:99px;">
+                      <div style="width:${perc}%; height:100%; background:var(--primary); border-radius:99px; transition:width 0.5s ease;"></div>
                     </div>
-                  </div>
-                `;
+                  </div>`;
               } else {
-                return `
-                  <button class="btn btn-secondary" style="text-align:left; justify-content:flex-start; padding:12px 20px;" onclick="votePoll('${p.id}', ${i})">
-                    ${opt}
-                  </button>
-                `;
+                return `<button class="btn btn-secondary" style="text-align:left; padding:12px 20px; width:100%;" onclick="votePoll('${p.id}', ${i})">${opt}</button>`;
               }
             }).join('')}
           </div>
-          ${hasVoted ? `<p style="margin-top:16px; font-size:11px; color:var(--text-muted); text-align:center;">You have already voted in this poll.</p>` : ''}
+          ${hasVoted ? '<p style="margin-top:12px; font-size:11px; color:var(--text-muted); text-align:center;">✓ You already voted in this poll.</p>' : ''}
         </div>
       `;
     }).join('');
   } catch (err) {
     console.error('Polls Load Error:', err.message);
+    list.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-muted);">Could not load polls.</p>';
   }
 }
 
@@ -786,7 +818,8 @@ async function votePoll(pollId, optionIndex) {
   if (localStorage.getItem(storageKey)) return;
 
   try {
-    const { data: poll, error: fetchErr } = await supabaseClient.from('polls').select('votes').eq('id', pollId).single();
+    const { data: poll, error: fetchErr } = await supabaseClient
+      .from('polls').select('votes').eq('id', pollId).single();
     if (fetchErr) throw fetchErr;
 
     const votes = poll.votes || {};
@@ -796,71 +829,30 @@ async function votePoll(pollId, optionIndex) {
     if (upErr) throw upErr;
 
     localStorage.setItem(storageKey, 'true');
-    loadPolls(); // Refresh UI
+    loadPolls();
   } catch (err) {
     console.error('Voting Error:', err.message);
   }
 }
 
-// --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
-  initModals();
-  initVerifyBtn();
-  loadAnnouncements();
-  loadProjects();
-  loadSuggestions();
-  loadPolls();
-});
-
-// Window Exports
-window.submitSuggestion = submitSuggestion;
-window.submitVolunteer = submitVolunteer;
-window.handleReaction = handleReaction;
-window.shareContent = shareContent;
-window.votePoll = votePoll;
-window.switchVerifyTab = switchVerifyTab;
-  btn.textContent = 'Processing Application...';
-
-  try {
-    const { error } = await supabaseClient.from('volunteer_signups').insert({
-      full_name: name,
-      contact: contact,
-      body_conditions: conditions
-    });
-    if (error) throw error;
-
-    document.getElementById('volunteer-form-content').innerHTML = `
-      <div style="text-align:center; padding:20px;">
-        <span class="material-symbols-outlined" style="font-size:64px; color:var(--primary); margin-bottom:24px;">volunteer_activism</span>
-        <h3 style="margin-bottom:12px;">Application Logged</h3>
-        <p style="color:var(--text-muted); margin-bottom:24px;">Thank you for your willingness to serve! Please proceed to the Barangay Hall for your personal walk-in and physical check-in.</p>
-        <button onclick="closeModal()" class="btn btn-primary" style="width:100%; justify-content:center;">Understood</button>
-      </div>
-    `;
-  } catch (err) {
-    alert('Error submitting application. Please try again.');
-    btn.disabled = false;
-    btn.textContent = 'Apply to Volunteer';
-  }
-}
-
-// Global exports
+// ===================== GLOBAL EXPORTS =====================
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.doVerify = doVerify;
+window.doResidentVerify = doResidentVerify;
+window.switchVerifyTab = switchVerifyTab;
 window.submitClearance = submitClearance;
 window.submitComplaint = submitComplaint;
 window.submitSuggestion = submitSuggestion;
 window.submitVolunteer = submitVolunteer;
 window.handleReaction = handleReaction;
 window.shareContent = shareContent;
+window.votePoll = votePoll;
 window.toggleMobileMenu = toggleMobileMenu;
-window.switchVerifyTab = switchVerifyTab;
-window.doResidentVerify = doResidentVerify;
 window.toggleTheme = () => {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('payatas-theme', newTheme);
+  const html = document.documentElement;
+  const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('payatas-theme', newTheme);
 };
+

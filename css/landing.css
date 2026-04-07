@@ -1637,3 +1637,150 @@ footer {
   letter-spacing: 1px;
   margin-bottom: 8px;
 }
+
+/* ============================================================
+   POLL CARDS (Public)
+   ============================================================ */
+.polls-container {
+  display: grid;
+  gap: 20px;
+}
+
+.poll-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  transition: var(--transition);
+}
+
+.poll-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ============================================================
+   CARD ACTIONS: Reactions & Share Toolbar
+   ============================================================ */
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.reactions-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-muted);
+}
+
+.reaction-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-glow);
+  transform: scale(1.05);
+}
+
+.reaction-btn.active.like {
+  background: #eef2ff;
+  border-color: #4f46e5;
+  color: #4f46e5;
+}
+
+.reaction-btn.active.heart {
+  background: #fff1f2;
+  border-color: #e11d48;
+  color: #e11d48;
+}
+
+.reaction-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.share-toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.share-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-muted);
+}
+
+.share-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: scale(1.1);
+}
+
+.share-btn .material-symbols-outlined {
+  font-size: 16px;
+}
+
+/* Suggestion feed card */
+.suggestion-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.suggestion-meta .material-symbols-outlined {
+  font-size: 16px;
+}
+
+/* Mobile Community Hub */
+@media (max-width: 768px) {
+  .community-hub-bg {
+    margin: 40px 0;
+    border-radius: 0;
+    padding: 60px 5%;
+  }
+
+  .community-hub-bg > .container {
+    grid-template-columns: 1fr !important;
+    gap: 40px;
+  }
+
+  .volunteer-premium-card {
+    padding: 40px 28px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

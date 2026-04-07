@@ -165,8 +165,46 @@
         Fetching project data...
       </div>
     </div>
-  </section>
+  <!-- VERIFY SECTION -->
+  <section id="verify" class="section">
+    <div class="section-header">
+      <div class="hero-tag">Real-time Verification</div>
+      <h3>Public Registry & Documents</h3>
+      <p>Verify the authenticity of barangay documents or check resident registration status.</p>
+    </div>
 
+    <div class="verify-tabs-container">
+      <div class="verify-tabs">
+        <button class="verify-tab active" data-tab="docs" onclick="switchVerifyTab('docs')">
+          <span class="material-symbols-outlined">description</span> Documents
+        </button>
+        <button class="verify-tab" data-tab="resident" onclick="switchVerifyTab('resident')">
+          <span class="material-symbols-outlined">groups</span> Residents
+        </button>
+      </div>
+
+      <!-- Document Verify -->
+      <div id="tab-docs" class="verify-tab-content active">
+        <div class="verify-form-group">
+          <div class="verify-input-wrapper">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" id="strip-verify-input" placeholder="Enter Reference Number (e.g. PAY-2026-XXXXXX)" />
+          </div>
+          <button id="strip-verify-btn" class="btn btn-primary">Verify Document</button>
+        </div>
+      </div>
+
+      <!-- Resident Verify -->
+      <div id="tab-resident" class="verify-tab-content">
+        <div class="verify-form-group">
+          <div class="verify-input-wrapper">
+            <span class="material-symbols-outlined">person_search</span>
+            <input type="text" id="resident-verify-input" placeholder="Enter Full Name or Resident ID" />
+          </div>
+          <button id="resident-verify-btn" class="btn btn-primary">Verify Resident</button>
+        </div>
+      </div>
+    </div>
   </section>
   
   <!-- COMMUNITY HUB: POLLS & VOICE -->
