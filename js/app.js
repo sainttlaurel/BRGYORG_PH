@@ -613,7 +613,7 @@ async function bulkApproveDocuments() {
     const d = state.documents.find(x => x.id === id);
     if (d && d.status === 'Pending') {
       try {
-        const remarks = 'please proceed to the main office claim it the clearance';
+        const remarks = 'please proceed to the main office claim it the clearance.';
         await dbUpdate('documents', id, { status: 'Approved', remarks });
         d.status = 'Approved';
         d.remarks = remarks;
@@ -1538,6 +1538,48 @@ function priorityBadge(priority) {
   }
 })();
 
+const REMARK_OPTIONS = {
+  Approved: [
+    "Approved. Please proceed to the barangay office to claim your clearance.",
+    "Your request has been approved. Kindly visit the main office for release of your clearance.",
+    "Application approved. Please proceed to the barangay hall for claiming.",
+    "Approved. You may now claim your barangay clearance at the office.",
+    "Request approved. Kindly proceed to the main office during office hours to claim your document.",
+    "Your barangay clearance is ready for release. Please claim it at the barangay office.",
+    "Approved. Please present a valid ID when claiming your clearance at the office.",
+    "Application approved. Kindly proceed to the barangay office for document release."
+  ],
+  Rejected: [
+    "Request not approved. Please visit the barangay office for further assistance.",
+    "Application requires clarification. Kindly proceed to the main office for assistance.",
+    "Your request cannot be processed at this time. Please visit the barangay office for support.",
+    "Request denied due to incomplete requirements. Please proceed to the office for assistance.",
+    "Application not approved. Kindly coordinate with the barangay office for further details.",
+    "Your request needs verification. Please proceed to the main office for assistance.",
+    "Request on hold. Please visit the barangay office to resolve the concern.",
+    "Application rejected. Kindly proceed to the barangay office for proper assistance and guidance."
+  ]
+};
+
+function updateQuickRemarks(status) {
+  const select = document.getElementById('dp-quick-select');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Choose a predefined message --</option>';
+  const options = REMARK_OPTIONS[status] || [];
+  options.forEach(opt => {
+    const el = document.createElement('option');
+    el.value = opt;
+    el.textContent = opt.length > 60 ? opt.slice(0, 60) + '...' : opt;
+    select.appendChild(el);
+  });
+}
+
+function applyQuickRemark(val) {
+  if (!val) return;
+  const textarea = document.getElementById('dp-edit-remarks');
+  if (textarea) textarea.value = val;
+}
+
 // ===================== DOCUMENT DETAIL PANEL =====================
 let _panelDocId = null;
 
@@ -1563,6 +1605,7 @@ function openDocPanel(id) {
   document.getElementById('dp-edit-purpose').value = d.purpose || '';
   document.getElementById('dp-edit-status').value = d.status;
   document.getElementById('dp-edit-remarks').value = d.remarks || '';
+  updateQuickRemarks(d.status);
   document.getElementById('doc-panel-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1732,10 +1775,10 @@ function renderReports() {
   }
   barChart('chart-doc-types',
     ['Barangay Clearance', 'Barangay Certificate of Residency', 'Barangay Certificate of Indigency', 'Barangay Business Clearance', 'Certificate of Good Moral Character', 'Barangay Permit'].map(t => ({ label: t, val: docs.filter(d => d.type === t).length })),
-    { 
-      'Barangay Clearance': '#1a56db', 
-      'Barangay Certificate of Residency': '#16a34a', 
-      'Barangay Certificate of Indigency': '#d97706', 
+    {
+      'Barangay Clearance': '#1a56db',
+      'Barangay Certificate of Residency': '#16a34a',
+      'Barangay Certificate of Indigency': '#d97706',
       'Barangay Business Clearance': '#7c3aed',
       'Certificate of Good Moral Character': '#db2777',
       'Barangay Permit': '#0891b2'
