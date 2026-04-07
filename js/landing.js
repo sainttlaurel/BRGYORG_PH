@@ -228,14 +228,6 @@ async function doVerify(queryArg) {
           </div>
         </div>
 
-        ${isRejected ? `
-          <div style="background:#fff1f2; border:1px solid #fecdd3; padding:12px 16px; border-radius:12px; color:#9f1239; font-size:13px; font-weight:600; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
-            <span class="material-symbols-outlined" style="font-size:18px">info</span>
-            Please visit the main Barangay office for assistance regarding your application.
-          </div>
-        ` : ''}
-
-        <div style="display:grid; gap:12px; font-size:14px; border-top: 1px solid var(--border); padding-top:24px;">
           <div style="display:flex; justify-content:space-between;"><span>Resident Name:</span><strong>${d.resident || d.resident_name}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Document Type:</span><strong>${d.type || d.document_type}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Date Filed:</span><strong>${new Date(d.date).toLocaleDateString()}</strong></div>

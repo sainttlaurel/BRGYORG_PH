@@ -613,8 +613,12 @@ async function bulkApproveDocuments() {
     const d = state.documents.find(x => x.id === id);
     if (d && d.status === 'Pending') {
       try {
-        await dbUpdate('documents', id, { status: 'Approved' });
+        await dbUpdate('documents', id, { 
+          status: 'Approved',
+          remarks: 'Your document request has been approved. You can now claim your copy at the Barangay Hall.'
+        });
         d.status = 'Approved';
+        d.remarks = 'Your document request has been approved. You can now claim your copy at the Barangay Hall.';
         addNotification('Document Approved', `${d.type} for ${d.resident} approved`, 'success');
       } catch (err) { console.warn('Bulk approve error:', err.message); }
     }
@@ -630,8 +634,12 @@ async function bulkRejectDocuments() {
     const d = state.documents.find(x => x.id === id);
     if (d && d.status === 'Pending') {
       try {
-        await dbUpdate('documents', id, { status: 'Rejected' });
+        await dbUpdate('documents', id, { 
+          status: 'Rejected',
+          remarks: 'Your request was not approved. Please visit the Barangay Hall for more information.'
+        });
         d.status = 'Rejected';
+        d.remarks = 'Your request was not approved. Please visit the Barangay Hall for more information.';
         addNotification('Document Rejected', `${d.type} for ${d.resident} rejected`, 'warning');
       } catch (err) { console.warn('Bulk reject error:', err.message); }
     }
@@ -662,8 +670,10 @@ async function approveDoc(id) {
   const d = state.documents.find(x => x.id === id);
   if (!d) return;
   try {
-    await dbUpdate('documents', id, { status: 'Approved' });
+    const remarks = 'Your document request has been approved. You can now claim your copy at the Barangay Hall.';
+    await dbUpdate('documents', id, { status: 'Approved', remarks });
     d.status = 'Approved';
+    d.remarks = remarks;
     updateBadges(); updateDashboard(); renderDocuments(); renderDashboardDocs();
     toast('Request approved!', 'success');
     addNotification('Document Approved', `${d.type} for ${d.resident} has been approved`, 'success');
@@ -674,8 +684,10 @@ async function rejectDoc(id) {
   const d = state.documents.find(x => x.id === id);
   if (!d) return;
   try {
-    await dbUpdate('documents', id, { status: 'Rejected' });
+    const remarks = 'Your request was not approved. Please visit the Barangay Hall for more information.';
+    await dbUpdate('documents', id, { status: 'Rejected', remarks });
     d.status = 'Rejected';
+    d.remarks = remarks;
     updateBadges(); updateDashboard(); renderDocuments(); renderDashboardDocs();
     toast('Request rejected', 'info');
     addNotification('Document Rejected', `${d.type} for ${d.resident} was rejected`, 'warning');
@@ -1554,6 +1566,7 @@ function openDocPanel(id) {
   document.getElementById('dp-edit-type').value = d.type;
   document.getElementById('dp-edit-purpose').value = d.purpose || '';
   document.getElementById('dp-edit-status').value = d.status;
+  document.getElementById('dp-edit-remarks').value = d.remarks || '';
   document.getElementById('doc-panel-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1590,6 +1603,7 @@ async function saveDocPanel() {
     type: document.getElementById('dp-edit-type').value,
     purpose: document.getElementById('dp-edit-purpose').value.trim(),
     status: document.getElementById('dp-edit-status').value,
+    remarks: document.getElementById('dp-edit-remarks').value.trim(),
   };
   try {
     await dbUpdate('documents', _panelDocId, updated);
