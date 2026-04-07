@@ -219,12 +219,20 @@ function updateDate() {
 function updateBadges() {
   const pending = state.documents.filter(d => d.status === 'Pending').length;
   const activeCmp = state.complaints.filter(c => c.status === 'Pending').length;
+  // Community Badges
+  const pendingSug = state.suggestions.filter(s => s.status === 'pending').length;
+  const pendingVol = state.volunteers.filter(v => v.status === 'pending').length;
+  const totalCom = pendingSug + pendingVol;
+
   const bd = document.getElementById('badge-documents');
   const bc = document.getElementById('badge-complaints');
   const br = document.getElementById('badge-residents');
+  const bcom = document.getElementById('badge-community');
+
   if (bd) { bd.textContent = pending || ''; bd.style.display = pending ? 'inline' : 'none'; }
   if (bc) { bc.textContent = activeCmp || ''; bc.style.display = activeCmp ? 'inline' : 'none'; }
   if (br) { br.style.display = 'none'; }
+  if (bcom) { bcom.textContent = totalCom || ''; bcom.style.display = totalCom ? 'inline' : 'none'; }
 }
 
 // ===================== NAVIGATION =====================
@@ -1976,22 +1984,102 @@ async function deleteSuggestion(id) {
     state.suggestions = state.suggestions.filter(x => x.id !== id);
     renderSuggestions();
     closeModal('confirm-modal');
+    updateBadges();
     toast('Suggestion removed', 'info');
   } catch (err) {
     toast('Error: ' + err.message, 'error');
   }
 }
 
-function exportVolunteers() {
-  const headers = ['Full Name', 'Contact', 'Email', 'Body Conditions', 'Status', 'Signed Up'];
-  const rows = state.volunteers.map(v => [v.full_name, v.contact, v.email || '', v.body_conditions || 'None', v.status || 'pending', formatDate(v.created_at)]);
-  exportToCSV(rows, 'volunteer_list', headers);
+async function confirmUpdateVolunteer(id, status) {
+  try {
+    const updated = await dbUpdate('volunteer_signups', id, { status });
+    state.volunteers = state.volunteers.map(v => v.id === id ? updated[0] : v);
+    renderVolunteers();
+    updateBadges();
+    toast(`Volunteer application ${status}`, 'success');
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+async function deleteVolunteer(id) {
+  try {
+    await dbDelete('volunteer_signups', id);
+    state.volunteers = state.volunteers.filter(v => v.id !== id);
+    renderVolunteers();
+    updateBadges();
+    closeModal('confirm-modal');
+    toast('Application removed', 'info');
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+async function submitPoll() {
+  const question = val('poll-question');
+  const optionsRaw = val('poll-options').split('\n').map(o => o.trim()).filter(o => o);
+  const expiry = val('poll-expiry');
+
+  if (!question || optionsRaw.length < 2) {
+    toast('Question and at least 2 options are required', 'error');
+    return;
+  }
+
+  try {
+    const poll = {
+      question,
+      options: optionsRaw,
+      votes: {},
+      status: 'active',
+      expires_at: expiry || null
+    };
+    const results = await dbInsert('polls', poll);
+    state.polls.push(results[0]);
+    renderAdminPolls();
+    closeModal('new-poll-modal');
+    ['poll-question', 'poll-options', 'poll-expiry'].forEach(clearField);
+    toast('Poll launched successfully!', 'success');
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+async function closePoll(id) {
+  try {
+    await dbUpdate('polls', id, { status: 'closed' });
+    const p = state.polls.find(x => x.id === id);
+    if (p) p.status = 'closed';
+    renderAdminPolls();
+    toast('Poll closed for voting', 'info');
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+async function deletePoll(id) {
+  confirmDelete('Poll', 'Permanently remove this poll and all its results?', async () => {
+    try {
+      await dbDelete('polls', id);
+      state.polls = state.polls.filter(x => x.id !== id);
+      renderAdminPolls();
+      closeModal('confirm-modal');
+      toast('Poll deleted', 'info');
+    } catch (err) {
+      toast('Error: ' + err.message, 'error');
+    }
+  });
 }
 
 // Export functions to window
 window.switchCommunityTab = switchCommunityTab;
 window.publishSuggestionUI = publishSuggestionUI;
 window.deleteSuggestion = deleteSuggestion;
+window.confirmUpdateVolunteer = confirmUpdateVolunteer;
+window.deleteVolunteer = deleteVolunteer;
+window.submitPoll = submitPoll;
+window.closePoll = closePoll;
+window.deletePoll = deletePoll;
 window.exportVolunteers = exportVolunteers;
 window.renderCommunityHub = renderCommunityHub;
 

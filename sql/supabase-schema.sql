@@ -79,7 +79,9 @@ CREATE TABLE documents (
     date VARCHAR(10) NOT NULL, -- YYYY-MM-DD
     status VARCHAR(20) DEFAULT 'Pending', -- 'Pending'|'Approved'|'Rejected'
     ref VARCHAR(30) DEFAULT '',
-
+    purpose TEXT DEFAULT '',
+    contact VARCHAR(30) DEFAULT 'N/A'
+);
 
 -- Sample documents
 INSERT INTO documents (id, resident, type, date, status, ref, purpose) VALUES

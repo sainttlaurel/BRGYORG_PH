@@ -1045,6 +1045,34 @@
     </div>
   </div>
 
+  <!-- New Poll Modal -->
+  <div id="new-poll-modal" class="modal-overlay" style="display:none" onclick="closeOnOverlay(event,'new-poll-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Poll</h3>
+        <button class="modal-close" onclick="closeModal('new-poll-modal')"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Poll Question *</label>
+          <input type="text" id="poll-question" placeholder="e.g. Should we extend the park hours?" />
+        </div>
+        <div class="form-group">
+          <label>Options (One per line, min 2) *</label>
+          <textarea id="poll-options" placeholder="Yes&#10;No&#10;Maybe" style="min-height:100px"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Expiry Date (Optional)</label>
+          <input type="date" id="poll-expiry" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('new-poll-modal')">Cancel</button>
+        <button class="btn-primary" onclick="submitPoll()">Launch Poll</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Confirm Delete Dialog -->
   <div id="confirm-modal" class="modal-overlay" style="display:none">
     <div class="confirm-dialog">
