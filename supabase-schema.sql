@@ -1,217 +1,207 @@
 -- ============================================================
 -- SUPABASE DATABASE SCHEMA
--- Payatas Ledger - Civic Management System
+-- Payatas Ledger — Civic Management System
+-- Fields match app.js state exactly
+-- Run this in Supabase Dashboard → SQL Editor
 -- ============================================================
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================
--- USERS TABLE
+-- DROP EXISTING TABLES (clean reset — comment out if updating)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  username VARCHAR(50) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  role VARCHAR(50) NOT NULL DEFAULT 'Staff',
-  status VARCHAR(20) NOT NULL DEFAULT 'Active',
-  last_login TIMESTAMP,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+DROP TABLE IF EXISTS announcements CASCADE;
+DROP TABLE IF EXISTS projects      CASCADE;
+DROP TABLE IF EXISTS complaints    CASCADE;
+DROP TABLE IF EXISTS documents     CASCADE;
+DROP TABLE IF EXISTS residents     CASCADE;
+DROP TABLE IF EXISTS users         CASCADE;
+
+-- ============================================================
+-- USERS
+-- Matches app.js: { id, name, username, password, role,
+--                   email, status, lastActive, initials }
+-- ============================================================
+CREATE TABLE users (
+  id          SERIAL PRIMARY KEY,
+  name        VARCHAR(100)  NOT NULL,
+  username    VARCHAR(50)   UNIQUE NOT NULL,
+  password    VARCHAR(255)  NOT NULL,
+  role        VARCHAR(20)   NOT NULL DEFAULT 'Staff',   -- 'Admin' | 'Staff'
+  email       VARCHAR(255)  NOT NULL DEFAULT '',
+  status      VARCHAR(20)   NOT NULL DEFAULT 'Active',  -- 'Active' | 'Suspended'
+  last_active VARCHAR(100)  DEFAULT 'Never',
+  initials    VARCHAR(5)    DEFAULT '',
+  created_at  TIMESTAMPTZ   DEFAULT NOW()
 );
 
--- Insert default users
-INSERT INTO users (username, password, name, email, role, status) VALUES
-('admin', 'admin123', 'Admin Payatas', 'admin@payatas.gov.ph', 'Super Administrator', 'Active'),
-('staff1', 'staff123', 'Maria Santos', 'maria.santos@payatas.gov.ph', 'Staff', 'Active'),
-('staff2', 'staff123', 'Juan Dela Cruz', 'juan.delacruz@payatas.gov.ph', 'Staff', 'Active'),
-('viewer', 'viewer123', 'Pedro Reyes', 'pedro.reyes@payatas.gov.ph', 'Viewer', 'Inactive')
-ON CONFLICT (username) DO NOTHING;
+-- Seed default users (passwords stored plain for demo — hash in production)
+INSERT INTO users (name, username, password, role, email, status, last_active, initials) VALUES
+  ('Admin Payatas', 'admin',   'admin123', 'Admin', 'admin@payatas.gov.ph',          'Active', '2 mins ago',  'AP'),
+  ('Elena Garcia',  'egarcia', 'staff123', 'Staff', 'elena.garcia@payatas.gov.ph',   'Active', '1 hour ago',  'EG'),
+  ('Roberto Santos','rsantos', 'staff123', 'Staff', 'roberto.santos@payatas.gov.ph', 'Active', '3 days ago',  'RS');
 
 -- ============================================================
--- RESIDENTS TABLE
+-- RESIDENTS
+-- Matches app.js: { id, fname, lname, purok, contact,
+--                   status, registered, address, gender,
+--                   dob, notes }
+-- NOTE: id is the custom string e.g. 'PAY-029481'
 -- ============================================================
-CREATE TABLE IF NOT EXISTS residents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  resident_id VARCHAR(50) UNIQUE,
-  initials VARCHAR(10),
-  name VARCHAR(100) NOT NULL,
-  address TEXT,
-  purok VARCHAR(50),
-  phone VARCHAR(20),
-  email VARCHAR(255),
-  status VARCHAR(20) DEFAULT 'Active',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE residents (
+  id          VARCHAR(20)   PRIMARY KEY,   -- e.g. PAY-029481
+  fname       VARCHAR(100)  NOT NULL,
+  lname       VARCHAR(100)  NOT NULL,
+  purok       VARCHAR(20)   NOT NULL,
+  contact     VARCHAR(30)   DEFAULT 'N/A',
+  status      VARCHAR(20)   DEFAULT 'Active',   -- 'Active' | 'Inactive'
+  registered  VARCHAR(4)    DEFAULT '',          -- year e.g. '2023'
+  address     TEXT          DEFAULT 'Barangay Payatas',
+  gender      VARCHAR(10)   DEFAULT 'N/A',
+  dob         VARCHAR(20)   DEFAULT 'N/A',       -- ISO date string or 'N/A'
+  notes       TEXT          DEFAULT '',
+  created_at  TIMESTAMPTZ   DEFAULT NOW()
 );
 
--- Insert sample residents
-INSERT INTO residents (resident_id, initials, name, address, purok, phone, email, status) VALUES
-('PAY-2023-0842', 'MS', 'Mateo Santos', '124 Orchid St. Phase 2', 'Purok 4', '+63 917 555 0192', 'mateo@payatas.ph', 'Active'),
-('PAY-2023-1129', 'ER', 'Elena Reyes', 'Blk 5 Lot 12, Area C', 'Purok 1', '+63 920 123 4567', 'elena@payatas.ph', 'Active'),
-('PAY-2022-0450', 'JR', 'Juan Rivera', '45 Molave Street', 'Purok 2', '+63 945 987 6543', 'juan@payatas.ph', 'Inactive'),
-('PAY-2023-1562', 'AL', 'Alicia Lopez', '78 Sampaguita Ext.', 'Purok 3', '+63 916 222 3344', 'alicia@payatas.ph', 'Active'),
-('PAY-2023-2041', 'BR', 'Bernadette Ramos', '33 Kalayaan Ave.', 'Purok 5', '+63 932 441 8800', 'berna@payatas.ph', 'Active');
+-- Seed sample residents
+INSERT INTO residents (id, fname, lname, purok, contact, status, registered, address, gender, dob) VALUES
+  ('PAY-029481', 'Maria Clara',  'Agustin',   'Purok 1', '+63 912 345 6789', 'Active',   '2018', 'Block 3 Lot 5, Purok 1, Barangay Payatas',  'Female', '1985-04-12'),
+  ('PAY-055102', 'Santiago',     'Bautista Jr.','Purok 3','+63 945 882 1092','Active',   '2020', 'Block 7 Lot 2, Purok 3, Barangay Payatas',  'Male',   '1991-08-23'),
+  ('PAY-010293', 'Theresa Mae',  'Cruz',      'Purok 2', '+63 908 556 1234', 'Inactive', '2015', 'Block 1 Lot 8, Purok 2, Barangay Payatas',  'Female', '1978-01-15'),
+  ('PAY-129038', 'Leonardo',     'Dela Cruz', 'Purok 1', '+63 922 110 4492', 'Active',   '2022', 'Block 5 Lot 11, Purok 1, Barangay Payatas', 'Male',   '1995-11-07'),
+  ('PAY-003482', 'Gloria',       'Estrada',   'Purok 5', '+63 933 772 0019', 'Active',   '2012', 'Block 2 Lot 4, Purok 5, Barangay Payatas',  'Female', '1962-06-30'),
+  ('PAY-073910', 'Ricardo Jose', 'de Vera',   'Purok 4', '+63 917 441 2230', 'Active',   '2019', 'Block 9 Lot 6, Purok 4, Barangay Payatas',  'Male',   '1988-03-18'),
+  ('PAY-098234', 'Amara',        'Luna',      'Purok 2', '+63 926 234 5678', 'Active',   '2021', 'Block 4 Lot 3, Purok 2, Barangay Payatas',  'Female', '1999-09-05');
 
 -- ============================================================
--- DOCUMENTS TABLE
+-- DOCUMENTS
+-- Matches app.js: { id, resident, type, date, status,
+--                   ref, purpose, contact }
 -- ============================================================
-CREATE TABLE IF NOT EXISTS documents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  doc_id VARCHAR(50) UNIQUE,
-  resident_name VARCHAR(100) NOT NULL,
-  document_type VARCHAR(100) NOT NULL,
-  purpose TEXT,
-  priority VARCHAR(20) DEFAULT 'Standard',
-  status VARCHAR(30) DEFAULT 'Pending',
-  reject_reason TEXT,
-  requested_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  processed_date TIMESTAMP,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE documents (
+  id          VARCHAR(20)   PRIMARY KEY,   -- e.g. DOC-001
+  resident    VARCHAR(100)  NOT NULL,
+  type        VARCHAR(100)  NOT NULL,      -- document type name
+  date        VARCHAR(10)   NOT NULL,      -- ISO date string YYYY-MM-DD
+  status      VARCHAR(20)   DEFAULT 'Pending',  -- 'Pending'|'Approved'|'Rejected'
+  ref         VARCHAR(30)   DEFAULT '',
+  purpose     TEXT          DEFAULT '',
+  contact     VARCHAR(30)   DEFAULT '',
+  created_at  TIMESTAMPTZ   DEFAULT NOW()
 );
 
--- Insert sample documents
-INSERT INTO documents (doc_id, resident_name, document_type, status, requested_date) VALUES
-('DOC-001', 'Maria Alicia Dela Cruz', 'Barangay Clearance', 'Pending', '2023-10-23'),
-('DOC-002', 'Ricardo Santos', 'Business Permit', 'Approved', '2023-10-22'),
-('DOC-003', 'Juanito Pineda', 'Certificate of Indigency', 'Ready for Pickup', '2023-10-21'),
-('DOC-004', 'Elena Ledesma', 'Barangay Clearance', 'Rejected', '2023-10-20'),
-('DOC-005', 'Fernando Bautista', 'Business Permit', 'Approved', '2023-10-19');
+-- Seed sample documents
+INSERT INTO documents (id, resident, type, date, status, ref, purpose) VALUES
+  ('DOC-001', 'Mateo Cruz',          'Barangay Clearance',       '2024-10-24', 'Approved', 'PAY-2024-001', 'Employment'),
+  ('DOC-002', 'Elena Santos',        'Certificate of Indigency', '2024-10-26', 'Pending',  'PAY-2024-002', 'Medical assistance'),
+  ('DOC-003', 'Ricardo Dalisay',     'Residency Certificate',    '2024-10-25', 'Rejected', 'PAY-2024-003', 'School enrollment'),
+  ('DOC-004', 'Amara Luna',          'Barangay Clearance',       '2024-10-27', 'Pending',  'PAY-2024-004', 'Bank account'),
+  ('DOC-005', 'Maria Clara Agustin', 'Business Permit',          '2024-10-28', 'Pending',  'PAY-2024-005', 'Business registration');
 
 -- ============================================================
--- COMPLAINTS TABLE
+-- COMPLAINTS
+-- Matches app.js: { id, complainant, category, priority,
+--                   status, date, desc }
 -- ============================================================
-CREATE TABLE IF NOT EXISTS complaints (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  case_id VARCHAR(50) UNIQUE,
-  complainant_name VARCHAR(100) NOT NULL,
-  category VARCHAR(50) NOT NULL,
-  priority VARCHAR(20) DEFAULT 'Standard',
-  location VARCHAR(100),
-  description TEXT,
-  status VARCHAR(30) DEFAULT 'Pending Assessment',
-  assigned_to VARCHAR(100),
-  resolution TEXT,
-  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  resolved_at TIMESTAMP,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE complaints (
+  id          VARCHAR(20)   PRIMARY KEY,   -- e.g. CMP-001
+  complainant VARCHAR(100)  NOT NULL,
+  category    VARCHAR(50)   NOT NULL,
+  priority    VARCHAR(20)   DEFAULT 'Medium',  -- 'High'|'Medium'|'Low'
+  status      VARCHAR(20)   DEFAULT 'Pending', -- 'Pending'|'Resolved'
+  date        VARCHAR(10)   NOT NULL,           -- ISO date string YYYY-MM-DD
+  description TEXT          DEFAULT '',
+  created_at  TIMESTAMPTZ   DEFAULT NOW()
 );
 
--- Insert sample complaints
-INSERT INTO complaints (case_id, complainant_name, category, priority, location, status) VALUES
-('CP-8842', 'Elena Javier', 'Health & Sanitation', 'Urgent', 'Phase 3', 'Pending Assessment'),
-('CP-8841', 'Roberto Cruz', 'Infrastructure', 'Standard', 'Block 5', 'In Progress'),
-('CP-8839', 'Maria Luna', 'Noise Disturbance', 'Low Urgency', 'San Jose St.', 'Resolved'),
-('CP-8843', 'Samuel Mateo', 'Infrastructure', 'Urgent', 'Dahlia Ave.', 'Awaiting Dispatch');
+-- Seed sample complaints
+INSERT INTO complaints (id, complainant, category, priority, status, date, description) VALUES
+  ('CMP-001', 'Maria Alicia Santos',  'Sanitation',    'High',   'Pending',  '2024-10-24', 'Overflowing garbage bins near the market area.'),
+  ('CMP-002', 'Ricardo Jose de Vera', 'Noise',         'Medium', 'Pending',  '2024-10-25', 'Loud music from neighbor past midnight.'),
+  ('CMP-003', 'Elena Ledesma',        'Public Safety', 'Low',    'Resolved', '2024-10-20', 'Broken streetlight in Purok 3.'),
+  ('CMP-004', 'Benjamin Pascual',     'Sanitation',    'High',   'Pending',  '2024-10-26', 'Stagnant water causing mosquito breeding.'),
+  ('CMP-005', 'Gloria Estrada',       'Infrastructure','Medium', 'Resolved', '2024-10-18', 'Pothole on main road near purok 5.');
 
 -- ============================================================
--- PROJECTS TABLE
+-- PROJECTS
+-- Matches app.js: { id, title, category, status,
+--                   budget, progress, desc }
 -- ============================================================
-CREATE TABLE IF NOT EXISTS projects (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  project_code VARCHAR(50) UNIQUE,
-  title VARCHAR(200) NOT NULL,
-  description TEXT,
-  status VARCHAR(30) DEFAULT 'Planned',
-  budget DECIMAL(15, 2),
-  spent_amount DECIMAL(15, 2) DEFAULT 0,
-  progress INTEGER DEFAULT 0,
-  contractor VARCHAR(100),
-  target_date DATE,
-  started_at DATE,
-  completed_at DATE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE projects (
+  id          VARCHAR(20)   PRIMARY KEY,   -- e.g. PRJ-001
+  title       VARCHAR(200)  NOT NULL,
+  category    VARCHAR(50)   NOT NULL,
+  status      VARCHAR(20)   DEFAULT 'Planned', -- 'Planned'|'Ongoing'|'Completed'
+  budget      BIGINT        DEFAULT 0,
+  progress    INTEGER       DEFAULT 0,          -- 0-100
+  description TEXT          DEFAULT '',
+  created_at  TIMESTAMPTZ   DEFAULT NOW()
 );
 
--- Insert sample projects
-INSERT INTO projects (project_code, title, description, status, budget, progress, contractor, target_date) VALUES
-('PRJ-001', 'Phase 4 Main Road Rehabilitation', 'Complete resurfacing of main artery', 'Ongoing', 1250000, 65, 'BuildBase PH', '2023-12-31'),
-('PRJ-002', 'Solar-Powered Lighting Initiative', 'Installation of 50 solar lamps', 'Completed', 450000, 100, 'SolarTech PH', '2023-09-30'),
-('PRJ-003', 'Multipurpose Hall Expansion', 'Expand local health center', 'Planned', 2800000, 0, NULL, '2024-01-31'),
-('PRJ-004', 'Central Payatas Drainage Upgrade', 'Drainage improvement for 2000+ households', 'Ongoing', 3200000, 28, 'BuildBase PH', '2024-03-31');
+-- Seed sample projects
+INSERT INTO projects (id, title, category, status, budget, progress, description) VALUES
+  ('PRJ-001', 'Phase 4 Road Maintenance',          'Infrastructure', 'Ongoing',   4200000, 75,  'Rehabilitation of main roads in Sectors 1-4.'),
+  ('PRJ-002', 'Smart LED Street Lighting',          'Public Safety',  'Ongoing',   1850000, 32,  'Installation of solar LED street lights.'),
+  ('PRJ-003', 'Barangay Health Center Renovation',  'Healthcare',     'Completed', 3400000, 100, 'Full renovation of the health center facilities.'),
+  ('PRJ-004', 'Flood Control & Drainage System',    'Environment',    'Ongoing',   2900000, 58,  'Upgrading drainage to prevent monsoon flooding.'),
+  ('PRJ-005', 'Youth Digital Literacy Hub',         'Education',      'Planned',   1200000, 15,  'Community digital education center.'),
+  ('PRJ-006', 'Eco-Waste Recovery Center',          'Sanitation',     'Ongoing',   2100000, 92,  'Organized waste sorting and recovery facility.');
 
 -- ============================================================
--- ANNOUNCEMENTS TABLE
+-- ANNOUNCEMENTS
+-- Matches app.js: { id, title, category, content, date }
 -- ============================================================
-CREATE TABLE IF NOT EXISTS announcements (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  title VARCHAR(200) NOT NULL,
-  content TEXT,
-  category VARCHAR(50),
-  featured BOOLEAN DEFAULT FALSE,
-  valid_until DATE,
-  published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by UUID REFERENCES users(id),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE announcements (
+  id          VARCHAR(20)   PRIMARY KEY,   -- e.g. ANN-001
+  title       VARCHAR(255)  NOT NULL,
+  category    VARCHAR(30)   DEFAULT 'general', -- 'meeting'|'health'|'holiday'|'infrastructure'|'general'
+  content     TEXT          DEFAULT '',
+  date        VARCHAR(10)   NOT NULL,            -- ISO date string YYYY-MM-DD
+  created_at  TIMESTAMPTZ   DEFAULT NOW()
 );
 
--- Insert sample announcements
-INSERT INTO announcements (title, content, category, featured, valid_until) VALUES
-('Annual Barangay Vaccination Drive & Medical Mission 2023', 'Free vaccinations, pediatric check-ups, and dental services for all residents.', 'Health', TRUE, '2023-10-31'),
-('Emergency Road Maintenance: IBP Road Section', 'Scheduled repair works. Expect rerouting and minor delays.', 'Advisory', FALSE, '2023-10-30'),
-('Community Clean-up Drive: Payatas Green', 'Monthly initiative to keep public parks clean.', 'Events', FALSE, '2023-10-28'),
-('Quarterly Town Hall: Budget Transparency Report', 'Financial performance review and upcoming projects.', 'Governance', FALSE, '2023-10-25');
+-- Seed sample announcements
+INSERT INTO announcements (id, title, category, content, date) VALUES
+  ('ANN-001', 'Annual General Assembly & Budget Transparency Forum', 'meeting',        'Join us for a detailed review of the upcoming fiscal year projects. We will discuss waste management enhancements and new youth recreational facilities.', '2024-10-24'),
+  ('ANN-002', 'Community Vaccination Drive: Seniors & Children',     'health',         'Mandatory flu and pneumonia shots available at the Barangay Health Center. Please bring valid IDs and vaccination cards.',                                '2024-10-22'),
+  ('ANN-003', 'All Saints'' Day: Office Operations Advisory',        'holiday',        'The Barangay Hall will be closed for non-emergency services. Garbage collection schedule remains unchanged.',                                            '2024-10-31'),
+  ('ANN-004', 'Street Lighting Committee Update',                    'meeting',        'Review of solar lighting installation progress along Block 5 and 6. Resident feedback on placement is highly encouraged.',                               '2024-10-18'),
+  ('ANN-005', 'Drainage System Maintenance Program',                 'infrastructure', 'Expect minor road diversions near the marketplace as we perform annual desilting to prevent monsoon flooding.',                                          '2024-10-15');
 
 -- ============================================================
--- USER ROLES TABLE (for role-based access control)
+-- ROW LEVEL SECURITY
 -- ============================================================
-CREATE TABLE IF NOT EXISTS user_roles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  role_name VARCHAR(50) UNIQUE NOT NULL,
-  description TEXT,
-  permissions JSONB DEFAULT '[]',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Insert default roles
-INSERT INTO user_roles (role_name, description, permissions) VALUES
-('Super Administrator', 'Full system access', '["all"]'),
-('Administrator', 'Manage users and settings', '["users", "settings", "reports"]'),
-('Staff', 'Handle day-to-day operations', '["residents", "documents", "complaints", "projects"]'),
-('Viewer', 'Read-only access', '["dashboard", "reports"]');
-
--- ============================================================
--- ROW LEVEL SECURITY (RLS)
--- ============================================================
-
--- Enable RLS on all tables
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE residents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE complaints ENABLE ROW LEVEL SECURITY;
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE residents     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE documents     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE complaints    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE projects      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
 
--- Create policies (simplified for demo - customize as needed)
-CREATE POLICY "Allow all for authenticated users" ON users FOR ALL USING (true);
-CREATE POLICY "Allow all for authenticated users" ON residents FOR ALL USING (true);
-CREATE POLICY "Allow all for authenticated users" ON documents FOR ALL USING (true);
-CREATE POLICY "Allow all for authenticated users" ON complaints FOR ALL USING (true);
-CREATE POLICY "Allow all for authenticated users" ON projects FOR ALL USING (true);
-CREATE POLICY "Allow all for authenticated users" ON announcements FOR ALL USING (true);
-CREATE POLICY "Allow all for authenticated users" ON user_roles FOR ALL USING (true);
+-- Allow all operations for anon key (demo — tighten in production)
+CREATE POLICY "allow_all_users"         ON users         FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_residents"     ON residents     FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_documents"     ON documents     FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_complaints"    ON complaints    FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_projects"      ON projects      FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_announcements" ON announcements FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================================
--- INDEXES FOR BETTER PERFORMANCE
+-- INDEXES
 -- ============================================================
-
-CREATE INDEX IF NOT EXISTS idx_residents_purok ON residents(purok);
-CREATE INDEX IF NOT EXISTS idx_residents_status ON residents(status);
-CREATE INDEX IF NOT EXISTS idx_documents_status ON documents(status);
-CREATE INDEX IF NOT EXISTS idx_documents_type ON documents(document_type);
-CREATE INDEX IF NOT EXISTS idx_complaints_status ON complaints(status);
-CREATE INDEX IF NOT EXISTS idx_complaints_category ON complaints(category);
-CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
-CREATE INDEX IF NOT EXISTS idx_announcements_category ON announcements(category);
+CREATE INDEX idx_residents_purok      ON residents(purok);
+CREATE INDEX idx_residents_status     ON residents(status);
+CREATE INDEX idx_documents_status     ON documents(status);
+CREATE INDEX idx_documents_type       ON documents(type);
+CREATE INDEX idx_complaints_status    ON complaints(status);
+CREATE INDEX idx_complaints_category  ON complaints(category);
+CREATE INDEX idx_complaints_priority  ON complaints(priority);
+CREATE INDEX idx_projects_status      ON projects(status);
+CREATE INDEX idx_projects_category    ON projects(category);
+CREATE INDEX idx_announcements_cat    ON announcements(category);
+CREATE INDEX idx_announcements_date   ON announcements(date);
 
 -- ============================================================
 -- END OF SCHEMA
 -- ============================================================
-
