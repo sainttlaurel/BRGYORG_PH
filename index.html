@@ -310,10 +310,12 @@
       <option>Pending</option><option>Approved</option><option>Rejected</option>
     </select>
   </div> 
+  <div id="doc-bulk-bar-wrap"></div>
   <div class="table-container">
     <div class="table-scroll">
       <table>
-        <thead><tr><th>Resident</th><th>Document Type</th><th>Reference</th><th>Date</th><th>Purpose</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>Share        <tbody id="documents-table"></tbody>
+    <thead><tr><th style="width:36px"></th><th>Resident</th><th>Document Type</th><th>Reference</th><th>Date</th><th>Purpose</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+        <tbody id="documents-table"></tbody>
       </table>
     </div>
     <div class="pagination" id="documents-pagination"></div>
@@ -342,10 +344,11 @@
       <input type="text" class="search-input" id="complaints-search" placeholder="Search complaints..." oninput="renderComplaints()" style="padding-left:34px"/>
     </div>
   </div>
+  <div id="complaint-bulk-bar-wrap"></div>
   <div class="table-container">
     <div class="table-scroll">
       <table>
-        <thead><tr><th>Complainant</th><th>Category</th><th>Priority</th><th>Date</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+        <thead><tr><th style="width:36px"></th><th>Complainant</th><th>Category</th><th>Priority</th><th>Date</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
         <tbody id="complaints-table"></tbody>
       </table>
     </div>

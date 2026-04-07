@@ -604,19 +604,19 @@ function renderDocBulkBar(filteredData) {
     bar = document.createElement('div');
     bar.id = 'doc-bulk-bar';
     bar.style.cssText = 'display:none;align-items:center;gap:10px;padding:8px 12px;background:var(--primary-light,#eef2ff);border-radius:8px;margin-bottom:10px;font-size:13px;font-weight:600;';
-    const tableWrap = document.getElementById('documents-table');
-    if (tableWrap && tableWrap.parentNode) tableWrap.parentNode.insertBefore(bar, tableWrap);
+    const wrap = document.getElementById('doc-bulk-bar-wrap');
+    if (wrap) wrap.appendChild(bar);
   }
   const count = state.selectedDocuments.size;
   if (count === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   bar.innerHTML = `
-    <span style="color:var(--primary)">${count} selected</span>
-    <button class="tbl-btn" onclick="bulkApproveDocuments()" title="Approve selected" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0"><span class="material-symbols-outlined" style="font-size:15px">check_circle</span> Approve All</button>
-    <button class="tbl-btn danger" onclick="bulkRejectDocuments()" title="Reject selected" style="background:#fef2f2"><span class="material-symbols-outlined" style="font-size:15px">cancel</span> Reject All</button>
-    <button class="tbl-btn danger" onclick="bulkDeleteDocuments()" title="Delete selected"><span class="material-symbols-outlined" style="font-size:15px">delete</span> Delete</button>
-    <button class="tbl-btn" onclick="clearDocSelection()">Clear</button>
-  `;
+      <span style="color:var(--primary)">${count} selected</span>
+      <button class="tbl-btn bulk" onclick="bulkApproveDocuments()" title="Approve selected" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;"><span class="material-symbols-outlined" style="font-size:15px;">check_circle</span> Approve All</button>
+      <button class="tbl-btn bulk danger" onclick="bulkRejectDocuments()" title="Reject selected" style="background:#fef2f2;"><span class="material-symbols-outlined" style="font-size:15px;">cancel</span> Reject All</button>
+      <button class="tbl-btn bulk danger" onclick="bulkDeleteDocuments()" title="Delete selected"><span class="material-symbols-outlined" style="font-size:15px;">delete</span> Delete</button>
+      <button class="tbl-btn bulk" onclick="clearDocSelection()">Clear</button>
+    `;
 }
 
 function clearDocSelection() {
@@ -776,18 +776,18 @@ function renderComplaintBulkBar() {
     bar = document.createElement('div');
     bar.id = 'complaint-bulk-bar';
     bar.style.cssText = 'display:none;align-items:center;gap:10px;padding:8px 12px;background:var(--primary-light,#eef2ff);border-radius:8px;margin-bottom:10px;font-size:13px;font-weight:600;';
-    const tableWrap = document.getElementById('complaints-table');
-    if (tableWrap && tableWrap.parentNode) tableWrap.parentNode.insertBefore(bar, tableWrap);
+    const wrap = document.getElementById('complaint-bulk-bar-wrap');
+    if (wrap) wrap.appendChild(bar);
   }
   const count = state.selectedComplaints.size;
   if (count === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   bar.innerHTML = `
-    <span style="color:var(--primary)">${count} selected</span>
-    <button class="tbl-btn" onclick="bulkResolveComplaints()" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0"><span class="material-symbols-outlined" style="font-size:15px">check_circle</span> Resolve All</button>
-    <button class="tbl-btn danger" onclick="bulkDeleteComplaints()"><span class="material-symbols-outlined" style="font-size:15px">delete</span> Delete</button>
-    <button class="tbl-btn" onclick="clearComplaintSelection()">Clear</button>
-  `;
+      <span style="color:var(--primary)">${count} selected</span>
+      <button class="tbl-btn bulk" onclick="bulkResolveComplaints()" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;"><span class="material-symbols-outlined" style="font-size:15px;">check_circle</span> Resolve All</button>
+      <button class="tbl-btn bulk danger" onclick="bulkDeleteComplaints()"><span class="material-symbols-outlined" style="font-size:15px;">delete</span> Delete</button>
+      <button class="tbl-btn bulk" onclick="clearComplaintSelection()">Clear</button>
+    `;
 }
 
 function clearComplaintSelection() {
