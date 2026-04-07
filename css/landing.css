@@ -1236,3 +1236,60 @@ footer {
   gap: 16px;
   margin-bottom: 20px;
 }
+
+/* --- MOBILE RESPONSIVE TWEAKS (All Browsers/iOS/Android) --- */
+@media (max-width: 600px) {
+  .verify-tabs-container {
+    padding: 24px 20px;
+    margin: 0 16px;
+    border-radius: var(--radius-md);
+  }
+
+  .verify-tabs {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .verify-tab {
+    padding: 10px 8px;
+    font-size: 13px;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .verify-tab span.material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  .verify-input-wrapper input {
+    padding: 16px 20px 16px 52px;
+    font-size: 14px;
+  }
+
+  .verify-input-wrapper .material-symbols-outlined {
+    left: 16px;
+    font-size: 20px;
+  }
+
+  #strip-verify-btn, #resident-verify-btn {
+    padding: 16px;
+    font-size: 14px;
+  }
+
+  /* Result Card on Mobile */
+  .modal-result-card {
+    padding: 20px 16px;
+  }
+
+  .modal-result-header {
+    gap: 12px;
+  }
+
+  .modal-result-header h4 {
+    font-size: 16px;
+  }
+}
