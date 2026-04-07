@@ -27,7 +27,7 @@
       <li><a href="#about">About</a></li>
       <li><a href="admin.html">Admin Portal</a></li>
     </ul>
-    <a href="#services" class="nav-cta" onclick="openModal('apply')">Get Clearance</a>
+    <a href="#services" class="nav-cta" onclick="openModal('apply')">Apply for Documents</a>
   </nav>
 
   <!-- HERO -->
@@ -86,12 +86,46 @@
         <p>Check the validity of any document issued by Barangay Payatas using its control number.</p>
         <span class="service-link">Check Status <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></span>
       </a>
-      <a href="javascript:void(0)" class="service-card">
+      <a href="#alerts" class="service-card">
         <div class="service-icon"><span class="material-symbols-outlined">campaign</span></div>
         <h4>Community Alerts</h4>
         <p>Stay updated with the latest announcements, projects, and health advisories.</p>
         <span class="service-link">View Board <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></span>
       </a>
+      <a href="javascript:void(0)" class="service-card" onclick="openModal('complaint')">
+        <div class="service-icon"><span class="material-symbols-outlined">gavel</span></div>
+        <h4>File a Complaint</h4>
+        <p>Report community issues or formal grievances directly to the barangay office.</p>
+        <span class="service-link">Submit Report <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ANNOUNCEMENTS -->
+  <section id="alerts" class="section" style="background: white;">
+    <div class="section-header">
+      <div class="hero-tag" style="margin-bottom:10px">Barangay Board</div>
+      <h3>Latest Announcements</h3>
+      <p>Official news and important updates from your local government.</p>
+    </div>
+    <div id="announcements-list" class="grid-3">
+      <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
+        Loading latest updates...
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="section">
+    <div class="section-header">
+      <div class="hero-tag" style="margin-bottom:10px">Community Growth</div>
+      <h3>Ongoing Projects</h3>
+      <p>Tracking the development and improvement of Barangay Payatas.</p>
+    </div>
+    <div id="projects-list" class="grid-3">
+      <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
+        Fetching project data...
+      </div>
     </div>
   </section>
 
@@ -206,6 +240,34 @@
           </div>
           <button id="submit-req-btn" onclick="submitClearance()" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;">
             Submit Application
+          </button>
+        </div>
+
+        <!-- Complaint Form -->
+        <div id="complaint-form-content" style="display:none">
+          <div class="form-group">
+            <label>Your Full Name</label>
+            <input type="text" id="comp-name" class="form-control" placeholder="Resident Name" required />
+          </div>
+          <div class="form-group">
+            <label>Complaint Category</label>
+            <select id="comp-category" class="form-control" required>
+              <option value="">Select category...</option>
+              <option>Sanitation & Waste</option>
+              <option>Noise Complaint</option>
+              <option>Public Safety</option>
+              <option>Infrastructure Repair</option>
+              <option>Health & Medical</option>
+              <option>Community Dispute</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Description of Issue</label>
+            <textarea id="comp-desc" class="form-control" rows="4" placeholder="Please provide specific details about your concern..." style="resize:none" required></textarea>
+          </div>
+          <button id="submit-comp-btn" onclick="submitComplaint()" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;">
+            Submit Complaint
           </button>
         </div>
 

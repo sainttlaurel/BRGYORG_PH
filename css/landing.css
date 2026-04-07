@@ -208,3 +208,46 @@ footer { background: #111; color: white; padding: 80px 5% 40px; }
   .hero h2 { font-size: 36px; }
   .stats { flex-direction: column; gap: 40px; }
 }
+
+/* Announcements */
+.announcement-card {
+  background: white; padding: 30px; border-radius: var(--radius-md);
+  border: 1px solid var(--border); transition: var(--transition);
+}
+.announcement-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--primary-glow); }
+.ann-tag {
+  display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; margin-bottom: 15px;
+}
+.ann-tag.general { background: #eef2ff; color: #1a56db; }
+.ann-tag.health { background: #f0fdf4; color: #16a34a; }
+.ann-tag.emergency { background: #fef2f2; color: #dc2626; }
+.ann-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: var(--text-main); }
+.ann-content { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+.ann-date { font-size: 12px; color: var(--text-muted); margin-top: 20px; display: block; border-top: 1px solid var(--border); padding-top: 15px; }
+
+/* Projects */
+.project-card {
+  background: white; padding: 30px; border-radius: var(--radius-md);
+  border: 1px solid var(--border); transition: var(--transition);
+}
+.project-card:hover { box-shadow: var(--shadow-md); }
+.proj-title { font-size: 20px; font-weight: 700; margin-bottom: 5px; }
+.proj-cat { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; display: block; }
+.progress-container { margin-bottom: 10px; }
+.progress-meta { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.progress-bar-bg { height: 10px; background: var(--background); border-radius: 99px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--primary); border-radius: 99px; transition: width 1s ease-in-out; }
+.proj-status {
+  display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  margin-top: 15px;
+}
+.status-planned { background: #f1f5f9; color: #64748b; }
+.status-ongoing { background: #eef2ff; color: #1a56db; }
+.status-completed { background: #f0fdf4; color: #16a34a; }
+
+/* Responsive adjustments for 4 cards */
+@media (min-width: 1200px) {
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
