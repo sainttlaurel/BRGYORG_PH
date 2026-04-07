@@ -411,18 +411,20 @@ async function deleteResident(id) {
 async function submitResident() {
   const fname = val('res-fname'), lname = val('res-lname'), purok = val('res-purok');
   if (!fname || !lname || !purok) { toast('Please fill required fields', 'error'); return; }
-  const id = generateResidentId();
-  const row = {
-    id, fname, lname, purok,
-    contact: val('res-contact') || 'N/A',
-    status: 'Active',
-    registered: new Date().getFullYear().toString(),
-    address: val('res-address') || 'Barangay Payatas',
-    gender: val('res-gender') || 'N/A',
-    dob: val('res-dob') || 'N/A',
-    notes: val('res-notes'),
-  };
   try {
+    const id = await dbGenerateId('residents', 'PAY');
+    // PAY prefix needs 6-digit padding
+    const paddedId = 'PAY-' + String(parseInt(id.split('-').pop(), 10)).padStart(6, '0');
+    const row = {
+      id: paddedId, fname, lname, purok,
+      contact: val('res-contact') || 'N/A',
+      status: 'Active',
+      registered: new Date().getFullYear().toString(),
+      address: val('res-address') || 'Barangay Payatas',
+      gender: val('res-gender') || 'N/A',
+      dob: val('res-dob') || 'N/A',
+      notes: val('res-notes'),
+    };
     const inserted = await dbInsert('residents', row);
     state.residents.push(inserted[0] || row);
     closeModal('add-resident-modal');
@@ -496,20 +498,24 @@ function printResidentProfile(id) {
 
 // ===================== DOCUMENTS =====================
 function injectDocDateFilters() {
-  const toolbar = document.getElementById('docs-toolbar');
-  if (!toolbar || document.getElementById('docs-date-from')) return;
+  if (document.getElementById('docs-date-from')) return;
+  // Find the filter bar on the documents page
+  const docPage = document.getElementById('page-documents');
+  if (!docPage) return;
+  const filterBar = docPage.querySelector('.filter-bar');
+  if (!filterBar) return;
   const wrap = document.createElement('div');
   wrap.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
   wrap.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--on-surface-3)">
       <span>From</span>
-      <input type="date" id="docs-date-from" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface)" oninput="onDocDateFilter()"/>
+      <input type="date" id="docs-date-from" style="font-size:12px;padding:4px 8px;border:1px solid var(--outline);border-radius:6px;background:var(--surface)" oninput="onDocDateFilter()"/>
       <span>To</span>
-      <input type="date" id="docs-date-to" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface)" oninput="onDocDateFilter()"/>
+      <input type="date" id="docs-date-to" style="font-size:12px;padding:4px 8px;border:1px solid var(--outline);border-radius:6px;background:var(--surface)" oninput="onDocDateFilter()"/>
       <button class="tbl-btn" onclick="clearDocDateFilter()" style="padding:4px 8px;font-size:11px">Clear</button>
     </div>
   `;
-  toolbar.appendChild(wrap);
+  filterBar.appendChild(wrap);
 }
 
 function onDocDateFilter() {
@@ -689,11 +695,11 @@ async function deleteDoc(id) {
 async function submitRequest() {
   const name = val('req-name'), type = val('req-type');
   if (!name || !type) { toast('Please fill required fields', 'error'); return; }
-  const num = state.documents.length + 1;
-  const id = 'DOC-' + String(num).padStart(3, '0');
-  const ref = 'PAY-' + new Date().getFullYear() + '-' + String(num).padStart(3, '0');
-  const row = { id, resident: name, type, date: today(), status: 'Pending', ref, purpose: val('req-purpose'), contact: val('req-contact') };
   try {
+    const id = await dbGenerateId('documents', 'DOC');
+    const num = id.split('-').pop();
+    const ref = 'PAY-' + new Date().getFullYear() + '-' + num;
+    const row = { id, resident: name, type, date: today(), status: 'Pending', ref, purpose: val('req-purpose'), contact: val('req-contact') };
     const inserted = await dbInsert('documents', row);
     state.documents.push(inserted[0] || row);
     closeModal('new-request-modal');
@@ -913,12 +919,12 @@ async function deleteComplaint(id) {
 async function submitComplaint() {
   const name = val('cmp-name'), cat = val('cmp-cat'), desc = val('cmp-desc');
   if (!name || !cat || !desc) { toast('Please fill required fields', 'error'); return; }
-  const id = 'CMP-' + String(state.complaints.length + 1).padStart(3, '0');
-  const row = { id, complainant: name, category: cat, priority: val('cmp-priority') || 'Medium', status: 'Pending', date: today(), description: desc };
   try {
+    const id = await dbGenerateId('complaints', 'CMP');
+    const row = { id, complainant: name, category: cat, priority: val('cmp-priority') || 'Medium', status: 'Pending', date: today(), description: desc };
     const inserted = await dbInsert('complaints', row);
-    // map description → desc for local state consistency
-    const local = { ...(inserted[0] || row), desc: row.description };
+    // dbInsert already maps description -> desc for complaints
+    const local = { ...(inserted[0] || row), desc: desc };
     state.complaints.push(local);
     closeModal('new-complaint-modal');
     ['cmp-name', 'cmp-cat', 'cmp-desc'].forEach(clearField);
@@ -1044,9 +1050,9 @@ async function deleteProject(id) {
 async function submitProject() {
   const title = val('proj-title'), cat = val('proj-cat');
   if (!title || !cat) { toast('Please fill required fields', 'error'); return; }
-  const id = 'PRJ-' + String(state.projects.length + 1).padStart(3, '0');
-  const row = { id, title, category: cat, status: val('proj-status'), budget: Number(val('proj-budget')) || 0, progress: Number(val('proj-progress')) || 0, description: val('proj-desc') || '' };
   try {
+    const id = await dbGenerateId('projects', 'PRJ');
+    const row = { id, title, category: cat, status: val('proj-status'), budget: Number(val('proj-budget')) || 0, progress: Number(val('proj-progress')) || 0, description: val('proj-desc') || '' };
     const inserted = await dbInsert('projects', row);
     const local = { ...(inserted[0] || row), desc: row.description };
     state.projects.push(local);
@@ -1145,9 +1151,9 @@ async function deleteAnnouncement(id) {
 async function submitAnnouncement() {
   const title = val('ann-title'), content = val('ann-content');
   if (!title || !content) { toast('Please fill required fields', 'error'); return; }
-  const id = 'ANN-' + String(state.announcements.length + 1).padStart(3, '0');
-  const row = { id, title, category: val('ann-cat') || 'general', content, date: today() };
   try {
+    const id = await dbGenerateId('announcements', 'ANN');
+    const row = { id, title, category: val('ann-cat') || 'general', content, date: today() };
     const inserted = await dbInsert('announcements', row);
     state.announcements.unshift(inserted[0] || row);
     closeModal('new-announcement-modal');
