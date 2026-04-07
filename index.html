@@ -23,7 +23,7 @@
         <p>Official Portal</p>
       </div>
     </a>
-    
+
     <ul class="nav-links">
       <li><a href="#services">Services</a></li>
       <li><a href="#verify">Verification</a></li>
@@ -125,8 +125,10 @@
       <p>Official news and important updates from your local government.</p>
     </div>
     <div id="announcements-list" class="grid-3">
-      <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
-        <span class="material-symbols-outlined" style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">downloading</span>
+      <div class="loading-state"
+        style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
+        <span class="material-symbols-outlined"
+          style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">downloading</span>
         Loading latest updates...
       </div>
     </div>
@@ -140,8 +142,10 @@
       <p>Direct tracking of the infrastructure and social improvements in Payatas.</p>
     </div>
     <div id="projects-list" class="grid-3">
-      <div class="loading-state" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
-        <span class="material-symbols-outlined" style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">engineering</span>
+      <div class="loading-state"
+        style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
+        <span class="material-symbols-outlined"
+          style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">engineering</span>
         Fetching project data...
       </div>
     </div>
@@ -155,8 +159,10 @@
         <p>Check the authenticity of any clearance by its record number.</p>
       </div>
       <div class="verify-form">
-        <div style="display:flex; gap:12px; background:rgba(255,255,255,0.05); padding:8px; border-radius:16px; border:1px solid rgba(255,255,255,0.1);">
-          <input type="text" id="strip-verify-input" class="form-control verify-input" placeholder="Enter Control Number (e.g. PAY-2026-XXXXXX)" />
+        <div
+          style="display:flex; gap:12px; background:rgba(255,255,255,0.05); padding:8px; border-radius:16px; border:1px solid rgba(255,255,255,0.1);">
+          <input type="text" id="strip-verify-input" class="form-control verify-input"
+            placeholder="Enter Control Number (e.g. PAY-2026-XXXXXX)" />
           <button id="strip-verify-btn" class="btn btn-primary verify-btn">Verify</button>
         </div>
       </div>
@@ -169,16 +175,20 @@
       <div>
         <div class="hero-tag">Our Mission</div>
         <h3 style="font-size:56px; margin-bottom:24px; line-height:1.1;">Integrity in Public Service</h3>
-        <p style="color:var(--text-muted); font-size:20px; margin-bottom:32px;">Barangay Payatas is committed to modernizing governmental services. By embracing digital transformation, we ensure transparency and faster processing for every resident.</p>
+        <p style="color:var(--text-muted); font-size:20px; margin-bottom:32px;">Barangay Payatas is committed to
+          modernizing governmental services. By embracing digital transformation, we ensure transparency and faster
+          processing for every resident.</p>
         <div style="display:grid; gap:20px;">
           <div style="display:flex; align-items:center; gap:15px;">
-            <div style="width:40px; height:40px; background:var(--primary-glow); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
+            <div
+              style="width:40px; height:40px; background:var(--primary-glow); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
               <span class="material-symbols-outlined">check</span>
             </div>
             <span style="font-weight:700;">Transparent Transactions</span>
           </div>
           <div style="display:flex; align-items:center; gap:15px;">
-            <div style="width:40px; height:40px; background:var(--primary-glow); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
+            <div
+              style="width:40px; height:40px; background:var(--primary-glow); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
               <span class="material-symbols-outlined">check</span>
             </div>
             <span style="font-weight:700;">Efficient Processing</span>
@@ -186,7 +196,8 @@
         </div>
       </div>
       <div style="position:relative; display:flex; justify-content:center;">
-        <img src="img/logo-payatas.png" alt="Payatas Seal" style="width:400px; height:auto; opacity:0.8; filter: drop-shadow(0 20px 40px var(--primary-glow));" />
+        <img src="img/logo-payatas.png" alt="Payatas Seal"
+          style="width:400px; height:auto; opacity:0.8; filter: drop-shadow(0 20px 40px var(--primary-glow));" />
       </div>
     </div>
   </section>
@@ -196,7 +207,8 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <h3>Payatas Ledger</h3>
-        <p>The official civic management system of Barangay Payatas, Quezon City. Dedicated to modernizing community services.</p>
+        <p>The official civic management system of Barangay Payatas, Quezon City. Dedicated to modernizing community
+          services.</p>
       </div>
       <div class="footer-links">
         <h5>Quick Links</h5>
@@ -238,7 +250,8 @@
           </div>
           <div class="form-group">
             <label>Complete Address</label>
-            <input type="text" id="req-address" class="form-control" placeholder="Block 1, Purok 2, Barangay Payatas" required />
+            <input type="text" id="req-address" class="form-control" placeholder="Block 1, Purok 2, Barangay Payatas"
+              required />
           </div>
           <div class="form-group">
             <label>Document Type</label>
@@ -263,7 +276,8 @@
               <option>Other</option>
             </select>
           </div>
-          <button id="submit-req-btn" onclick="submitClearance()" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:20px;">
+          <button id="submit-req-btn" onclick="submitClearance()" class="btn btn-primary"
+            style="width:100%; justify-content:center; margin-top:20px;">
             Submit Application
           </button>
         </div>
@@ -288,9 +302,11 @@
           </div>
           <div class="form-group">
             <label>Description of Issue</label>
-            <textarea id="comp-desc" class="form-control" rows="4" placeholder="Detail your concern..." style="resize:none" required></textarea>
+            <textarea id="comp-desc" class="form-control" rows="4" placeholder="Detail your concern..."
+              style="resize:none" required></textarea>
           </div>
-          <button id="submit-comp-btn" onclick="submitComplaint()" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:20px;">
+          <button id="submit-comp-btn" onclick="submitComplaint()" class="btn btn-primary"
+            style="width:100%; justify-content:center; margin-top:20px;">
             Submit Complaint
           </button>
         </div>
@@ -299,7 +315,8 @@
           <div class="form-group">
             <label>Control Number or Record ID</label>
             <div style="display:flex; gap:12px;">
-              <input type="text" id="verify-query" class="form-control" placeholder="e.g. PAY-2026-000001" style="text-transform:uppercase" />
+              <input type="text" id="verify-query" class="form-control" placeholder="e.g. PAY-2026-000001"
+                style="text-transform:uppercase" />
               <button onclick="doVerify()" class="btn btn-primary">Check</button>
             </div>
           </div>

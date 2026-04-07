@@ -36,7 +36,7 @@ function initDarkMode() {
   toggle.addEventListener('click', () => {
     const currentTheme = html.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
+
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('payatas-theme', newTheme);
     updateThemeIcon(newTheme);
@@ -65,7 +65,7 @@ function initScrollAnimations() {
     el.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
     observer.observe(el);
   });
-  
+
   // Custom reveal class logic
   const style = document.createElement('style');
   style.textContent = `
@@ -77,13 +77,13 @@ function initScrollAnimations() {
 // --- MODALS ---
 function initModals() {
   const overlay = document.querySelector('.modal-overlay');
-  
+
   if (!overlay) return;
 
   const closeModal = () => {
     overlay.style.display = 'none';
     document.body.style.overflow = '';
-    
+
     // Clear forms
     document.querySelectorAll('.form-control').forEach(el => el.value = '');
     const resEl = document.getElementById('modal-result-content');
@@ -97,7 +97,7 @@ function initModals() {
   window.openModal = (type) => {
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    
+
     const requestForm = document.getElementById('request-form-content');
     const complaintForm = document.getElementById('complaint-form-content');
     const verifyForm = document.getElementById('verify-form-content');
@@ -131,7 +131,7 @@ function initModals() {
 function initVerifyBtn() {
   const btn = document.getElementById('strip-verify-btn');
   const input = document.getElementById('strip-verify-input');
-  
+
   if (btn && input) {
     btn.addEventListener('click', () => {
       const val = input.value.trim();
@@ -177,24 +177,51 @@ async function doVerify(queryArg) {
     }
 
     const d = docs[0];
-    const isValid = d.status === 'Approved';
+    const status = d.status || 'Pending';
+    const isApproved = status === 'Approved';
+    const isRejected = status === 'Rejected';
+
+    let icon = 'pending';
+    let color = 'var(--accent)';
+    let title = 'Under Review';
+    let border = 'var(--border)';
+
+    if (isApproved) {
+      icon = 'verified';
+      color = 'var(--primary)';
+      title = 'Authentic Record';
+      border = 'var(--primary)';
+    } else if (isRejected) {
+      icon = 'cancel';
+      color = '#e11d48';
+      title = 'Request Rejected';
+      border = '#e11d48';
+    }
 
     resEl.innerHTML = `
-      <div style="background:var(--background); border-radius:24px; padding:32px; border: 2px solid ${isValid ? 'var(--primary)' : 'var(--border)'}">
+      <div style="background:var(--background); border-radius:24px; padding:32px; border: 2px solid ${border}">
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px;">
-          <div style="width:56px; height:56px; background:${isValid ? 'var(--primary)' : 'var(--accent)'}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
-            <span class="material-symbols-outlined" style="font-size:32px;">${isValid ? 'verified' : 'pending'}</span>
+          <div style="width:56px; height:56px; background:${color}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+            <span class="material-symbols-outlined" style="font-size:32px;">${icon}</span>
           </div>
           <div>
-            <h4 style="margin:0; font-size:22px;">${isValid ? 'Authentic Record' : 'Under Review'}</h4>
-            <p style="color:var(--text-muted); margin:0;">REF: ${d.ref || d.id}</p>
+            <h4 style="margin:0; font-size:20px; font-weight:900; color:${color}">${title}</h4>
+            <p style="color:var(--text-muted); margin:4px 0 0; font-size:13px;">REF: ${d.ref || d.id}</p>
           </div>
         </div>
-        <div style="display:grid; gap:12px; font-size:15px; border-top: 1px solid var(--border); padding-top:24px;">
+
+        ${isRejected ? `
+          <div style="background:#fff1f2; border:1px solid #fecdd3; padding:12px 16px; border-radius:12px; color:#9f1239; font-size:13px; font-weight:600; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+            <span class="material-symbols-outlined" style="font-size:18px">info</span>
+            Please visit the main Barangay office for assistance regarding your application.
+          </div>
+        ` : ''}
+
+        <div style="display:grid; gap:12px; font-size:14px; border-top: 1px solid var(--border); padding-top:24px;">
           <div style="display:flex; justify-content:space-between;"><span>Resident Name:</span><strong>${d.resident || d.resident_name}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Document Type:</span><strong>${d.type || d.document_type}</strong></div>
           <div style="display:flex; justify-content:space-between;"><span>Date Filed:</span><strong>${new Date(d.date).toLocaleDateString()}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Current Status:</span><span style="font-weight:800; color:${isValid ? 'var(--primary)' : 'var(--accent)'}">${d.status}</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>Current Status:</span><span style="font-weight:800; color:${color}">${status}</span></div>
         </div>
       </div>
     `;
@@ -296,7 +323,7 @@ async function submitClearance() {
   try {
     const docId = await dbGenerateId('documents', 'DOC');
     const ref = 'PAY-2026-' + Math.floor(100000 + Math.random() * 900000);
-    
+
     const row = {
       id: docId,
       resident: name,
@@ -312,7 +339,7 @@ async function submitClearance() {
 
     document.getElementById('request-form-content').style.display = 'none';
     document.getElementById('modal-title').textContent = 'Submited Successfully';
-    
+
     resEl.innerHTML = `
       <div style="text-align:center; padding:20px;">
         <div style="font-size:64px; margin-bottom:24px;">🎉</div>
@@ -364,7 +391,7 @@ async function submitComplaint() {
 
     document.getElementById('complaint-form-content').style.display = 'none';
     document.getElementById('modal-title').textContent = 'Complaint Filed';
-    
+
     resEl.innerHTML = `
       <div style="text-align:center; padding:20px;">
         <div style="font-size:64px; margin-bottom:24px;">📥</div>
