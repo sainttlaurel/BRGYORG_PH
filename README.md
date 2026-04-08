@@ -50,9 +50,6 @@ The platform follows a **Civic Horizon** design language:
 | Username | Password | Role |
 |----------|----------|------|
 | admin | admin123 | Super Administrator |
-| staff1 | staff123 | Staff |
-| staff2 | staff123 | Staff |
-
 
 ### Authentication Functions
 | Function | Description |
