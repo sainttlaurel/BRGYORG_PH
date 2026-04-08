@@ -1665,12 +1665,14 @@ async function saveDocPanel() {
   };
   try {
     try {
+      // Attempt to update with remarks
       await dbUpdate('documents', _panelDocId, { ...updated, remarks: remarksVal });
-      updated.remarks = remarksVal;
+      d.remarks = remarksVal; // Update local state directly
     } catch (err) {
       if (err.message && err.message.includes("Could not find the 'remarks' column")) {
         console.warn("Supabase schema cache error or 'remarks' column missing. Saving without remarks.");
         await dbUpdate('documents', _panelDocId, updated);
+        delete d.remarks; 
       } else {
         throw err;
       }

@@ -364,14 +364,24 @@ async function doVerify(queryArg) {
             <span style="color:var(--text-muted); font-size:13px;">Issued To</span>
             <span style="font-weight:700;">${d.resident || d.resident_name}</span>
           </div>
-          <div style="display:flex; justify-content:space-between;">
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:8px;">
             <span style="color:var(--text-muted); font-size:13px;">Status</span>
             <span style="font-weight:900; color:${color}">${status.toUpperCase()}</span>
           </div>
           ${d.remarks ? `
-          <div style="background:var(--background); padding:12px; border-radius:12px; font-size:13px; font-style:italic; border-top: 1px dashed var(--border);">
-            " ${d.remarks} "
-          </div>` : ''}
+          <div style="margin-top:8px; padding-top:12px; border-top:1px dashed var(--border);">
+            <div style="display:flex; align-items:center; gap:6px; color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+              <span class="material-symbols-outlined" style="font-size:14px;">comment</span> Official Remarks
+            </div>
+            <div style="background:var(--background); padding:12px; border-radius:12px; font-size:13px; font-style:italic; border:1px solid var(--border); color:var(--text-main); line-height:1.5;">
+              "${d.remarks}"
+            </div>
+          </div>
+          ` : (isApproved || isRejected ? `
+          <div style="margin-top:8px; padding-top:12px; border-top:1px dashed var(--border); font-size:12px; color:var(--text-muted); font-style:italic; text-align:center;">
+            No additional remarks provided by the admin.
+          </div>
+          ` : '')}
         </div>
       </div>
     `;
