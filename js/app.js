@@ -1876,7 +1876,7 @@ function renderCommunityHub() {
   if (tab === 'suggestions') renderSuggestions();
   else if (tab === 'volunteers') renderVolunteers();
   else if (tab === 'polls') renderAdminPolls();
-  
+
   // Update badge if any pending suggestions
   const pending = state.suggestions.filter(s => s.status === 'pending').length;
   const b = document.getElementById('badge-tab-suggestions');
@@ -1950,10 +1950,10 @@ function renderAdminPolls() {
       <div class="card-body">
         <div style="display:grid; gap:10px;">
           ${p.options.map((opt, i) => {
-            const votes = p.votes?.[i] || 0;
-            const total = Object.values(p.votes || {}).reduce((a, b) => a + b, 0) || 1;
-            const perc = Math.round((votes / total) * 100);
-            return `
+    const votes = p.votes?.[i] || 0;
+    const total = Object.values(p.votes || {}).reduce((a, b) => a + b, 0) || 1;
+    const perc = Math.round((votes / total) * 100);
+    return `
               <div>
                 <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
                   <span>${opt}</span>
@@ -1962,7 +1962,7 @@ function renderAdminPolls() {
                 <div class="progress-bar"><div class="progress-fill" style="width:${perc}%"></div></div>
               </div>
             `;
-          }).join('')}
+  }).join('')}
         </div>
         <div style="margin-top:20px; display:flex; gap:10px;">
           <button class="btn-secondary" style="font-size:11px; padding:6px 12px;" onclick="closePoll('${p.id}')">Close Poll</button>

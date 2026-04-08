@@ -95,11 +95,19 @@ function initScrollAnimations() {
 }
 
 // --- MODALS ---
+
+// Hoist to module scope so all functions can reference them
+let _openModal = null;
+let _closeModal = null;
+
+function openModal(type) { if (_openModal) _openModal(type); }
+function closeModal() { if (_closeModal) _closeModal(); }
+
 function initModals() {
   const overlay = document.querySelector('.modal-overlay');
   if (!overlay) return;
 
-  const closeModal = () => {
+  _closeModal = () => {
     overlay.classList.remove('active');
     document.body.style.overflow = '';
     
@@ -122,7 +130,7 @@ function initModals() {
     }
   };
 
-  const openModal = (type) => {
+  _openModal = (type) => {
     const modal = document.querySelector('.modal');
     const title = document.getElementById('modal-title');
     
@@ -137,7 +145,7 @@ function initModals() {
     if (volForm) volForm.style.display = 'none';
     if (resContent) resContent.style.display = 'none';
 
-    if (type === 'clearance') {
+    if (type === 'clearance' || type === 'apply') {
       title.textContent = 'Document Application';
       if (reqForm) reqForm.style.display = 'block';
     } else if (type === 'complaint') {
@@ -493,53 +501,64 @@ async function loadProjects() {
 
 // --- SUBMISSIONS ---
 async function submitClearance() {
-  const name = document.getElementById('req-name').value.trim();
-  const address = document.getElementById('req-address').value.trim();
-  const docType = document.getElementById('req-doc-type').value;
-  const purpose = document.getElementById('req-purpose').value;
+  const name = document.getElementById('req-name')?.value.trim();
+  const address = document.getElementById('req-address')?.value.trim();
+  const docType = document.getElementById('req-doc-type')?.value;
+  const purpose = document.getElementById('req-purpose')?.value;
   const btn = document.getElementById('submit-req-btn');
   const resEl = document.getElementById('modal-result-content');
 
-  if (!name || !address || !docType || !purpose) {
-    alert('Please complete the form.');
+  if (!name || !docType || !purpose) {
+    alert('Please fill in all required fields.');
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = 'Processing Application...';
+  if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
 
   try {
     const docId = await dbGenerateId('documents', 'DOC');
+    const year = new Date().getFullYear();
+    // docId is like "DOC-001" — extract the numeric part
+    const numPart = docId.replace(/\D/g, '');
+    const ref = `PAY-${year}-${String(numPart).padStart(6, '0')}`;
+
     const row = {
       id: docId,
-      name: name,
-      address: address,
+      resident: name,
       type: docType,
       purpose: purpose,
       status: 'Pending',
-      date: new Date().toISOString().split('T')[0]
+      ref: ref,
+      date: new Date().toISOString().split('T')[0],
+      contact: 'N/A'
     };
 
     await dbInsert('documents', row);
 
-    document.getElementById('request-form-content').style.display = 'none';
-    document.getElementById('modal-title').textContent = 'Application Submitted';
-
-    resEl.innerHTML = `
-      <div style="text-align:center; padding:20px;">
-        <div style="font-size:64px; margin-bottom:24px;">📄</div>
-        <h3 style="margin-bottom:12px;">Submitted Successfully</h3>
-        <p style="color:var(--text-muted); margin-bottom:24px;">Your request is being reviewed. Please save your reference number.</p>
-        <div style="background:var(--background); padding:24px; border-radius:16px; font-family:monospace; font-size:18px; font-weight:800; border:1px solid var(--border);">
-          REF: ${docId}
+    // Hide form, show result
+    const reqForm = document.getElementById('request-form-content');
+    const title = document.getElementById('modal-title');
+    if (reqForm) reqForm.style.display = 'none';
+    if (title) title.textContent = 'Application Submitted';
+    if (resEl) {
+      resEl.style.display = 'block';
+      resEl.innerHTML = `
+        <div style="text-align:center; padding:20px;">
+          <span class="material-symbols-outlined" style="font-size:64px; color:var(--primary); margin-bottom:24px; display:block;">task_alt</span>
+          <h3 style="margin-bottom:12px;">Application Submitted!</h3>
+          <p style="color:var(--text-muted); margin-bottom:24px;">Your document request has been received. Please save your reference number and visit the Barangay Hall to claim your document.</p>
+          <div style="background:var(--background); padding:24px; border-radius:16px; font-family:monospace; font-size:20px; font-weight:800; border:2px solid var(--primary); color:var(--primary); letter-spacing:2px;">
+            ${ref}
+          </div>
+          <p style="font-size:12px; color:var(--text-muted); margin-top:12px;">Processing time: 1–3 business days</p>
+          <button onclick="closeModal()" class="btn btn-primary" style="margin-top:28px; width:100%; justify-content:center;">Done</button>
         </div>
-        <button onclick="closeModal()" class="btn btn-primary" style="margin-top:32px; width:100%; justify-content:center;">Got it</button>
-      </div>
-    `;
+      `;
+    }
   } catch (err) {
-    alert('Error submitting application.');
-    btn.disabled = false;
-    btn.textContent = 'Submit Application';
+    alert('Error submitting application. Please try again.');
+    console.error('Submit Error:', err.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Submit Application'; }
   }
 }
 
@@ -574,6 +593,9 @@ async function submitComplaint() {
 
     document.getElementById('complaint-form-content').style.display = 'none';
     document.getElementById('modal-title').textContent = 'Complaint Filed';
+
+    // Show the result panel
+    if (resEl) resEl.style.display = 'block';
 
     resEl.innerHTML = `
       <div style="text-align:center; padding:20px;">
@@ -836,8 +858,7 @@ async function votePoll(pollId, optionIndex) {
 }
 
 // ===================== GLOBAL EXPORTS =====================
-window.openModal = openModal;
-window.closeModal = closeModal;
+// openModal and closeModal are already hoisted to module scope above
 window.doVerify = doVerify;
 window.doResidentVerify = doResidentVerify;
 window.switchVerifyTab = switchVerifyTab;
