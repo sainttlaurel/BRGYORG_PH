@@ -208,7 +208,7 @@ function setGreeting() {
   const h = new Date().getHours();
   const g = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
   const el = document.getElementById('dash-greeting');
-  if (el && state.session) el.textContent = `Good ${g}, ${state.session.name.split(' ')[0]}! 👋`;
+  if (el && state.session) el.textContent = `Good ${g}, ${state.session.name.split(' ')[0]}!`;
 }
 
 function updateDate() {
@@ -1655,16 +1655,26 @@ function closeDocPanelDirect() { document.getElementById('doc-panel-overlay').cl
 async function saveDocPanel() {
   const d = state.documents.find(x => x.id === _panelDocId);
   if (!d) return;
+  const remarksVal = document.getElementById('dp-edit-remarks').value.trim();
   const updated = {
     resident: document.getElementById('dp-edit-name').value.trim() || d.resident,
     contact: document.getElementById('dp-edit-contact').value.trim(),
     type: document.getElementById('dp-edit-type').value,
     purpose: document.getElementById('dp-edit-purpose').value.trim(),
     status: document.getElementById('dp-edit-status').value,
-    remarks: document.getElementById('dp-edit-remarks').value.trim(),
   };
   try {
-    await dbUpdate('documents', _panelDocId, updated);
+    try {
+      await dbUpdate('documents', _panelDocId, { ...updated, remarks: remarksVal });
+      updated.remarks = remarksVal;
+    } catch (err) {
+      if (err.message && err.message.includes("Could not find the 'remarks' column")) {
+        console.warn("Supabase schema cache error or 'remarks' column missing. Saving without remarks.");
+        await dbUpdate('documents', _panelDocId, updated);
+      } else {
+        throw err;
+      }
+    }
     Object.assign(d, updated);
     openDocPanel(_panelDocId);
     renderDocuments(); renderDashboardDocs(); updateBadges(); updateDashboard();
