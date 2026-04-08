@@ -223,7 +223,8 @@ async function doResidentVerify() {
     if (isId) {
       dbQuery = dbQuery.eq('id', query);
     } else {
-      dbQuery = dbQuery.ilike('fname', `%${query}%`).or(`lname.ilike.%${query}%`);
+      // Correct Supabase v2 OR syntax for filters
+      dbQuery = dbQuery.or(`fname.ilike.%${query}%,lname.ilike.%${query}%`);
     }
 
     const { data: res, error } = await dbQuery.limit(1);
@@ -307,7 +308,7 @@ async function doVerify(queryArg) {
     const { data: docs, error } = await supabaseClient
       .from('documents')
       .select('*')
-      .or(`ref.eq."${query}",id.eq."${query}"`)
+      .or(`ref.eq.${query},id.eq.${query}`)
       .limit(1);
 
     if (error) throw error;
@@ -761,8 +762,15 @@ async function submitVolunteer() {
     if (error) throw error;
 
     const volForm = document.getElementById('volunteer-form-content');
-    if (volForm) {
-      volForm.innerHTML = `
+    const title = document.getElementById('modal-title');
+    const resEl = document.getElementById('modal-result-content');
+
+    if (volForm) volForm.style.display = 'none';
+    if (title) title.textContent = 'Application Logged';
+    
+    if (resEl) {
+      resEl.style.display = 'block';
+      resEl.innerHTML = `
         <div style="text-align:center; padding:20px;">
           <span class="material-symbols-outlined" style="font-size:64px; color:var(--primary); margin-bottom:24px; display:block;">volunteer_activism</span>
           <h3 style="margin-bottom:12px;">Application Logged!</h3>
