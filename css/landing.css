@@ -875,6 +875,10 @@ footer {
   padding: 20px;
 }
 
+.modal-overlay.active {
+  display: flex;
+}
+
 .modal {
   background: var(--surface);
   width: 100%;
