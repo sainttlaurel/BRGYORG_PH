@@ -116,4 +116,4 @@ brgyorg-ph/
 
 ---
 
-&copy; 2026 Barangay Payatas Digital Division. Powered by **Payatas Ledger**.
+&copy; 2026 Barangay Payatas Digital Division. Powered by **Payatas Ledger**.

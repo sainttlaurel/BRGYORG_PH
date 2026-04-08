@@ -1665,17 +1665,24 @@ async function saveDocPanel() {
   };
   try {
     try {
-      // Attempt to update with remarks
+      // Primary: try saving to 'remarks' column
       await dbUpdate('documents', _panelDocId, { ...updated, remarks: remarksVal });
-      d.remarks = remarksVal; // Update local state directly
+      d.remarks = remarksVal;
     } catch (err) {
-      if (err.message && err.message.includes("Could not find the 'remarks' column")) {
-        console.warn("Supabase schema cache error or 'remarks' column missing. Saving without remarks.");
-        await dbUpdate('documents', _panelDocId, updated);
-        delete d.remarks; 
-      } else {
-        throw err;
-      }
+      if (err.message && (err.message.includes("remarks' column") || err.message.includes("undefined column"))) {
+        try {
+          // Secondary fallback: check if column is named 'notes' instead
+          await dbUpdate('documents', _panelDocId, { ...updated, notes: remarksVal });
+          d.remarks = remarksVal;
+          console.log("Success: Used 'notes' column fallback.");
+        } catch (err2) {
+          // Final fallback: save core data only
+          console.error("Supabase Error: Column 'remarks' or 'notes' missing. Remarks not saved.");
+          await dbUpdate('documents', _panelDocId, updated);
+          delete d.remarks;
+          toast('Saved details, but Remarks skipped (DB Column missing)', 'info');
+        }
+      } else { throw err; }
     }
     Object.assign(d, updated);
     openDocPanel(_panelDocId);

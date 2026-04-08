@@ -208,37 +208,58 @@
       </div>
     </div>
   </section>
-  
+
   <!-- COMMUNITY HUB: POLLS & VOICE -->
   <section id="community-hub" class="section community-hub-bg">
     <div class="container" style="display:grid; grid-template-columns: 1fr 1fr; gap:60px; align-items: start;">
-      
+
       <!-- CITIZENS' VOICE -->
       <div id="voice-section" class="fade-in">
         <div class="hero-tag">Citizens' Voice</div>
         <h3 class="mb-2">Common Concerns & Q&A</h3>
-        <p style="color:var(--text-muted); margin-bottom:32px; font-size:15px; line-height:1.6;">Official responses to resident suggestions and frequently asked questions from around the barangay.</p>
-        
+        <p style="color:var(--text-muted); margin-bottom:32px; font-size:15px; line-height:1.6;">Official responses to
+          resident suggestions and frequently asked questions from around the barangay.</p>
+
         <div id="suggestions-list" class="voice-list">
           <div class="empty-suggestions-glass">
-             <span class="material-symbols-outlined" style="font-size:32px; color:var(--primary); margin-bottom:12px; opacity:0.6;">forum</span>
-             <p style="font-size:14px; color:var(--text-main); font-weight:500;">No published topics yet. Be the first to speak out!</p>
+            <span class="material-symbols-outlined"
+              style="font-size:32px; color:var(--primary); margin-bottom:12px; opacity:0.6;">forum</span>
+            <p style="font-size:14px; color:var(--text-main); font-weight:500;">No published topics yet. Be the first to
+              speak out!</p>
           </div>
         </div>
 
         <div class="voice-box glass-form" style="margin-top:24px;">
-           <h5 style="margin-bottom:16px; font-size:18px;">Share Your Suggestion</h5>
-           <div style="display:grid; gap:16px;">
-             <div class="input-glass-wrap">
-               <span class="material-symbols-outlined">person</span>
-               <input type="text" id="voice-name" placeholder="Full Name (Optional)" />
-             </div>
-             <div class="input-glass-wrap">
-               <span class="material-symbols-outlined">edit_note</span>
-               <textarea id="voice-content" placeholder="What's on your mind? Share your suggestions or concerns..." style="min-height:100px"></textarea>
-             </div>
-             <button class="btn btn-primary btn-glow" onclick="submitSuggestion()">Submit My Voice</button>
-           </div>
+          <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:24px;">
+            <div>
+              <h5 style="margin:0; font-size:20px; font-weight:900; letter-spacing:-0.5px;">Share Your Suggestion</h5>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--text-muted); font-weight:500;">Your feedback helps us build a better Payatas.</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; background:var(--primary-glow); padding:6px 12px; border-radius:99px; border:1px solid var(--primary-dark);">
+              <span class="material-symbols-outlined" style="font-size:14px; color:var(--primary-dark);">verified_user</span>
+              <span style="font-size:10px; font-weight:800; color:var(--primary-dark); text-transform:uppercase; letter-spacing:0.5px;">Safe & Confidential</span>
+            </div>
+          </div>
+
+          <div style="display:grid; gap:20px;">
+            <div class="input-glass-wrap">
+              <span class="material-symbols-outlined">person</span>
+              <input type="text" id="voice-name" placeholder="Leave your name (Optional)" />
+            </div>
+            <div class="input-glass-wrap">
+              <span class="material-symbols-outlined">chat_bubble</span>
+              <textarea id="voice-content" placeholder="What's on your mind? Share your thoughts, suggestions, or concerns..."
+                style="min-height:120px; resize: none;"></textarea>
+            </div>
+            <button class="btn btn-primary btn-glow" onclick="submitSuggestion()" style="width:100%; justify-content:center; gap:12px;">
+              <span>Submit My Voice</span>
+              <span class="material-symbols-outlined">send</span>
+            </button>
+          </div>
+
+          <p style="margin-top:20px; text-align:center; font-size:12px; color:var(--text-muted); opacity:0.8;">
+            By submitting, you agree to our community guidelines.
+          </p>
         </div>
       </div>
 
@@ -247,22 +268,24 @@
         <div id="active-polls-section" style="margin-bottom:60px;">
           <div class="hero-tag">Community Vote</div>
           <h3 class="mb-2">Active Polls</h3>
-          <p style="color:var(--text-muted); margin-bottom:32px; font-size:15px; line-height:1.6;">Help shape the future of our barangay by participating in active community decisions.</p>
+          <p style="color:var(--text-muted); margin-bottom:32px; font-size:15px; line-height:1.6;">Help shape the future
+            of our barangay by participating in active community decisions.</p>
           <div id="polls-list" class="polls-container">
-             <div class="loading-state-glass">
-               <span class="material-symbols-outlined spin-icon">sync</span>
-               <span>Fetching active polls...</span>
-             </div>
+            <div class="loading-state-glass">
+              <span class="material-symbols-outlined spin-icon">sync</span>
+              <span>Fetching active polls...</span>
+            </div>
           </div>
         </div>
 
         <div id="volunteer-cta" class="volunteer-premium-card">
-           <div class="volunteer-content">
-             <h4 style="color:white; margin-bottom:12px; font-size:24px;">Become a Community Hero</h4>
-             <p style="margin-bottom:32px; opacity:0.9; font-size:15px; line-height:1.6;">Join our network of community responders. Help during events, emergencies, and local initiatives.</p>
-             <button class="btn btn-white-glow" onclick="openModal('volunteer')">Register as Volunteer</button>
-           </div>
-           <span class="material-symbols-outlined volunteer-icon-bg">volunteer_activism</span>
+          <div class="volunteer-content">
+            <h4 style="color:white; margin-bottom:12px; font-size:24px;">Become a Community Hero</h4>
+            <p style="margin-bottom:32px; opacity:0.9; font-size:15px; line-height:1.6;">Join our network of community
+              responders. Help during events, emergencies, and local initiatives.</p>
+            <button class="btn btn-white-glow" onclick="openModal('volunteer')">Register as Volunteer</button>
+          </div>
+          <span class="material-symbols-outlined volunteer-icon-bg">volunteer_activism</span>
         </div>
       </div>
 
@@ -394,13 +417,16 @@
           </div>
           <div class="form-group">
             <label>Physical / Body Conditions</label>
-            <textarea id="vol-conditions" class="form-control" placeholder="Any health concerns we should know? (e.g. Asthma, Knee Injury)"></textarea>
+            <textarea id="vol-conditions" class="form-control"
+              placeholder="Any health concerns we should know? (e.g. Asthma, Knee Injury)"></textarea>
           </div>
           <div class="condition-check">
             <span class="material-symbols-outlined">health_and_safety</span>
-            <p style="margin:0; font-size:12px; color:var(--primary-dark); font-weight:700;">Important: Acceptance is subject to manual verification and a physical check-in at the barangay hall.</p>
+            <p style="margin:0; font-size:12px; color:var(--primary-dark); font-weight:700;">Important: Acceptance is
+              subject to manual verification and a physical check-in at the barangay hall.</p>
           </div>
-          <button id="submit-vol-btn" onclick="submitVolunteer()" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:24px;">Apply to Volunteer</button>
+          <button id="submit-vol-btn" onclick="submitVolunteer()" class="btn btn-primary"
+            style="width:100%; justify-content:center; margin-top:24px;">Apply to Volunteer</button>
         </div>
 
         <div id="complaint-form-content" style="display:none">

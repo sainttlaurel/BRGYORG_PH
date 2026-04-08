@@ -326,6 +326,7 @@ async function doVerify(queryArg) {
 
     const d = docs[0];
     const status = d.status || 'Pending';
+    const remarks = d.remarks || d.notes || ''; // Handle potential variations in column naming
     const isApproved = status === 'Approved';
     const isRejected = status === 'Rejected';
 
@@ -368,13 +369,13 @@ async function doVerify(queryArg) {
             <span style="color:var(--text-muted); font-size:13px;">Status</span>
             <span style="font-weight:900; color:${color}">${status.toUpperCase()}</span>
           </div>
-          ${d.remarks ? `
+          ${remarks ? `
           <div style="margin-top:8px; padding-top:12px; border-top:1px dashed var(--border);">
             <div style="display:flex; align-items:center; gap:6px; color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
               <span class="material-symbols-outlined" style="font-size:14px;">comment</span> Official Remarks
             </div>
             <div style="background:var(--background); padding:12px; border-radius:12px; font-size:13px; font-style:italic; border:1px solid var(--border); color:var(--text-main); line-height:1.5;">
-              "${d.remarks}"
+              "${remarks}"
             </div>
           </div>
           ` : (isApproved || isRejected ? `
