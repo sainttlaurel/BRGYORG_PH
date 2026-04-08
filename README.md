@@ -50,9 +50,6 @@ The platform follows a **Civic Horizon** design language:
 | Username | Password | Role |
 |----------|----------|------|
 | admin | admin123 | Super Administrator |
-| staff1 | staff123 | Staff |
-| staff2 | staff123 | Staff |
-
 
 ### Authentication Functions
 | Function | Description |
@@ -65,7 +62,7 @@ The platform follows a **Civic Horizon** design language:
 
 ---
 
-## 📊 Administrative Tools
+## Administrative Tools
 
 ### Document Detail Panel (Drawer)
 Slide-out panel for viewing and processing document requests.
@@ -78,7 +75,7 @@ Comprehensive view of resident data, including their entire document request and
 
 ---
 
-## ⚙️ Project Setup
+## Project Setup
 
 ### 1. Database Configuration
 Edit `supabase-config.js`:
