@@ -75,14 +75,71 @@ html {
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--background);
-  background-image: linear-gradient(rgba(248, 250, 252, 0.85), rgba(248, 250, 252, 0.85)), url('../img/bg.png');
-  background-attachment: fixed;
-  background-size: cover;
   color: var(--text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.5s ease;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* Background 3D Glass Orbs */
+.bg-aura {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  filter: blur(80px); /* Reduced blur for more 'orb' definition */
+  opacity: 0.5;
+}
+
+.aura-blob {
+  position: absolute;
+  border-radius: 50%;
+  animation: orbMove 25s infinite alternate ease-in-out;
+  box-shadow: inset 0 0 50px rgba(255, 255, 255, 0.2);
+}
+
+.aura-1 {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle at 30% 30%, var(--primary), #3b82f644, transparent 80%);
+  top: -150px;
+  right: -100px;
+}
+
+.aura-2 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle at 70% 70%, #4f46e5, #818cf844, transparent 80%);
+  bottom: -150px;
+  left: -100px;
+  animation-duration: 35s;
+  animation-delay: -8s;
+}
+
+.aura-3 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle at 40% 60%, #7c3aed, #a78bfa44, transparent 80%);
+  top: 35%;
+  left: 15%;
+  animation-duration: 45s;
+  animation-delay: -15s;
+}
+
+@keyframes orbMove {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(150px, 80px) scale(1.1) rotate(10deg); }
+  100% { transform: translate(-80px, 150px) scale(0.9) rotate(-10deg); }
+}
+
+[data-theme='dark'] .bg-aura {
+  opacity: 0.25;
 }
 
 [data-theme='dark'] body {
@@ -171,10 +228,6 @@ h3,
   display: flex;
   align-items: center;
   gap: 24px;
-}
-
-.desktop-only {
-  display: flex;
 }
 
 .mobile-only {
@@ -463,14 +516,14 @@ h3,
 
 /* Sections Styling */
 .section {
-  padding: 160px 5%;
+  padding: 100px 5%;
   position: relative;
 }
 
 .section-header {
   text-align: center;
   max-width: 800px;
-  margin: 0 auto 100px;
+  margin: 0 auto 60px;
 }
 
 .section-header h3 {
@@ -593,16 +646,20 @@ h3,
 /* Announcements */
 .announcement-card {
   background: var(--surface);
-  padding: 48px;
+  padding: 40px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   transition: var(--transition);
   box-shadow: var(--shadow-md);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .announcement-card:hover {
-  transform: scale(1.02);
+  transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
 }
 
 .ann-tag {
@@ -640,9 +697,14 @@ h3,
 }
 
 .ann-content {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-muted);
-  line-height: 1.7;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  display: block;
+  /* Ensure text isn't cut off */
+  overflow: visible;
+  height: auto;
 }
 
 .ann-date {
@@ -658,11 +720,20 @@ h3,
 /* Projects */
 .project-card {
   background: var(--surface);
-  padding: 48px;
+  padding: 40px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   transition: var(--transition);
   box-shadow: var(--shadow-md);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
 }
 
 .proj-title {
@@ -1658,6 +1729,118 @@ footer {
 @keyframes spin {
   100% { transform: rotate(360deg); }
 }
+
+/* Swiper Custom Theme */
+.swiper {
+  padding: 24px 80px 60px !important; /* Increased horizontal padding to prevent overlap */
+  margin: -24px -80px 0;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.swiper-wrapper {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.custom-nav-btn {
+  color: var(--primary) !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50% !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-lg) !important;
+  transition: var(--transition) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 20 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+.swiper-button-prev.custom-nav-btn {
+  left: 15px !important;
+}
+
+.swiper-button-next.custom-nav-btn {
+  right: 15px !important;
+}
+
+.custom-nav-btn:hover {
+  background: var(--primary) !important;
+  color: white !important;
+  transform: scale(1.1);
+}
+
+.custom-nav-btn::after {
+  font-size: 20px !important;
+  font-weight: 900 !important;
+}
+
+.swiper-pagination {
+  bottom: 20px !important;
+  z-index: 10 !important;
+}
+
+.swiper-pagination-bullet {
+  background: var(--primary) !important;
+  opacity: 0.2 !important;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1 !important;
+  width: 24px !important;
+  border-radius: 10px !important;
+}
+
+.swiper-slide {
+  height: auto !important;
+}
+
+.service-card, .announcement-card, .project-card, .glass-form {
+  position: relative;
+  overflow: hidden !important;
+  transform-style: preserve-3d !important;
+  perspective: 1000px;
+  transition: transform 0.1s ease, box-shadow 0.4s ease, border-color 0.4s ease !important;
+}
+
+.spotlight {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 0;
+  transform: translate(-50%, -50%) translateZ(20px); /* Lift the spotlight slightly in 3D */
+}
+
+/* Premium 3D Reveal Animations */
+.reveal {
+  opacity: 0;
+  filter: blur(15px);
+  transform: perspective(1000px) translate3d(0, 60px, -100px) rotateX(10deg);
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-active {
+  opacity: 1 !important;
+  filter: blur(0) !important;
+  transform: perspective(1000px) translate3d(0, 0, 0) rotateX(0) !important;
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
 
 .fade-in {
   animation: fadeIn 0.8s ease forwards;

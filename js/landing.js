@@ -13,7 +13,54 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProjects();
   loadSuggestions();
   loadPolls();
+  initSpotlight();
+  initMagneticButtons();
 });
+
+let annSwiper, projSwiper;
+
+function initAnnSwiper() {
+  if (annSwiper) {
+    annSwiper.update();
+    return;
+  }
+  annSwiper = new Swiper('.ann-swiper', {
+    slidesPerView: 1,
+    spaceBetween: 30,
+    loop: false, // Set to false to avoid issues with few items
+    observer: true,
+    observeParents: true,
+    autoHeight: true,
+    autoplay: { delay: 5000, disableOnInteraction: false },
+    pagination: { el: '.ann-swiper .swiper-pagination', clickable: true },
+    navigation: { nextEl: '.ann-swiper .swiper-button-next', prevEl: '.ann-swiper .swiper-button-prev' },
+    breakpoints: {
+      768: { slidesPerView: 2 },
+      1200: { slidesPerView: 3 }
+    }
+  });
+}
+
+function initProjSwiper() {
+  if (projSwiper) {
+    projSwiper.update();
+    return;
+  }
+  projSwiper = new Swiper('.proj-swiper', {
+    slidesPerView: 1,
+    spaceBetween: 30,
+    centeredSlides: false,
+    observer: true,
+    observeParents: true,
+    autoHeight: true,
+    pagination: { el: '.proj-swiper .swiper-pagination', clickable: true },
+    navigation: { nextEl: '.proj-swiper .swiper-button-next', prevEl: '.proj-swiper .swiper-button-prev' },
+    breakpoints: {
+      768: { slidesPerView: 2 },
+      1200: { slidesPerView: 3 }
+    }
+  });
+}
 
 // --- NAVBAR ---
 function initNavbar() {
@@ -79,19 +126,89 @@ function initScrollAnimations() {
     });
   }, { threshold: 0.1 });
 
-  document.querySelectorAll('.section, .stat-item, .service-card').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(30px)';
-    el.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+  document.querySelectorAll('.section, .stat-item, .service-card, .section-header, .hero-content > *').forEach((el, index) => {
+    el.classList.add('reveal');
+    if (index % 3 === 1) el.classList.add('reveal-delay-1');
+    if (index % 3 === 2) el.classList.add('reveal-delay-2');
     observer.observe(el);
   });
+}
 
-  // Custom reveal class logic
-  const style = document.createElement('style');
-  style.textContent = `
-    .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }
-  `;
-  document.head.appendChild(style);
+// --- SPOTLIGHT & 3D TILT EFFECT ---
+function initSpotlight() {
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget;
+    const spotlight = card.querySelector('.spotlight');
+    if (!spotlight) return;
+
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Update Spotlight Position
+    spotlight.style.left = `${x}px`;
+    spotlight.style.top = `${y}px`;
+
+    // 3D Tilt Logic (Subtle)
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (y - centerY) / 15; // Subtle x-axis tilt
+    const rotateY = (centerX - x) / 15; // Subtle y-axis tilt
+
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+  };
+
+  const handleMouseLeave = (e) => {
+    const card = e.currentTarget;
+    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+  };
+
+  const add3DEffect = (card) => {
+    if (card.querySelector('.spotlight')) return;
+    const spotlight = document.createElement('div');
+    spotlight.className = 'spotlight';
+    card.prepend(spotlight);
+    card.addEventListener('mousemove', handleMouseMove);
+    card.addEventListener('mouseleave', handleMouseLeave);
+  };
+
+  // Initial cards
+  document.querySelectorAll('.service-card, .glass-form').forEach(add3DEffect);
+
+  // Watch for dynamic cards (Announcements/Projects)
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === 1) {
+          if (node.classList.contains('announcement-card') || node.classList.contains('project-card')) {
+            add3DEffect(node);
+          }
+          node.querySelectorAll('.announcement-card, .project-card').forEach(add3DEffect);
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+// --- MAGNETIC BUTTONS ---
+function initMagneticButtons() {
+  const btns = document.querySelectorAll('.btn-primary');
+  
+  btns.forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      
+      btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+    });
+    
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'translate(0, 0)';
+    });
+  });
 }
 
 // --- MODALS ---
@@ -411,37 +528,44 @@ async function loadAnnouncements() {
       return;
     }
 
-    listEl.innerHTML = alerts.map(a => {
+    const content = alerts.map(a => {
       const reactions = a.reactions || { likes: 0, hearts: 0 };
       const hasLiked = localStorage.getItem(`reacted_announcement_${a.id}_like`);
       const hasHearted = localStorage.getItem(`reacted_announcement_${a.id}_heart`);
       
       return `
-        <div class="announcement-card" id="ann-${a.id}">
+        <div class="announcement-card swiper-slide" id="ann-${a.id}">
           <span class="ann-tag ${a.category?.toLowerCase() || 'general'}">${a.category || 'General'}</span>
           <h4 class="ann-title">${a.title}</h4>
           <p class="ann-content">${a.content}</p>
-          <span class="ann-date">Posted — ${new Date(a.date).toLocaleDateString()}</span>
-          
-          <div class="card-actions">
-            <div class="reactions-group">
-              <button class="reaction-btn ${hasLiked ? 'active like' : ''}" onclick="handleReaction('announcement', '${a.id}', 'like')">
-                <span class="material-symbols-outlined">thumb_up</span>
-                <span class="count">${reactions.likes || 0}</span>
-              </button>
-              <button class="reaction-btn ${hasHearted ? 'active heart' : ''}" onclick="handleReaction('announcement', '${a.id}', 'heart')">
-                <span class="material-symbols-outlined">favorite</span>
-                <span class="count">${reactions.hearts || 0}</span>
-              </button>
-            </div>
-            <div class="share-toolbar">
-              <button class="share-btn" onclick="shareContent('facebook', '${a.title}', 'ann-${a.id}')" title="Share to Facebook"><span class="material-symbols-outlined">share</span></button>
-              <button class="share-btn" onclick="shareContent('instagram', '${a.title}', 'ann-${a.id}')" title="Share to Instagram"><span class="material-symbols-outlined">photo_camera</span></button>
+          <div style="margin-top:auto;">
+            <span class="ann-date">Posted — ${new Date(a.date).toLocaleDateString()}</span>
+            
+            <div class="card-actions">
+              <div class="reactions-group">
+                <button class="reaction-btn ${hasLiked ? 'active like' : ''}" onclick="handleReaction('announcement', '${a.id}', 'like')">
+                  <span class="material-symbols-outlined">thumb_up</span>
+                  <span class="count">${reactions.likes || 0}</span>
+                </button>
+                <button class="reaction-btn ${hasHearted ? 'active heart' : ''}" onclick="handleReaction('announcement', '${a.id}', 'heart')">
+                  <span class="material-symbols-outlined">favorite</span>
+                  <span class="count">${reactions.hearts || 0}</span>
+                </button>
+              </div>
+              <div class="share-toolbar">
+                <button class="share-btn" onclick="shareContent('facebook', '${a.title}', 'ann-${a.id}')" title="Share to Facebook"><span class="material-symbols-outlined">share</span></button>
+                <button class="share-btn" onclick="shareContent('instagram', '${a.title}', 'ann-${a.id}')" title="Share to Instagram"><span class="material-symbols-outlined">photo_camera</span></button>
+              </div>
             </div>
           </div>
         </div>
       `;
     }).join('');
+
+    listEl.innerHTML = content;
+    setTimeout(() => {
+      initAnnSwiper();
+    }, 100);
   } catch (err) {
     listEl.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#dc2626;">Network error. Please refresh.</p>`;
   }
@@ -466,13 +590,13 @@ async function loadProjects() {
       return;
     }
 
-    listEl.innerHTML = projects.map(p => {
+    const content = projects.map(p => {
       const reactions = p.reactions || { likes: 0, hearts: 0 };
       const hasLiked = localStorage.getItem(`reacted_project_${p.id}_like`);
       const hasHearted = localStorage.getItem(`reacted_project_${p.id}_heart`);
 
       return `
-        <div class="project-card" id="proj-${p.id}">
+        <div class="project-card swiper-slide" id="proj-${p.id}">
           <h4 class="proj-title">${p.title}</h4>
           <span class="proj-cat">${p.category}</span>
           <div class="progress-container">
@@ -484,28 +608,35 @@ async function loadProjects() {
               <div class="progress-bar-fill" style="width: ${p.progress}%"></div>
             </div>
           </div>
-          <p style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">${p.description || ''}</p>
-          <span class="proj-status status-${p.status.toLowerCase()}">${p.status}</span>
-          
-          <div class="card-actions">
-            <div class="reactions-group">
-              <button class="reaction-btn ${hasLiked ? 'active like' : ''}" onclick="handleReaction('project', '${p.id}', 'like')">
-                <span class="material-symbols-outlined">thumb_up</span>
-                <span class="count">${reactions.likes || 0}</span>
-              </button>
-              <button class="reaction-btn ${hasHearted ? 'active heart' : ''}" onclick="handleReaction('project', '${p.id}', 'heart')">
-                <span class="material-symbols-outlined">favorite</span>
-                <span class="count">${reactions.hearts || 0}</span>
-              </button>
-            </div>
-            <div class="share-toolbar">
-              <button class="share-btn" onclick="shareContent('facebook', '${p.title}', 'proj-${p.id}')" title="Share to Facebook"><span class="material-symbols-outlined">share</span></button>
-              <button class="share-btn" onclick="shareContent('tiktok', '${p.title}', 'proj-${p.id}')" title="Share to TikTok"><span class="material-symbols-outlined">play_circle</span></button>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:24px; line-height:1.6;">${p.description || ''}</p>
+          <div style="margin-top:auto;">
+            <span class="proj-status status-${p.status.toLowerCase()}">${p.status}</span>
+            
+            <div class="card-actions">
+              <div class="reactions-group">
+                <button class="reaction-btn ${hasLiked ? 'active like' : ''}" onclick="handleReaction('project', '${p.id}', 'like')">
+                  <span class="material-symbols-outlined">thumb_up</span>
+                  <span class="count">${reactions.likes || 0}</span>
+                </button>
+                <button class="reaction-btn ${hasHearted ? 'active heart' : ''}" onclick="handleReaction('project', '${p.id}', 'heart')">
+                  <span class="material-symbols-outlined">favorite</span>
+                  <span class="count">${reactions.hearts || 0}</span>
+                </button>
+              </div>
+              <div class="share-toolbar">
+                <button class="share-btn" onclick="shareContent('facebook', '${p.title}', 'proj-${p.id}')" title="Share to Facebook"><span class="material-symbols-outlined">share</span></button>
+                <button class="share-btn" onclick="shareContent('tiktok', '${p.title}', 'proj-${p.id}')" title="Share to TikTok"><span class="material-symbols-outlined">play_circle</span></button>
+              </div>
             </div>
           </div>
         </div>
       `;
     }).join('');
+
+    listEl.innerHTML = content;
+    setTimeout(() => {
+      initProjSwiper();
+    }, 100);
   } catch (err) {
     listEl.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#dc2626;">Network error.</p>`;
   }

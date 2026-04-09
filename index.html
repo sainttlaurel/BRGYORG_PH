@@ -9,10 +9,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/landing.css" />
+  <!-- Swiper.js CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
+  <div class="bg-aura" id="bg-aura">
+    <div class="aura-blob aura-1"></div>
+    <div class="aura-blob aura-2"></div>
+    <div class="aura-blob aura-3"></div>
+  </div>
 
   <!-- NAVBAR -->
   <nav class="navbar">
@@ -140,13 +147,19 @@
       <h3>Latest Announcements</h3>
       <p>Official news and important updates from your local government.</p>
     </div>
-    <div id="announcements-list" class="grid-3">
-      <div class="loading-state"
-        style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
-        <span class="material-symbols-outlined"
-          style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">downloading</span>
-        Loading latest updates...
+    <div class="swiper ann-swiper">
+      <div id="announcements-list" class="swiper-wrapper">
+        <div class="loading-state swiper-slide"
+          style="text-align: center; color: var(--text-muted); padding: 60px;">
+          <span class="material-symbols-outlined"
+            style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">downloading</span>
+          Loading latest updates...
+        </div>
       </div>
+      <!-- Add Pagination & Navigation -->
+      <div class="swiper-pagination"></div>
+      <div class="swiper-button-next custom-nav-btn"></div>
+      <div class="swiper-button-prev custom-nav-btn"></div>
     </div>
   </section>
 
@@ -157,13 +170,19 @@
       <h3>Community Development</h3>
       <p>Direct tracking of the infrastructure and social improvements in Payatas.</p>
     </div>
-    <div id="projects-list" class="grid-3">
-      <div class="loading-state"
-        style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">
-        <span class="material-symbols-outlined"
-          style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">engineering</span>
-        Fetching project data...
+    <div class="swiper proj-swiper">
+      <div id="projects-list" class="swiper-wrapper">
+        <div class="loading-state swiper-slide"
+          style="text-align: center; color: var(--text-muted); padding: 60px;">
+          <span class="material-symbols-outlined"
+            style="font-size:48px; margin-bottom:15px; display:block; opacity:0.3;">engineering</span>
+          Fetching project data...
+        </div>
       </div>
+      <!-- Add Pagination & Navigation -->
+      <div class="swiper-pagination"></div>
+      <div class="swiper-button-next custom-nav-btn"></div>
+      <div class="swiper-button-prev custom-nav-btn"></div>
     </div>
   </section>
 
@@ -475,6 +494,8 @@
   </div>
 
   <script src="supabase-config.js"></script>
+  <!-- Swiper.js Script -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="js/landing.js"></script>
 </body>
 
