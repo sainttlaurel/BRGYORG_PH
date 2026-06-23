@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payatas Ledger | Civic Management System</title>
+  <link rel="icon" href="img/logo-payatas.png" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-bg-grid"></div>
+    <div class="login-bg-glow"></div>
+    <div class="login-container">
+      <div class="login-brand">
+        <div class="login-logo">
+          <img src="img/logo-payatas.png" alt="Barangay Payatas" />
+        </div>
+        <h1>Payatas Ledger</h1>
+        <p>Civic Management System · Barangay Payatas, QC</p>
+      </div>
+      <div class="login-field">
+        <span class="material-symbols-outlined">person</span>
+        <input type="text" id="login-email" placeholder="Email or Username" autocomplete="username" />
+      </div>
+      <div class="login-field">
+        <span class="material-symbols-outlined">lock</span>
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')login()" />
+        <button class="toggle-pw" onclick="togglePw()"><span class="material-symbols-outlined"
+            id="pw-eye">visibility</span></button>
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <button class="login-btn" id="login-btn" onclick="login()">Sign In to Ledger</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main-app" class="main-app" style="display:none">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-mark">
+          <img src="img/logo-payatas.png" alt="Payatas" style="width:36px;height:36px;object-fit:contain;border-radius:8px" />
+        </div>
+        <div class="brand-text">
+          <h1>Payatas Ledger</h1>
+          <p>Civic Horizon</p>
+        </div>
+      </div>
+
+      <nav class="nav-section">
+        <button class="nav-item active" onclick="showPage('dashboard')">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="showPage('residents')">
+          <span class="material-symbols-outlined">groups</span>
+          <span>Residents</span>
+          <span class="nav-badge" id="badge-residents"></span>
+        </button>
+        <button class="nav-item" onclick="showPage('documents')">
+          <span class="material-symbols-outlined">description</span>
+          <span>Documents</span>
+          <span class="nav-badge" id="badge-documents"></span>
+        </button>
+        <button class="nav-item" onclick="showPage('complaints')">
+          <span class="material-symbols-outlined">gavel</span>
+          <span>Complaints</span>
+          <span class="nav-badge" id="badge-complaints"></span>
+        </button>
+        <button class="nav-item" onclick="showPage('projects')">
+          <span class="material-symbols-outlined">account_tree</span>
+          <span>Projects</span>
+        </button>
+        <button class="nav-item" onclick="showPage('announcements')">
+          <span class="material-symbols-outlined">campaign</span>
+          <span>Announcements</span>
+        </button>
+        <button class="nav-item" onclick="showPage('community')">
+          <span class="material-symbols-outlined">hub</span>
+          <span>Community Hub</span>
+          <span class="nav-badge" id="badge-community"></span>
+        </button>
+        <button class="nav-item" onclick="showPage('reports')">
+          <span class="material-symbols-outlined">analytics</span>
+          <span>Reports</span>
+        </button>
+        <div class="nav-group-label">Administration</div>
+        <button class="nav-item admin-only" onclick="showPage('users')">
+          <span class="material-symbols-outlined">supervised_user_circle</span>
+          <span>Users</span>
+        </button>
+        <button class="nav-item" onclick="showPage('settings')">
+          <span class="material-symbols-outlined">settings</span>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user" onclick="showProfileMenu()">
+          <div class="sidebar-avatar" id="sidebar-avatar">AP</div>
+          <div class="sidebar-user-info">
+            <div class="name" id="sidebar-name">Admin Payatas</div>
+            <div class="role" id="sidebar-role">Super Administrator</div>
+          </div>
+          <button class="logout-btn" onclick="event.stopPropagation();logout()" title="Logout">
+            <span class="material-symbols-outlined" style="font-size:18px">logout</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()" title="Menu">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="search-wrap">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" id="global-search" placeholder="Search residents, documents, complaints..."
+            oninput="globalSearch(this.value)" />
+        </div>
+        <div class="topbar-end">
+          <div class="topbar-date">
+            <span class="material-symbols-outlined">calendar_today</span>
+            <span id="topbar-date"></span>
+          </div>
+          <button class="icon-btn" onclick="toggleAdminTheme()" title="Toggle Dark Mode">
+            <span class="material-symbols-outlined" id="admin-theme-icon">light_mode</span>
+          </button>
+          <button class="icon-btn" onclick="toggleNotifications()" title="Notifications">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="notif-dot"></span>
+          </button>
+          <div class="topbar-user" onclick="showProfileMenu()">
+            <div class="topbar-avatar" id="topbar-avatar">AP</div>
+            <div class="topbar-user-info">
+              <div class="name" id="topbar-name">Admin Payatas</div>
+              <div class="role" id="topbar-role">Super Administrator</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+
+        <!-- ===================== DASHBOARD ===================== -->
+        <div id="page-dashboard" class="page active">
+          <div class="pg-header">
+            <div>
+              <h2 id="dash-greeting">Good morning! </h2>
+              <p>Here's what's happening in Barangay Payatas today.</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-secondary" onclick="exportReport('dashboard')"><span class="material-symbols-outlined"
+                  style="font-size:16px">download</span> Export</button>
+              <button class="btn-primary" onclick="openModal('new-request-modal')"><span
+                  class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
+            </div>
+          </div>
+
+          <div class="stats-grid stats-4 mb-5">
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon" style="background:#eef2ff"><span class="material-symbols-outlined"
+                    style="color:#1a56db">groups</span></div>
+                <span class="stat-change" style="background:#eef2ff;color:#1a56db" id="stat-residents-badge">Live</span>
+              </div>
+              <div class="stat-label">Total Residents</div>
+              <div class="stat-value" id="stat-residents">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon" style="background:#fffbeb"><span class="material-symbols-outlined"
+                    style="color:#d97706">description</span></div>
+                <span class="stat-change" style="background:#fffbeb;color:#d97706">Urgent</span>
+              </div>
+              <div class="stat-label">Pending Requests</div>
+              <div class="stat-value" id="stat-pending">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon" style="background:#fef2f2"><span class="material-symbols-outlined"
+                    style="color:#dc2626">warning</span></div>
+                <span class="stat-change" style="background:#fef2f2;color:#dc2626">Active</span>
+              </div>
+              <div class="stat-label">Active Complaints</div>
+              <div class="stat-value" id="stat-complaints">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon" style="background:#f0fdf4"><span class="material-symbols-outlined"
+                    style="color:#16a34a">account_tree</span></div>
+                <span class="stat-change" style="background:#f0fdf4;color:#16a34a">On Track</span>
+              </div>
+              <div class="stat-label">Ongoing Projects</div>
+              <div class="stat-value" id="stat-projects">0</div>
+            </div>
+          </div>
+
+          <div class="two-col mb-5">
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Quick Actions</span>
+              </div>
+              <div class="card-body">
+                <div class="quick-actions-grid">
+                  <button class="quick-action-btn" onclick="openModal('new-request-modal')">
+                    <span class="material-symbols-outlined">description</span>
+                    <span>New Request</span>
+                  </button>
+                  <button class="quick-action-btn" onclick="openModal('add-resident-modal')">
+                    <span class="material-symbols-outlined">person_add</span>
+                    <span>Add Resident</span>
+                  </button>
+                  <button class="quick-action-btn" onclick="openModal('new-announcement-modal')">
+                    <span class="material-symbols-outlined">campaign</span>
+                    <span>Announce</span>
+                  </button>
+                  <button class="quick-action-btn" onclick="openModal('new-complaint-modal')">
+                    <span class="material-symbols-outlined">gavel</span>
+                    <span>File Complaint</span>
+                  </button>
+                  <button class="quick-action-btn" onclick="openModal('new-project-modal')">
+                    <span class="material-symbols-outlined">construction</span>
+                    <span>New Project</span>
+                  </button>
+                  <button class="quick-action-btn" onclick="openModal('emergency-modal')">
+                    <span class="material-symbols-outlined" style="color:#dc2626">warning</span>
+                    <span style="color:#dc2626">Emergency</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="emergency-card">
+              <div class="em-header">
+                <span class="material-symbols-outlined">warning</span>
+                <span>Emergency Hub</span>
+              </div>
+              <p>Broadcast urgent alerts to all residents in the barangay instantly. Use only for critical situations.
+              </p>
+              <button class="em-btn" onclick="openModal('emergency-modal')">🚨 Launch Emergency Alert</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Recent Document Requests</span>
+              <button class="card-link" onclick="showPage('documents')">View All →</button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Resident</th>
+                    <th>Document Type</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-docs-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== RESIDENTS ===================== -->
+        <div id="page-residents" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>Residents Directory</h2>
+              <p>Manage all registered residents of Barangay Payatas</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-secondary" onclick="exportCSV('residents')"><span class="material-symbols-outlined"
+                  style="font-size:16px">download</span> Export CSV</button>
+              <button class="btn-primary" onclick="openModal('add-resident-modal')"><span
+                  class="material-symbols-outlined" style="font-size:16px">add</span> Add Resident</button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <div style="position:relative">
+              <span class="material-symbols-outlined"
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--on-surface-3);font-size:17px;pointer-events:none">search</span>
+              <input type="text" class="search-input" id="residents-search"
+                placeholder="Search by name, ID, or address..." oninput="renderResidents()" style="padding-left:34px" />
+            </div>
+            <select class="filter-select" id="residents-status" onchange="renderResidents()">
+              <option value="">All Status</option>
+              <option>Active</option>
+              <option>Inactive</option>
+            </select>
+            <select class="filter-select" id="residents-purok" onchange="renderResidents()">
+              <option value="">All Puroks</option>
+              <option>Purok 1</option>
+              <option>Purok 2</option>
+              <option>Purok 3</option>
+              <option>Purok 4</option>
+              <option>Purok 5</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Resident</th>
+                    <th>Resident ID</th>
+                    <th>Purok</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="residents-table"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="residents-pagination"></div>
+          </div>
+        </div>
+
+        <!-- ===================== DOCUMENTS ===================== -->
+        <div id="page-documents" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>Document Requests</h2>
+              <p>Process and track civic document requests</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-secondary" onclick="exportCSV('documents')"><span class="material-symbols-outlined"
+                  style="font-size:16px">download</span> Export</button>
+              <button class="btn-primary" onclick="openModal('new-request-modal')"><span
+                  class="material-symbols-outlined" style="font-size:16px">add</span> New Request</button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <div style="position:relative">
+              <span class="material-symbols-outlined"
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--on-surface-3);font-size:17px;pointer-events:none">search</span>
+              <input type="text" class="search-input" id="docs-search" placeholder="Search by name or reference..."
+                oninput="renderDocuments()" style="padding-left:34px" />
+            </div>
+            <select class="filter-select" id="docs-type" onchange="renderDocuments()">
+              <option value="">All Types</option>
+              <option>Barangay Clearance</option>
+              <option>Barangay Certificate of Residency</option>
+              <option>Barangay Certificate of Indigency</option>
+              <option>Barangay Business Clearance</option>
+              <option>Certificate of Good Moral Character</option>
+              <option>Barangay Permit</option>
+            </select>
+            <select class="filter-select" id="docs-status" onchange="renderDocuments()">
+              <option value="">All Status</option>
+              <option>Pending</option>
+              <option>Approved</option>
+              <option>Rejected</option>
+            </select>
+          </div>
+          <div id="doc-bulk-bar-wrap"></div>
+          <div class="table-container">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:36px"></th>
+                    <th>Resident</th>
+                    <th>Document Type</th>
+                    <th>Reference</th>
+                    <th>Date</th>
+                    <th>Purpose</th>
+                    <th>Status</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="documents-table"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="documents-pagination"></div>
+          </div>
+        </div>
+
+        <!-- ===================== COMPLAINTS ===================== -->
+        <div id="page-complaints" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>Complaints Registry</h2>
+              <p>Manage and resolve citizen complaints</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-secondary" onclick="exportCSV('complaints')"><span class="material-symbols-outlined"
+                  style="font-size:16px">download</span> Export</button>
+              <button class="btn-primary" onclick="openModal('new-complaint-modal')"><span
+                  class="material-symbols-outlined" style="font-size:16px">add</span> File Complaint</button>
+            </div>
+          </div>
+          <div class="stats-grid stats-3 mb-5" id="complaints-stats"></div>
+          <div class="filter-bar">
+            <div class="filter-chips">
+              <button class="chip chip-active" onclick="filterComplaints('all', this)">All Cases</button>
+              <button class="chip chip-inactive" onclick="filterComplaints('pending', this)">Pending</button>
+              <button class="chip chip-inactive" onclick="filterComplaints('resolved', this)">Resolved</button>
+              <button class="chip chip-inactive" onclick="filterComplaints('urgent', this)">Urgent</button>
+            </div>
+            <div style="position:relative;margin-left:auto">
+              <span class="material-symbols-outlined"
+                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--on-surface-3);font-size:17px;pointer-events:none">search</span>
+              <input type="text" class="search-input" id="complaints-search" placeholder="Search complaints..."
+                oninput="renderComplaints()" style="padding-left:34px" />
+            </div>
+          </div>
+          <div id="complaint-bulk-bar-wrap"></div>
+          <div class="table-container">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:36px"></th>
+                    <th>Complainant</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="complaints-table"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="complaints-pagination"></div>
+          </div>
+        </div>
+
+        <!-- ===================== PROJECTS ===================== -->
+        <div id="page-projects" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>Community Projects</h2>
+              <p>Infrastructure and development project tracker</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-secondary" onclick="exportCSV('projects')"><span class="material-symbols-outlined"
+                  style="font-size:16px">download</span> Export</button>
+              <button class="btn-primary" onclick="openModal('new-project-modal')"><span
+                  class="material-symbols-outlined" style="font-size:16px">add</span> New Project</button>
+            </div>
+          </div>
+          <div class="stats-grid stats-4 mb-5" id="projects-stats"></div>
+          <div id="projects-grid" class="proj-grid"></div>
+        </div>
+
+        <!-- ===================== ANNOUNCEMENTS ===================== -->
+        <div id="page-announcements" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>Community Announcements</h2>
+              <p>Broadcast updates and notices to residents</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-primary" onclick="openModal('new-announcement-modal')"><span
+                  class="material-symbols-outlined" style="font-size:16px">add</span> New Announcement</button>
+            </div>
+          </div>
+          <div class="filter-bar mb-4">
+            <div class="filter-chips">
+              <button class="chip chip-active" onclick="filterAnnouncements('all', this)">All</button>
+              <button class="chip chip-inactive" onclick="filterAnnouncements('health', this)">Health</button>
+              <button class="chip chip-inactive" onclick="filterAnnouncements('meeting', this)">Meetings</button>
+              <button class="chip chip-inactive"
+                onclick="filterAnnouncements('infrastructure', this)">Infrastructure</button>
+            </div>
+            <div class="filter-chips" id="ann-sort-bar" style="margin-left:auto">
+              <button class="chip chip-active" onclick="setAnnSort('newest', this)">Newest</button>
+              <button class="chip chip-inactive" onclick="setAnnSort('oldest', this)">Oldest</button>
+            </div>
+          </div>
+          <div class="ann-grid" id="announcements-grid"></div>
+        </div>
+
+        <!-- ===================== COMMUNITY HUB ===================== -->
+        <div id="page-community" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>Community Presence Hub</h2>
+              <p>Moderate resident engagement, volunteer applications, and polls</p>
+            </div>
+            <div class="pg-actions" id="community-pg-actions">
+              <!-- Actions change per tab -->
+            </div>
+          </div>
+
+          <div class="filter-bar mb-4">
+            <div class="filter-chips" id="community-tabs">
+              <button class="chip chip-active" onclick="switchCommunityTab('suggestions', this)">Citizens' Voice <span
+                  id="badge-tab-suggestions" class="dot-badge" style="display:none"></span></button>
+              <button class="chip chip-inactive" onclick="switchCommunityTab('volunteers', this)">Volunteer
+                Roster</button>
+              <button class="chip chip-inactive" onclick="switchCommunityTab('polls', this)">Community Polls</button>
+              <button class="chip chip-inactive" onclick="switchCommunityTab('businesses', this)">Business
+                Registry <span id="badge-tab-businesses" class="dot-badge" style="display:none"></span></button>
+            </div>
+          </div>
+
+          <!-- Suggestions Tab -->
+          <div id="com-tab-suggestions" class="com-tab-content">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Resident</th>
+                    <th>Suggestion / Question</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="suggestions-table"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Volunteers Tab -->
+          <div id="com-tab-volunteers" class="com-tab-content" style="display:none">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Volunteer Name</th>
+                    <th>Contact</th>
+                    <th>Body Conditions</th>
+                    <th>Status</th>
+                    <th>Signed Up</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="volunteers-table"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Polls Tab -->
+          <div id="com-tab-polls" class="com-tab-content" style="display:none">
+            <div id="polls-admin-grid" class="grid-3">
+              <!-- Polls loaded here -->
+            </div>
+          </div>
+
+          <!-- Business Registry Tab -->
+          <div id="com-tab-businesses" class="com-tab-content" style="display:none">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Business Name</th>
+                    <th>Owner</th>
+                    <th>Category</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="businesses-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== REPORTS ===================== -->
+        <div id="page-reports" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>Analytics & Reports</h2>
+              <p>Live data from Barangay Payatas records</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-secondary" onclick="exportReport('summary')"><span class="material-symbols-outlined"
+                  style="font-size:16px">download</span> Export Report (CSV)</button>
+            </div>
+          </div>
+
+          <!-- Live stat cards -->
+          <div class="stats-grid stats-4 mb-5" id="reports-stats"></div>
+
+          <div class="two-col mb-5">
+            <!-- Document Requests by Type -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">Documents by Type</span></div>
+              <div class="card-body" id="chart-doc-types"></div>
+            </div>
+            <!-- Complaint Categories -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">Complaints by Category</span></div>
+              <div class="card-body" id="chart-cmp-cats"></div>
+            </div>
+          </div>
+
+          <div class="two-col mb-5">
+            <!-- Demographic breakdown -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">Resident Demographics</span></div>
+              <div class="card-body" id="chart-demographics"></div>
+            </div>
+            <!-- Project status breakdown -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">Project Status Overview</span></div>
+              <div class="card-body" id="chart-projects"></div>
+            </div>
+          </div>
+
+          <!-- Summary table -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Live System Summary</span></div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th>Count</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-summary-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== USERS ===================== -->
+        <div id="page-users" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>User Management</h2>
+              <p>Control administrative access and staff permissions</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-secondary" onclick="exportCSV('users')"><span class="material-symbols-outlined"
+                  style="font-size:16px">download</span> Export</button>
+              <button class="btn-primary" onclick="openModal('add-user-modal')"><span class="material-symbols-outlined"
+                  style="font-size:16px">add</span> Add User</button>
+            </div>
+          </div>
+          <div class="stats-grid stats-4 mb-5" id="users-stats"></div>
+          <div class="table-container">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Last Active</th>
+                    <th style="text-align:right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== SETTINGS ===================== -->
+        <div id="page-settings" class="page">
+          <div class="pg-header">
+            <div>
+              <h2>System Settings</h2>
+              <p>Configure your administrative environment</p>
+            </div>
+            <div class="pg-actions">
+              <button class="btn-primary" onclick="saveSettings()"><span class="material-symbols-outlined"
+                  style="font-size:16px">save</span> Save Changes</button>
+            </div>
+          </div>
+          <div class="two-col">
+            <div>
+              <div class="card mb-5">
+                <div class="card-header"><span class="card-title">Barangay Information</span></div>
+                <div class="card-body">
+                  <div class="form-group"><label>Barangay Name</label><input type="text" id="s-name"
+                      value="Barangay Payatas" /></div>
+                  <div class="form-group"><label>District / City</label><input type="text" id="s-district"
+                      value="Quezon City, Metro Manila" /></div>
+                  <div class="form-group"><label>Contact Number</label><input type="text" id="s-contact"
+                      value="+63 2 8123 4567" /></div>
+                  <div class="form-group"><label>Official Email</label><input type="email" id="s-email"
+                      value="payatas.ledger@qc.gov.ph" /></div>
+                  <div class="form-group"><label>Office Address</label><input type="text" id="s-address"
+                      value="Litex Road, Barangay Payatas, QC 1119" /></div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><span class="card-title">Change Password</span></div>
+                <div class="card-body">
+                  <div class="form-group"><label>Current Password</label><input type="password" id="s-cur-pw"
+                      placeholder="Enter current password" /></div>
+                  <div class="form-group"><label>New Password</label><input type="password" id="s-new-pw"
+                      placeholder="Enter new password" /></div>
+                  <div class="form-group"><label>Confirm New Password</label><input type="password" id="s-conf-pw"
+                      placeholder="Confirm new password" /></div>
+                  <button class="btn-primary" onclick="changePassword()">Update Password</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="card mb-5">
+                <div class="card-header"><span class="card-title">Notification Preferences</span></div>
+                <div class="card-body">
+                  <div class="toggle-row">
+                    <div class="toggle-info">
+                      <h5>Email Alerts for Complaints</h5>
+                      <p>Receive alerts when new complaints are filed</p>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" id="t-complaints" checked /><span
+                        class="toggle-slider"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div class="toggle-info">
+                      <h5>Document Request Notifications</h5>
+                      <p>Get notified for new document requests</p>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" id="t-documents" checked /><span
+                        class="toggle-slider"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div class="toggle-info">
+                      <h5>Weekly Summary Reports</h5>
+                      <p>Consolidated PDF every Monday morning</p>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" id="t-weekly" /><span
+                        class="toggle-slider"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div class="toggle-info">
+                      <h5>Security Login Alerts</h5>
+                      <p>Notify for admin login activity</p>
+                    </div>
+                    <label class="toggle-switch"><input type="checkbox" id="t-security" checked /><span
+                        class="toggle-slider"></span></label>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><span class="card-title">System Status</span></div>
+                <div class="card-body">
+                  <div class="flex-between mb-3"><span class="text-sm text-muted">Version</span><span
+                      class="font-bold text-sm" id="sys-version">—</span></div>
+                  <div class="flex-between mb-3"><span class="text-sm text-muted">Database</span><span
+                      class="font-bold text-sm" id="sys-db-status">Checking…</span></div>
+                  <div class="flex-between mb-3"><span class="text-sm text-muted">API Latency</span><span
+                      class="font-bold text-sm" id="sys-latency">Measuring…</span></div>
+                  <div class="flex-between mb-3"><span class="text-sm text-muted">Cloud Backup</span><span
+                      class="font-bold text-sm text-muted" id="sys-backup">Managed by Supabase</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ===================== MODALS ===================== -->
+
+  <!-- New Document Request Modal -->
+  <div id="new-request-modal" class="modal-overlay" style="display:none"
+    onclick="closeOnOverlay(event,'new-request-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">New Document Request</h3>
+        <button class="modal-close" onclick="closeModal('new-request-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="form-group"><label>Resident Name *</label><input type="text" id="req-name"
+              placeholder="Full name" /></div>
+          <div class="form-group"><label>Contact Number</label><input type="text" id="req-contact"
+              placeholder="+63 9XX XXX XXXX" /></div>
+        </div>
+        <div class="form-group"><label>Document Type *</label>
+          <select id="req-type">
+            <option value="">Select type...</option>
+            <option>Barangay Clearance</option>
+            <option>Barangay Certificate of Residency</option>
+            <option>Barangay Certificate of Indigency</option>
+            <option>Barangay Business Clearance</option>
+            <option>Certificate of Good Moral Character</option>
+            <option>Barangay Permit</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Purpose</label><textarea id="req-purpose"
+            placeholder="State the purpose of this request..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('new-request-modal')">Cancel</button>
+        <button class="btn-primary" onclick="submitRequest()">Submit Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Resident Modal -->
+  <div id="add-resident-modal" class="modal-overlay" style="display:none"
+    onclick="closeOnOverlay(event,'add-resident-modal')">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Resident</h3>
+        <button class="modal-close" onclick="closeModal('add-resident-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="form-group"><label>First Name *</label><input type="text" id="res-fname"
+              placeholder="First name" /></div>
+          <div class="form-group"><label>Last Name *</label><input type="text" id="res-lname" placeholder="Last name" />
+          </div>
+          <div class="form-group"><label>Date of Birth</label><input type="date" id="res-dob" /></div>
+          <div class="form-group"><label>Gender</label>
+            <select id="res-gender">
+              <option value="">Select...</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Contact Number</label><input type="text" id="res-contact"
+              placeholder="+63 9XX XXX XXXX" /></div>
+          <div class="form-group"><label>Purok *</label>
+            <select id="res-purok">
+              <option value="">Select Purok...</option>
+              <option>Purok 1</option>
+              <option>Purok 2</option>
+              <option>Purok 3</option>
+              <option>Purok 4</option>
+              <option>Purok 5</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Complete Address</label><input type="text" id="res-address"
+            placeholder="House No., Street, Purok, Barangay Payatas" /></div>
+        <div class="form-group"><label>Notes (Optional)</label><textarea id="res-notes"
+            placeholder="Any additional notes..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('add-resident-modal')">Cancel</button>
+        <button class="btn-primary" onclick="submitResident()">Add Resident</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Complaint Modal -->
+  <div id="new-complaint-modal" class="modal-overlay" style="display:none"
+    onclick="closeOnOverlay(event,'new-complaint-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">File New Complaint</h3>
+        <button class="modal-close" onclick="closeModal('new-complaint-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>Complainant Name *</label><input type="text" id="cmp-name"
+            placeholder="Full name" /></div>
+        <div class="form-grid-2">
+          <div class="form-group"><label>Category *</label>
+            <select id="cmp-cat">
+              <option value="">Select...</option>
+              <option>Sanitation</option>
+              <option>Noise</option>
+              <option>Public Safety</option>
+              <option>Environmental</option>
+              <option>Infrastructure</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Priority</label>
+            <select id="cmp-priority">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Description *</label><textarea id="cmp-desc"
+            placeholder="Describe the complaint in detail..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('new-complaint-modal')">Cancel</button>
+        <button class="btn-primary" onclick="submitComplaint()">File Complaint</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Project Modal -->
+  <div id="new-project-modal" class="modal-overlay" style="display:none"
+    onclick="closeOnOverlay(event,'new-project-modal')">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">New Community Project</h3>
+        <button class="modal-close" onclick="closeModal('new-project-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>Project Title *</label><input type="text" id="proj-title"
+            placeholder="Project name" /></div>
+        <div class="form-grid-2">
+          <div class="form-group"><label>Category *</label>
+            <select id="proj-cat">
+              <option value="">Select...</option>
+              <option>Infrastructure</option>
+              <option>Healthcare</option>
+              <option>Education</option>
+              <option>Environment</option>
+              <option>Public Safety</option>
+              <option>Sanitation</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Status</label>
+            <select id="proj-status">
+              <option>Planned</option>
+              <option>Ongoing</option>
+              <option>Completed</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Budget (₱) *</label><input type="number" id="proj-budget" placeholder="0" />
+          </div>
+          <div class="form-group"><label>Progress (%)</label><input type="number" id="proj-progress" placeholder="0"
+              min="0" max="100" /></div>
+        </div>
+        <div class="form-group"><label>Description</label><textarea id="proj-desc"
+            placeholder="Project description and objectives..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('new-project-modal')">Cancel</button>
+        <button class="btn-primary" onclick="submitProject()">Create Project</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Announcement Modal -->
+  <div id="new-announcement-modal" class="modal-overlay" style="display:none"
+    onclick="closeOnOverlay(event,'new-announcement-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">New Announcement</h3>
+        <button class="modal-close" onclick="closeModal('new-announcement-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>Title *</label><input type="text" id="ann-title"
+            placeholder="Announcement title" /></div>
+        <div class="form-group"><label>Category</label>
+          <select id="ann-cat">
+            <option value="meeting">Meeting</option>
+            <option value="health">Health</option>
+            <option value="infrastructure">Infrastructure</option>
+            <option value="holiday">Holiday</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Content *</label><textarea id="ann-content"
+            placeholder="Write the announcement content here..." style="min-height:120px"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('new-announcement-modal')">Cancel</button>
+        <button class="btn-primary" onclick="submitAnnouncement()">Publish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div id="add-user-modal" class="modal-overlay" style="display:none" onclick="closeOnOverlay(event,'add-user-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New User</h3>
+        <button class="modal-close" onclick="closeModal('add-user-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="form-group"><label>Full Name *</label><input type="text" id="usr-name" placeholder="Full name" />
+          </div>
+          <div class="form-group"><label>Username *</label><input type="text" id="usr-username"
+              placeholder="username" /></div>
+          <div class="form-group"><label>Email *</label><input type="email" id="usr-email"
+              placeholder="email@payatas.gov.ph" /></div>
+          <div class="form-group"><label>Role *</label>
+            <select id="usr-role">
+              <option>Staff</option>
+              <option>Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Password *</label><input type="password" id="usr-password"
+            placeholder="Set password" /></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('add-user-modal')">Cancel</button>
+        <button class="btn-primary" onclick="submitUser()">Create User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emergency Alert Modal -->
+  <div id="emergency-modal" class="modal-overlay" style="display:none"
+    onclick="closeOnOverlay(event,'emergency-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color:var(--error)">🚨 Emergency Alert</h3>
+        <button class="modal-close" onclick="closeModal('emergency-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div
+          style="background:var(--error-light);border:1px solid rgba(220,38,38,0.2);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:13px;color:var(--error)">
+          ⚠️ This will broadcast an urgent alert to all registered users. Use responsibly.
+        </div>
+        <div class="form-group"><label>Alert Type</label>
+          <select id="em-type">
+            <option>Natural Disaster Warning</option>
+            <option>Public Safety Alert</option>
+            <option>Health Emergency</option>
+            <option>Infrastructure Alert</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Alert Message *</label><textarea id="em-message"
+            placeholder="Describe the emergency situation..." style="min-height:100px"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('emergency-modal')">Cancel</button>
+        <button
+          style="padding:9px 16px;background:var(--error);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;"
+          onclick="launchEmergency()">Launch Alert</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Poll Modal -->
+  <div id="new-poll-modal" class="modal-overlay" style="display:none" onclick="closeOnOverlay(event,'new-poll-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Poll</h3>
+        <button class="modal-close" onclick="closeModal('new-poll-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Poll Question *</label>
+          <input type="text" id="poll-question" placeholder="e.g. Should we extend the park hours?" />
+        </div>
+        <div class="form-group">
+          <label>Options (One per line, min 2) *</label>
+          <textarea id="poll-options" placeholder="Yes&#10;No&#10;Maybe" style="min-height:100px"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Expiry Date (Optional)</label>
+          <input type="date" id="poll-expiry" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('new-poll-modal')">Cancel</button>
+        <button class="btn-primary" onclick="submitPoll()">Launch Poll</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Dialog -->
+  <div id="confirm-modal" class="modal-overlay" style="display:none">
+    <div class="confirm-dialog">
+      <div class="confirm-icon danger"><span class="material-symbols-outlined">delete</span></div>
+      <h3 id="confirm-title">Delete Record?</h3>
+      <p id="confirm-message">This action cannot be undone. Are you sure you want to proceed?</p>
+      <div class="confirm-btns">
+        <button class="btn-secondary" onclick="closeModal('confirm-modal')">Cancel</button>
+        <button class="btn-danger" id="confirm-action">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal (generic) -->
+  <div id="edit-modal" class="modal-overlay" style="display:none" onclick="closeOnOverlay(event,'edit-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="edit-modal-title">Edit</h3>
+        <button class="modal-close" onclick="closeModal('edit-modal')"><span
+            class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body" id="edit-modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('edit-modal')">Cancel</button>
+        <button class="btn-primary" id="edit-modal-save">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Panel -->
+  <div id="notif-panel" class="notif-panel" style="display:none">
+    <div class="notif-header">
+      <h3>Notifications</h3>
+      <button class="btn-secondary" style="font-size:11px;padding:4px 8px" onclick="markAllRead()">Mark all
+        read</button>
+    </div>
+    <div class="notif-list" id="notif-list"></div>
+  </div>
+
+  <!-- Profile Menu -->
+  <div id="profile-menu" class="profile-menu" style="display:none">
+    <div class="profile-menu-item" onclick="showPage('settings');closeProfileMenu()">
+      <span class="material-symbols-outlined">manage_accounts</span> My Profile
+    </div>
+    <div class="profile-menu-item" onclick="showPage('settings');closeProfileMenu()">
+      <span class="material-symbols-outlined">settings</span> Settings
+    </div>
+    <div class="profile-menu-divider"></div>
+    <div class="profile-menu-item danger" onclick="logout()">
+      <span class="material-symbols-outlined">logout</span> Sign Out
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Document Detail Panel -->
+  <div id="doc-panel-overlay" class="doc-panel-overlay" onclick="closeDocPanel(event)">
+    <div class="doc-panel" id="doc-panel">
+      <div class="doc-panel-header">
+        <div>
+          <h3 id="dp-title">Document Request</h3>
+          <p id="dp-ref" style="font-family:'DM Mono',monospace">REF-000</p>
+        </div>
+        <button class="doc-panel-close" onclick="closeDocPanelDirect()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="doc-panel-body">
+
+        <!-- Certificate Preview -->
+        <div>
+          <div class="panel-section-title">Document Preview</div>
+          <div class="cert-preview">
+            <div class="cert-preview-header">
+              <div class="cert-seal"><span class="material-symbols-outlined">description</span></div>
+              <div class="cert-info">
+                <h4 id="dp-cert-type">Barangay Clearance</h4>
+                <p>Barangay Payatas, Quezon City</p>
+              </div>
+            </div>
+            <div class="cert-preview-body">
+              <div class="cert-row"><span class="cert-label">Issued To</span><span class="cert-val"
+                  id="dp-cert-name">—</span></div>
+              <div class="cert-row"><span class="cert-label">Purpose</span><span class="cert-val"
+                  id="dp-cert-purpose">—</span></div>
+              <div class="cert-row"><span class="cert-label">Date Filed</span><span class="cert-val"
+                  id="dp-cert-date">—</span></div>
+              <div class="cert-row"><span class="cert-label">Contact</span><span class="cert-val"
+                  id="dp-cert-contact">—</span></div>
+            </div>
+            <div class="cert-preview-footer">
+              <span class="cert-ref" id="dp-cert-ref">PAY-0000</span>
+              <span class="cert-status-tag" id="dp-cert-status-tag">Pending</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Timeline -->
+        <div>
+          <div class="panel-section-title">Status Timeline</div>
+          <div class="status-timeline" id="dp-timeline"></div>
+        </div>
+
+        <!-- Edit Fields -->
+        <div>
+          <div class="panel-section-title">Edit Details</div>
+          <div class="panel-field">
+            <label>Resident Name</label>
+            <input type="text" id="dp-edit-name" placeholder="Full name" />
+          </div>
+          <div class="panel-field">
+            <label>Contact Number</label>
+            <input type="text" id="dp-edit-contact" placeholder="+63 9XX XXX XXXX" />
+          </div>
+          <div class="panel-field">
+            <label>Document Type</label>
+            <select id="dp-edit-type">
+              <option>Barangay Clearance</option>
+              <option>Certificate of Indigency</option>
+              <option>Business Permit</option>
+              <option>Residency Certificate</option>
+            </select>
+          </div>
+          <div class="panel-field">
+            <label>Purpose</label>
+            <textarea id="dp-edit-purpose" placeholder="Purpose of request..."></textarea>
+          </div>
+          <div class="panel-field">
+            <label>Status</label>
+            <select id="dp-edit-status" onchange="updateQuickRemarks(this.value)">
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="panel-field">
+            <label>Quick Select Options</label>
+            <select id="dp-quick-select" onchange="applyQuickRemark(this.value)">
+              <option value="">-- Choose a predefined message --</option>
+            </select>
+          </div>
+          <div class="panel-field">
+            <label>Admin Remarks / Comments</label>
+            <textarea id="dp-edit-remarks" placeholder="Optional notes for the resident..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="doc-panel-footer">
+        <button class="btn-secondary" onclick="printDocument()">
+          <span class="material-symbols-outlined" style="font-size:15px">print</span> Print
+        </button>
+        <button class="btn-secondary" onclick="closeDocPanelDirect()">Cancel</button>
+        <button class="btn-primary" onclick="saveDocPanel()">
+          <span class="material-symbols-outlined" style="font-size:15px">save</span> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resident Profile Panel -->
+  <div id="resident-panel-overlay" class="doc-panel-overlay" onclick="closeResidentPanel(event)">
+    <div class="doc-panel" style="width:min(640px,100vw)">
+      <div class="doc-panel-header">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="av" id="rp-avatar" style="width:48px;height:48px;font-size:16px;color:white;background:#1a56db">MG
+          </div>
+          <div>
+            <h3 id="rp-name" style="margin:0 0 2px">Resident Name</h3>
+            <p id="rp-id" style="margin:0;font-family:'DM Mono',monospace;font-size:11px;color:var(--on-surface-3)">
+              PAY-000000</p>
+          </div>
+        </div>
+        <button class="doc-panel-close" onclick="closeResidentPanelDirect()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="doc-panel-body">
+
+        <!-- Status + Purok badges -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="rp-badges"></div>
+
+        <!-- Personal Info -->
+        <div>
+          <div class="panel-section-title">Personal Information</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="rp-info-grid"></div>
+        </div>
+
+        <!-- Document History -->
+        <div>
+          <div class="panel-section-title">Document Request History</div>
+          <div id="rp-doc-history"></div>
+        </div>
+
+        <!-- Complaints Linked -->
+        <div>
+          <div class="panel-section-title">Linked Complaints</div>
+          <div id="rp-complaints"></div>
+        </div>
+
+      </div>
+      <div class="doc-panel-footer">
+        <button class="btn-secondary" onclick="closeResidentPanelDirect()">Close</button>
+        <button class="btn-primary" onclick="editResidentFromPanel()">
+          <span class="material-symbols-outlined" style="font-size:15px">edit</span> Edit Resident
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
