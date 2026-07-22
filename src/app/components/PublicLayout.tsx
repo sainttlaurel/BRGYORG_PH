@@ -70,7 +70,7 @@ const PublicLayout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <img src="/src/assets/img/logo-payatas.png" alt="Payatas Logo" className="w-9 h-9 rounded-xl object-contain shadow-sm group-hover:shadow-emerald-300 transition-shadow" />
+            <img src="/img/logo-payatas.png" alt="Payatas Logo" className="w-9 h-9 rounded-xl object-contain shadow-sm group-hover:shadow-emerald-300 transition-shadow" />
             <div className="leading-tight">
               <div className="font-bold text-emerald-700 dark:text-emerald-400" style={{ fontSize: "0.95rem", lineHeight: 1.2 }}>Payatas Ledger</div>
               <div className="text-emerald-600/70 dark:text-emerald-500/70" style={{ fontSize: "0.65rem", lineHeight: 1 }}>Barangay Payatas</div>

@@ -36,7 +36,7 @@ const PublicHome: React.FC = () => {
       <section className="relative min-h-[88vh] flex items-center overflow-hidden">
         {/* Background image */}
         <div className="absolute inset-0">
-          <img src="/src/assets/img/bg.png" alt="Background" className="w-full h-full object-cover" />
+          <img src="/img/bg.png" alt="Background" className="w-full h-full object-cover" />
         </div>
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-900/60 to-transparent" />
@@ -89,7 +89,7 @@ const PublicHome: React.FC = () => {
             className="hidden lg:block"
           >
             <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-              <img src="/src/assets/img/logo-payatas.png" alt="Logo" className="w-full h-auto object-cover" />
+              <img src="/img/logo-payatas.png" alt="Logo" className="w-full h-auto object-cover" />
             </div>
           </motion.div>
         </div>
