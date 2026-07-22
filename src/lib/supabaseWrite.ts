@@ -89,7 +89,7 @@ export async function insertDocument(data: {
   id: string; resident: string; type: string; purpose: string; date: string;
   contact?: string; status?: string; id_upload?: string;
 }) {
-  if (!supabase) return;
+  if (!supabase) throw new Error('offline');
   const { error } = await supabase.from('documents').insert({
     ...data,
     status: data.status ?? 'Pending',
