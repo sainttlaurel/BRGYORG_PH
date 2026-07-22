@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Outlet, Link, NavLink, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -30,6 +30,15 @@ const moreLinks = [
 const PublicLayout: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { barangayInfo } = useData();
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem("disclaimer_dismissed");
+    if (!dismissed) setShowDisclaimer(true);
+  }, []);
+  const dismissDisclaimer = useCallback(() => {
+    setShowDisclaimer(false);
+    sessionStorage.setItem("disclaimer_dismissed", "1");
+  }, []);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -58,6 +67,26 @@ const PublicLayout: React.FC = () => {
           <span className="flex items-center gap-1.5"><MapPin size={11} /> {barangayInfo.address}</span>
         </div>
       </div>
+
+      {/* Disclaimer banner */}
+      <AnimatePresence>
+        {showDisclaimer && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 overflow-hidden"
+          >
+            <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-start gap-3 text-xs text-amber-800 dark:text-amber-200">
+              <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+              <div className="flex-1">
+                <strong>Disclaimer:</strong> This website is a project prototype and is <strong>not affiliated</strong> with Barangay Payatas or any government entity. All information, data, and content displayed are for demonstration purposes only and are <strong>not real</strong>. No actual government services are provided through this site.
+              </div>
+              <button onClick={dismissDisclaimer} className="shrink-0 p-1 rounded hover:bg-amber-200 dark:hover:bg-amber-900 transition-colors"><X size={14} /></button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Navbar */}
       <header
