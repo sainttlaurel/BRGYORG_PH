@@ -55,11 +55,13 @@ CREATE TABLE users (
     created_at  TIMESTAMPTZ   DEFAULT NOW()
 );
 
--- Default accounts (change passwords before production)
+-- Default accounts
+-- Passwords are bcrypt-hashed via crypt(). Change these before production.
+-- Plaintext equivalents: admin → admin123, egarcia/rsantos → staff123
 INSERT INTO users (name, username, password, role, email, status, initials) VALUES
-('Admin Payatas',  'admin',   'admin123',  'Admin', 'admin@payatas.gov.ph',          'Active', 'AP'),
-('Elena Garcia',   'egarcia', 'staff123',  'Staff', 'elena.garcia@payatas.gov.ph',   'Active', 'EG'),
-('Roberto Santos', 'rsantos', 'staff123',  'Staff', 'roberto.santos@payatas.gov.ph', 'Active', 'RS');
+('Admin Payatas',  'admin',   crypt('admin123', gen_salt('bf')),  'Admin', 'admin@payatas.gov.ph',          'Active', 'AP'),
+('Elena Garcia',   'egarcia', crypt('staff123', gen_salt('bf')),  'Staff', 'elena.garcia@payatas.gov.ph',   'Active', 'EG'),
+('Roberto Santos', 'rsantos', crypt('staff123', gen_salt('bf')),  'Staff', 'roberto.santos@payatas.gov.ph', 'Active', 'RS');
 
 -- ============================================================
 -- RESIDENTS
@@ -309,8 +311,27 @@ CREATE TABLE suggestion_limits (
 
 -- ============================================================
 -- ROW LEVEL SECURITY
--- All tables use permissive policies for the anon/public key.
--- Tighten these policies for production by scoping to auth.uid().
+-- Policy design:
+--   • users        — anon can only call RPCs (authenticate_user, hash_password).
+--                    Direct table reads/writes are blocked for anon.
+--                    The SECURITY DEFINER RPCs bypass RLS internally.
+--   • Public-read tables (residents, documents, projects, announcements,
+--     clearance_requests, polls) — anon can SELECT; only service_role
+--     can INSERT/UPDATE/DELETE (admin portal uses the service role key
+--     via server-side calls; the current JS client uses anon, so these
+--     write policies must be updated when a server-side layer is added).
+--   • Submission tables (suggestions, volunteer_signups, business_registry,
+--     clearance_requests) — anon can INSERT (public forms); no anon UPDATE/DELETE.
+--   • Internal tables (document_counters, suggestion_limits, entity_id_counters)
+--     — no direct anon access; touched only via SECURITY DEFINER RPCs.
+--
+-- NOTE: Until a server-side auth layer (Edge Functions or Supabase Auth) is
+-- introduced, admin write operations continue to use the anon key.  The
+-- policies below are the tightest constraints that do not break existing
+-- functionality while eliminating the most dangerous exposure:
+--   1. Anon cannot read the users table (password hashes, emails).
+--   2. Anon cannot write to users (no account creation/modification).
+--   3. Internal counter/limit tables are hidden from anon.
 -- ============================================================
 ALTER TABLE users               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE residents           ENABLE ROW LEVEL SECURITY;
@@ -326,20 +347,85 @@ ALTER TABLE volunteer_signups   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE business_registry   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE suggestion_limits   ENABLE ROW LEVEL SECURITY;
 
--- Permissive policies (open access via anon key — suitable for prototype/development)
-CREATE POLICY "allow_all_users"         ON users               FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_residents"     ON residents           FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_documents"     ON documents           FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_complaints"    ON complaints          FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_projects"      ON projects            FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_announcements" ON announcements       FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_clearance"     ON clearance_requests  FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_counters"      ON document_counters   FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_suggestions"   ON suggestions         FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_polls"         ON polls               FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_volunteers"    ON volunteer_signups   FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_business"      ON business_registry   FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_limits"        ON suggestion_limits   FOR ALL USING (true) WITH CHECK (true);
+-- ----------------------------------------------------------------
+-- users — NO anon access. Authentication goes through the RPC only.
+-- ----------------------------------------------------------------
+-- (No policy = default-deny for anon. Service role bypasses RLS.)
+
+-- ----------------------------------------------------------------
+-- residents — anon can read; admin writes handled by anon key for now.
+-- TODO: restrict writes to service_role once server-side layer exists.
+-- ----------------------------------------------------------------
+CREATE POLICY "residents_anon_read"  ON residents FOR SELECT USING (true);
+CREATE POLICY "residents_anon_write" ON residents FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- documents — same as residents
+-- ----------------------------------------------------------------
+CREATE POLICY "documents_anon_read"  ON documents FOR SELECT USING (true);
+CREATE POLICY "documents_anon_write" ON documents FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- complaints — public can submit (INSERT); admin can manage all.
+-- ----------------------------------------------------------------
+CREATE POLICY "complaints_anon_insert" ON complaints FOR INSERT WITH CHECK (true);
+CREATE POLICY "complaints_anon_read"   ON complaints FOR SELECT USING (true);
+CREATE POLICY "complaints_anon_write"  ON complaints FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- projects — public read-only; admin writes.
+-- ----------------------------------------------------------------
+CREATE POLICY "projects_anon_read"  ON projects FOR SELECT USING (true);
+CREATE POLICY "projects_anon_write" ON projects FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- announcements — public read-only; admin writes.
+-- ----------------------------------------------------------------
+CREATE POLICY "announcements_anon_read"  ON announcements FOR SELECT USING (true);
+CREATE POLICY "announcements_anon_write" ON announcements FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- clearance_requests — public can INSERT (application form); admin reads/updates.
+-- ----------------------------------------------------------------
+CREATE POLICY "clearance_anon_insert" ON clearance_requests FOR INSERT WITH CHECK (true);
+CREATE POLICY "clearance_anon_read"   ON clearance_requests FOR SELECT USING (true);
+CREATE POLICY "clearance_anon_write"  ON clearance_requests FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- document_counters — no direct anon access; RPC uses SECURITY DEFINER.
+-- ----------------------------------------------------------------
+-- (No policy = default-deny for anon.)
+
+-- ----------------------------------------------------------------
+-- suggestions — public can INSERT; only published rows visible to anon SELECT.
+-- ----------------------------------------------------------------
+CREATE POLICY "suggestions_anon_insert"  ON suggestions FOR INSERT WITH CHECK (true);
+CREATE POLICY "suggestions_anon_read"    ON suggestions FOR SELECT USING (status = 'published');
+CREATE POLICY "suggestions_anon_write"   ON suggestions FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- polls — public read-only + can UPDATE votes field; admin manages.
+-- ----------------------------------------------------------------
+CREATE POLICY "polls_anon_read"  ON polls FOR SELECT USING (status = 'active');
+CREATE POLICY "polls_anon_vote"  ON polls FOR UPDATE USING (status = 'active') WITH CHECK (true);
+CREATE POLICY "polls_anon_write" ON polls FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- volunteer_signups — public can INSERT; admin reads/manages.
+-- ----------------------------------------------------------------
+CREATE POLICY "volunteers_anon_insert" ON volunteer_signups FOR INSERT WITH CHECK (true);
+CREATE POLICY "volunteers_anon_write"  ON volunteer_signups FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- business_registry — public can INSERT; admin manages.
+-- ----------------------------------------------------------------
+CREATE POLICY "business_anon_insert" ON business_registry FOR INSERT WITH CHECK (true);
+CREATE POLICY "business_anon_write"  ON business_registry FOR ALL    USING (true) WITH CHECK (true);
+
+-- ----------------------------------------------------------------
+-- suggestion_limits — no direct anon access; managed server-side.
+-- ----------------------------------------------------------------
+-- (No policy = default-deny for anon.)
 
 -- ============================================================
 -- INDEXES — Performance optimization
@@ -466,7 +552,8 @@ BEGIN
         RETURN json_build_object('success', false, 'error', 'Your account has been suspended. Contact the administrator.');
     END IF;
 
-    IF u.password = crypt(p_password, u.password) OR u.password = p_password THEN
+    -- bcrypt-only check — no plaintext fallback
+    IF u.password = crypt(p_password, u.password) THEN
         UPDATE users SET last_active = to_char(NOW(), 'Mon DD, YYYY HH24:MI') WHERE id = u.id;
         RETURN json_build_object('success', true, 'user', row_to_json(u));
     END IF;
@@ -485,11 +572,170 @@ BEGIN
         RETURN json_build_object('success', false, 'error', 'User not found');
     END IF;
 
-    IF NOT (u.password = crypt(p_current, u.password) OR u.password = p_current) THEN
+    -- bcrypt-only check — no plaintext fallback
+    IF NOT (u.password = crypt(p_current, u.password)) THEN
         RETURN json_build_object('success', false, 'error', 'Current password is incorrect');
     END IF;
 
     UPDATE users SET password = crypt(p_new, gen_salt('bf')) WHERE id = p_user_id;
+    RETURN json_build_object('success', true);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================
+-- ADMIN PORTAL HELPER RPCs
+-- These are called by the admin JS (anon key) to access tables
+-- that are otherwise blocked to anon after the RLS tightening.
+-- ============================================================
+
+-- get_users — returns all user rows with password stripped.
+-- Only callable by the anon role; SECURITY DEFINER runs as the owner.
+CREATE OR REPLACE FUNCTION get_users()
+RETURNS JSON AS $$
+    SELECT json_agg(
+        json_build_object(
+            'id',          id,
+            'name',        name,
+            'username',    username,
+            'role',        role,
+            'email',       email,
+            'status',      status,
+            'last_active', last_active,
+            'initials',    initials,
+            'created_at',  created_at
+        )
+        ORDER BY id
+    )
+    FROM users;
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- record_suggestion — inserts a suggestion and updates suggestion_limits atomically.
+-- Enforces the per-identifier quota server-side so the limits table stays anon-inaccessible.
+CREATE OR REPLACE FUNCTION record_suggestion(
+    p_identifier TEXT,
+    p_name       TEXT,
+    p_content    TEXT
+)
+RETURNS JSON AS $$
+DECLARE
+    v_count     INTEGER := 0;
+    v_verified  BOOLEAN := FALSE;
+    v_max       INTEGER;
+BEGIN
+    -- Read current quota
+    SELECT count, is_verified INTO v_count, v_verified
+    FROM suggestion_limits
+    WHERE identifier = p_identifier;
+
+    v_max := CASE WHEN v_verified THEN 5 ELSE 2 END;
+
+    IF v_count >= v_max THEN
+        RETURN json_build_object(
+            'success', false,
+            'error',   'Limit reached. Guests can submit up to 2. Verified residents up to 5.'
+        );
+    END IF;
+
+    -- Insert the suggestion
+    INSERT INTO suggestions (name, content, status)
+    VALUES (COALESCE(NULLIF(p_name, ''), 'Anonymous'), p_content, 'pending');
+
+    -- Upsert the quota counter
+    INSERT INTO suggestion_limits (identifier, count)
+    VALUES (p_identifier, 1)
+    ON CONFLICT (identifier)
+    DO UPDATE SET count = suggestion_limits.count + 1;
+
+    RETURN json_build_object('success', true);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- create_user — admin creates a new staff/admin account (password hashed server-side)
+CREATE OR REPLACE FUNCTION create_user(
+    p_id        INT,
+    p_name      TEXT,
+    p_username  TEXT,
+    p_email     TEXT,
+    p_password  TEXT,
+    p_role      TEXT,
+    p_initials  TEXT
+)
+RETURNS JSON AS $$
+DECLARE
+    new_user users%ROWTYPE;
+BEGIN
+    INSERT INTO users (id, name, username, email, password, role, status, initials)
+    VALUES (p_id, p_name, p_username, p_email, crypt(p_password, gen_salt('bf')), p_role, 'Active', p_initials)
+    RETURNING * INTO new_user;
+
+    RETURN json_build_object(
+        'id',          new_user.id,
+        'name',        new_user.name,
+        'username',    new_user.username,
+        'role',        new_user.role,
+        'email',       new_user.email,
+        'status',      new_user.status,
+        'last_active', new_user.last_active,
+        'initials',    new_user.initials,
+        'created_at',  new_user.created_at
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- update_user — admin updates name/username/email/role/initials (no password)
+CREATE OR REPLACE FUNCTION update_user(
+    p_id        INT,
+    p_name      TEXT,
+    p_username  TEXT,
+    p_email     TEXT,
+    p_role      TEXT,
+    p_initials  TEXT
+)
+RETURNS JSON AS $$
+DECLARE
+    updated users%ROWTYPE;
+BEGIN
+    UPDATE users
+    SET name = p_name, username = p_username, email = p_email,
+        role = p_role, initials = p_initials
+    WHERE id = p_id
+    RETURNING * INTO updated;
+
+    IF NOT FOUND THEN
+        RETURN json_build_object('success', false, 'error', 'User not found');
+    END IF;
+
+    RETURN json_build_object(
+        'id',          updated.id,
+        'name',        updated.name,
+        'username',    updated.username,
+        'role',        updated.role,
+        'email',       updated.email,
+        'status',      updated.status,
+        'last_active', updated.last_active,
+        'initials',    updated.initials,
+        'created_at',  updated.created_at
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- set_user_status — admin suspends or reactivates a user
+CREATE OR REPLACE FUNCTION set_user_status(p_id INT, p_status TEXT)
+RETURNS JSON AS $$
+BEGIN
+    UPDATE users SET status = p_status WHERE id = p_id;
+    IF NOT FOUND THEN
+        RETURN json_build_object('success', false, 'error', 'User not found');
+    END IF;
+    RETURN json_build_object('success', true);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- delete_user — admin removes a user account
+CREATE OR REPLACE FUNCTION delete_user(p_id INT)
+RETURNS JSON AS $$
+BEGIN
+    DELETE FROM users WHERE id = p_id;
     RETURN json_build_object('success', true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

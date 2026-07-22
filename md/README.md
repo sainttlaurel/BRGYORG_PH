@@ -1,139 +1,116 @@
-# Payatas Ledger
-## Barangay Civic Management Platform
+# Payatas Ledger — Civic Management System
 
-Payatas Ledger is a digital governance platform for barangay operations. It covers resident records, document processing, complaints, community projects, announcements, business registry, and administrative reporting — all backed by a live Supabase database with real-time sync.
-
----
-
-## Core Modules
-
-### Resident Management
-Centralized resident directory for barangay staff to register and manage profiles, track document and complaint history per resident, search and filter by purok or status, and maintain accurate records.
-
-### Document Requests
-Digital processing of barangay-issued certificates.
-
-Supported documents:
-- Barangay Clearance
-- Certificate of Residency
-- Certificate of Indigency
-- Barangay Business Clearance
-- Certificate of Good Moral Character
-- Barangay Permit
-
-Includes online submission, approval and rejection workflows, status tracking, administrative remarks, and official print letterhead with barangay logo.
-
-### Public Verification Portal
-Allows residents to verify registration status and check document authenticity. Sensitive personal data is not exposed.
-
-### Complaint Management
-Citizen grievance filing with priority levels (High / Medium / Low), status tracking, and resolution history.
-
-### Community Project Management
-Track barangay initiatives with progress monitoring, budget, and timelines. Projects are visible on the public portal.
-
-### Announcement Center
-Post community updates, public advisories, emergency notices, and events. Live on both admin and public portals.
-
-### Community Hub
-- Citizens Voice: Public suggestion board with admin reply workflow
-- Community Polls: Live voting with real-time results
-- Volunteer Program: Sign-up and status management
-- Business Registry: Local business applications with approve/reject workflow
-
-### Reports and Analytics
-Generate summaries on resident demographics, document requests by type, complaint resolution rates, and project status — all from live Supabase data.
+A barangay management system for Barangay Payatas, Quezon City, Philippines. Provides comprehensive civic administration tools including resident management, document request processing, complaint handling, project tracking, and community announcements.
 
 ---
 
-## Administrative Features
+## Features
 
-### Admin Dashboard
-Live statistics on pending requests, active complaints, ongoing projects, and total residents. Recent document requests with one-click approve/reject.
+### Core Modules
 
-### Authentication and Security
-- Username/email login with bcrypt password hashing via PostgreSQL pgcrypto
-- Legacy plaintext fallback during migration
-- Role-based access: Admin and Staff
-- 30-minute session timeout with 5-minute warning banner
-- Session data stored in sessionStorage with password stripped before persistence
-- XSS protection via escHtml() on all rendered user data
-
-### Real-Time Sync
-Supabase Realtime subscriptions on 9 admin tables and 4 public portal channels. All connected staff see live updates without refreshing.
+- Dashboard — Overview of barangay statistics, recent activities, and quick actions.
+- Residents — Manage resident directory with CRUD operations and detailed profile drawers.
+- Document Requests — Process and track official document certifications (Clearance, Indigency, Residency, etc.) with custom remarks.
+- Public Verification — Dual-purpose portal for verifying document authenticity and resident registration status.
+- Complaints — Handle and track citizen complaints with priority levels and bulk resolution tools.
+- Projects — Manage and display community infrastructure and social projects with progress tracking.
+- Announcements — Post and manage community announcements reachable by all residents.
+- Reports — Generate operational reports and analytics with date-range filtering.
 
 ---
 
 ## Technology Stack
 
-| Layer      | Technology                          |
-|------------|--------------------------------------|
-| Markup     | HTML5 (Semantic, Accessible)        |
-| Styling    | CSS3 (Custom Properties, Flex/Grid) |
-| Scripting  | Vanilla JavaScript (ES6+)           |
-| Backend    | Supabase (PostgreSQL + Realtime)    |
-| Icons      | Material Symbols (Outlined)         |
-| Fonts      | DM Sans, DM Mono                    |
-| Deployment | Vercel (Clean URLs)                 |
+- HTML5 and CSS3 — Semantic markup with CSS Grid/Flexbox layouts.
+- Vanilla JavaScript — ES6+ logic for real-time state management and DOM manipulation.
+- Supabase — Backend-as-a-Service providing PostgreSQL database and real-time subscriptions.
+- Material Symbols — Standardized icons for clear visual hierarchy.
+- Responsive Web Design — Optimized for mobile browsers (Safari/Chrome) through desktop displays.
 
 ---
 
-## Setup
+## Design System
 
-### 1. Supabase Configuration
+The platform uses a Civic Horizon design language.
 
-Credentials are set in `js/supabase-config.js`:
+### Visual Style
+
+- Glassmorphism — Surfaces use `backdrop-filter: blur(20px)` with semi-transparent backgrounds.
+- Dynamic Themes — Light and Dark mode support that persists across sessions.
+- Navigation — Desktop uses a fixed slide-out drawer. Mobile uses a responsive overlay menu.
+- Typography — `Public Sans` for bold accessible headings, `Inter` for clean body text.
+
+### Design Tokens
+
+| Token | Light Mode | Dark Mode |
+|-------|------------|-----------|
+| Primary | `#0d9488` | `#2dd4bf` |
+| Background | `#f8fafc` | `#0f172a` |
+| Surface | `#ffffff` | `#1e293b` |
+| Text Main | `#0f172a` | `#f8fafc` |
+| Text Muted | `#64748b` | `#94a3b8` |
+| Border | `#e2e8f0` | `#334155` |
+
+### Fonts
+
+- Headings — `DM Sans` (700-900 weight)
+- Body — `Inter` (400-600 weight)
+- Mono — `DM Mono` (400-500 weight)
+
+---
+
+## Login and Authentication
+
+### Default Users (for testing)
+
+| Username | Password | Role |
+|----------|----------|------|
+| admin | admin123 | Super Administrator |
+
+### Authentication Functions
+
+| Function | Description |
+|----------|-------------|
+| `checkAuth()` | Check if user is logged in on page load |
+| `login()` | Authenticate user with username/password |
+| `logout()` | Open logout confirmation modal |
+| `confirmLogout()` | Confirm logout and clear session |
+| `updateAdminUI()` | Show/hide admin-only elements |
+
+---
+
+## Administrative Tools
+
+### Document Detail Panel (Drawer)
+
+Slide-out panel for viewing and processing document requests.
+
+- Status Management — Toggle between Pending, Approved, and Rejected.
+- Quick Select Remarks — Predefined templates for common approval/rejection messages.
+- History Timeline — Visual tracking of document status changes.
+
+### Resident Profile Panel
+
+Comprehensive view of resident data including their full document request and complaint history.
+
+---
+
+## Project Setup
+
+### 1. Database Configuration
+
+Edit `supabase-config.js`:
 
 ```javascript
 const SUPABASE_CONFIG = {
-  url: 'https://xyaqigazszqhvvglqint.supabase.co',
-  anonKey: 'sb_publishable_ftY2kTePsAkVcK-PrgTgiQ_jG636mXp'
+  url: 'https://your-project.supabase.co',
+  anonKey: 'your-anon-key-here'
 };
 ```
 
-### 2. Initialize the Database
+### 2. Database Schema
 
-Run `sql/supabase-schema.sql` in Supabase Dashboard > SQL Editor.
-
-Or via CLI:
-```bash
-psql "postgresql://postgres:[YOUR-PASSWORD]@db.xyaqigazszqhvvglqint.supabase.co:5432/postgres" \
-  -f sql/supabase-schema.sql
-```
-
-### 3. Supabase CLI (optional)
-
-```bash
-supabase login
-supabase init
-supabase link --project-ref xyaqigazszqhvvglqint
-```
-
-### 4. Environment Variables
-
-```bash
-cp .env.example .env
-# Edit .env with your database password
-```
-
-### 5. Deploy to Vercel
-
-```bash
-vercel
-# or connect your GitHub repo in the Vercel dashboard
-```
-
----
-
-## Default Login Accounts
-
-| Username | Password  | Role  |
-|----------|-----------|-------|
-| admin    | admin123  | Admin |
-| egarcia  | staff123  | Staff |
-| rsantos  | staff123  | Staff |
-
-Change all passwords before deploying to production.
+Run `sql/supabase-schema.sql` in your Supabase SQL Editor to initialize all tables, RLS policies, and sample data.
 
 ---
 
@@ -141,51 +118,45 @@ Change all passwords before deploying to production.
 
 ```
 brgyorg-ph/
-├── index.html              # Public Portal (Landing and Verification)
-├── admin.html              # Administrative Dashboard
-├── vercel.json             # Deployment config for clean URLs
+├── index.html              # Public portal (landing and verification)
+├── admin.html              # Administrative dashboard
+├── README.md               # Project overview (root entry point)
 ├── .env.example            # Environment variable template
+├── vercel.json             # Deployment config for clean URLs
 ├── css/
-│   ├── landing.css         # Public portal styles (mobile responsive)
+│   ├── landing.css         # Public portal styles
 │   └── styles.css          # Admin portal styles
-├── img/                    # Logos, seals, and backgrounds
 ├── js/
-│   ├── supabase-config.js  # Supabase connection and DB helpers
+│   ├── app.js              # Admin portal engine
 │   ├── landing.js          # Public portal logic and verification
-│   └── app.js              # Administrative engine
-├── md/
-│   ├── README.md           # This file
-│   └── CHANGELOG.md        # Version history
-└── sql/
-    └── supabase-schema.sql # Full database schema and seed data
+│   ├── supabase-config.js  # Supabase client and BRGY_CONFIG
+│   └── pages/
+│       ├── dashboard.js
+│       ├── residents.js
+│       ├── documents.js
+│       ├── complaints.js
+│       ├── projects.js
+│       ├── announcements.js
+│       ├── reports.js
+│       ├── users.js
+│       └── settings.js
+├── sql/
+│   └── supabase-schema.sql # Full database schema and migrations
+├── img/
+│   ├── logo-payatas.png
+│   ├── hero.png
+│   └── bg.png
+└── md/
+    ├── README.md           # This file
+    ├── DESIGN.md           # System design and architecture
+    ├── ROADMAP.md          # Improvement roadmap and migration plan
+    └── CHANGELOG.md        # Version history
 ```
 
 ---
 
-## Database Schema
+## Related Documents
 
-| Table                | Purpose                                    |
-|----------------------|--------------------------------------------|
-| `users`              | Admin and staff accounts                  |
-| `residents`          | Resident directory                        |
-| `documents`          | Document and certificate requests         |
-| `complaints`         | Citizen complaints and grievances         |
-| `projects`           | Community development projects            |
-| `announcements`      | Community notices and advisories          |
-| `clearance_requests` | Public portal document applications       |
-| `document_counters`  | Sequential reference number generation    |
-| `suggestions`        | Citizens Voice suggestions and Q&A        |
-| `polls`              | Community voting polls                    |
-| `volunteer_signups`  | Volunteer program registrations           |
-| `business_registry`  | Local business directory                  |
-| `suggestion_limits`  | Rate limiting for public submissions      |
-
----
-
-## Current Version
-
-v3.1.0 — June 2026. See `md/CHANGELOG.md` for full version history.
-
----
-
-&copy; 2026 Barangay Payatas Digital Division. Powered by Payatas Ledger.
+- DESIGN.md — System architecture, data models, and module design.
+- ROADMAP.md — Prioritized improvements, React migration plan, and implementation timeline.
+- CHANGELOG.md — Full version history and release notes.
