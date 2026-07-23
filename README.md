@@ -1,3 +1,5 @@
+# BRGYORG_PH — Barangay Management SaaS
+
 A barangay management system that digitizes resident records, complaint tracking, and document requests into a single dashboard for local government staff.
 
 **Live demo:** [brgyorg-ph.vercel.app](https://brgyorg-ph.vercel.app/)
