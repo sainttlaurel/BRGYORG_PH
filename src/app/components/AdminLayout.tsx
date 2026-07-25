@@ -11,22 +11,26 @@ import { useAuth } from "./AuthContext";
 import { useTheme } from "./ThemeProvider";
 import { useData } from "./DataContext";
 
-const navItems = [
+const navItems: { path: string; label: string; icon: React.FC<React.SVGProps<SVGSVGElement>>; roles?: string[] }[] = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/admin/residents", label: "Residents", icon: Users },
+  { path: "/admin/residents", label: "Residents", icon: Users, roles: ["admin", "captain", "staff"] },
   { path: "/admin/requests", label: "Requests", icon: FileText },
   { path: "/admin/blotter", label: "Blotter", icon: Shield },
-  { path: "/admin/officials", label: "Officials", icon: Award },
+  { path: "/admin/officials", label: "Officials", icon: Award, roles: ["admin", "captain", "secretary"] },
   { path: "/admin/announcements", label: "Announcements", icon: Megaphone },
-  { path: "/admin/polls", label: "Polls", icon: BarChart2 },
+  { path: "/admin/polls", label: "Polls", icon: BarChart2, roles: ["admin", "captain", "secretary"] },
   { path: "/admin/reports", label: "Analytics", icon: TrendingUp },
-  { path: "/admin/concerns", label: "Concerns", icon: AlertTriangle },
-  { path: "/admin/suggestions", label: "Suggestions", icon: MessageSquare },
-  { path: "/admin/volunteers", label: "Volunteers", icon: Heart },
-  { path: "/admin/users", label: "Users", icon: UserCog },
-  { path: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText },
-  { path: "/admin/settings", label: "Settings", icon: Settings },
+  { path: "/admin/concerns", label: "Concerns", icon: AlertTriangle, roles: ["admin", "captain", "secretary", "staff"] },
+  { path: "/admin/suggestions", label: "Suggestions", icon: MessageSquare, roles: ["admin", "captain", "secretary"] },
+  { path: "/admin/volunteers", label: "Volunteers", icon: Heart, roles: ["admin", "captain", "secretary"] },
+  { path: "/admin/users", label: "Users", icon: UserCog, roles: ["admin"] },
+  { path: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["admin", "captain"] },
+  { path: "/admin/settings", label: "Settings", icon: Settings, roles: ["admin"] },
 ];
+
+export function getVisiblePaths(role: string): string[] {
+  return navItems.filter(n => !n.roles || n.roles.includes(role)).map(n => n.path);
+}
 
 const roleColors: Record<string, string> = {
   captain: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
@@ -66,7 +70,7 @@ const AdminLayout: React.FC = () => {
 
       {/* Nav items */}
       <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
-        {navItems.map(item => (
+        {navItems.filter(n => !n.roles || n.roles.includes(user?.role ?? "")).map(item => (
           <NavLink
             key={item.path}
             to={item.path}

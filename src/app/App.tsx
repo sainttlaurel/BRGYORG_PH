@@ -42,10 +42,18 @@ import AdminVolunteers from "./components/AdminVolunteers";
 import AdminUsers from "./components/AdminUsers";
 import AdminAuditLogs from "./components/AdminAuditLogs";
 import AdminSettings from "./components/AdminSettings";
+import { getVisiblePaths } from "./components/AdminLayout";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to="/admin/login" replace />;
+  return <>{children}</>;
+};
+
+const RoleRoute: React.FC<{ children: React.ReactNode; path: string }> = ({ children, path }) => {
+  const { user, isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/admin/login" replace />;
+  if (!user || !getVisiblePaths(user.role).includes(path)) return <Navigate to="/admin/dashboard" replace />;
   return <>{children}</>;
 };
 
@@ -95,20 +103,20 @@ const AppRoutes: React.FC = () => {
           }
         >
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="residents" element={<AdminResidents />} />
-          <Route path="requests" element={<AdminRequests />} />
-          <Route path="blotter" element={<AdminBlotter />} />
-          <Route path="officials" element={<AdminOfficials />} />
-          <Route path="announcements" element={<AdminAnnouncements />} />
-          <Route path="polls" element={<AdminPolls />} />
-          <Route path="reports" element={<AdminReports />} />
-          <Route path="concerns" element={<AdminConcerns />} />
-          <Route path="suggestions" element={<AdminSuggestions />} />
-          <Route path="volunteers" element={<AdminVolunteers />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="audit-logs" element={<AdminAuditLogs />} />
-          <Route path="settings" element={<AdminSettings />} />
+          <Route path="dashboard" element={<RoleRoute path="/admin/dashboard"><AdminDashboard /></RoleRoute>} />
+          <Route path="residents" element={<RoleRoute path="/admin/residents"><AdminResidents /></RoleRoute>} />
+          <Route path="requests" element={<RoleRoute path="/admin/requests"><AdminRequests /></RoleRoute>} />
+          <Route path="blotter" element={<RoleRoute path="/admin/blotter"><AdminBlotter /></RoleRoute>} />
+          <Route path="officials" element={<RoleRoute path="/admin/officials"><AdminOfficials /></RoleRoute>} />
+          <Route path="announcements" element={<RoleRoute path="/admin/announcements"><AdminAnnouncements /></RoleRoute>} />
+          <Route path="polls" element={<RoleRoute path="/admin/polls"><AdminPolls /></RoleRoute>} />
+          <Route path="reports" element={<RoleRoute path="/admin/reports"><AdminReports /></RoleRoute>} />
+          <Route path="concerns" element={<RoleRoute path="/admin/concerns"><AdminConcerns /></RoleRoute>} />
+          <Route path="suggestions" element={<RoleRoute path="/admin/suggestions"><AdminSuggestions /></RoleRoute>} />
+          <Route path="volunteers" element={<RoleRoute path="/admin/volunteers"><AdminVolunteers /></RoleRoute>} />
+          <Route path="users" element={<RoleRoute path="/admin/users"><AdminUsers /></RoleRoute>} />
+          <Route path="audit-logs" element={<RoleRoute path="/admin/audit-logs"><AdminAuditLogs /></RoleRoute>} />
+          <Route path="settings" element={<RoleRoute path="/admin/settings"><AdminSettings /></RoleRoute>} />
         </Route>
 
         {/* Catch-all */}

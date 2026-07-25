@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Settings, Save, Bell, Shield, FileText, DollarSign, Leaf, Upload, Check } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Settings, Save, Bell, Shield, FileText, DollarSign, Leaf, Upload, Check, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase, dbFetch, dbUpdate } from "@/lib/supabase";
 
@@ -24,9 +24,10 @@ const AdminSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(true);
 
+  const [templateEditor, setTemplateEditor] = useState<{ name: string; header: string; footer: string; officer: string } | null>(null);
   const [profileForm, setProfileForm] = useState({
     name: "", municipality: "", captain: "", hotline: "", email: "",
-    address: "", office_hours: "", vision: "", mission: "",
+    address: "", office_hours: "", vision: "", mission: "", seal_url: "",
   });
   const [fees, setFees] = useState<{ id: number; service: string; fee: number }[]>([]);
   const [settingsMap, setSettingsMap] = useState<Record<string, string>>({});
@@ -52,6 +53,7 @@ const AdminSettings: React.FC = () => {
           office_hours: String(info.office_hours ?? ""),
           vision: String(info.vision ?? ""),
           mission: String(info.mission ?? ""),
+          seal_url: String(info.seal_url ?? ""),
         });
         setFees(feeRows.map(r => ({ id: Number(r.id ?? 0), service: String(r.service ?? ""), fee: Number(r.fee ?? 0) })));
         const sm: Record<string, string> = {};
@@ -150,9 +152,32 @@ const AdminSettings: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1.5">Barangay Seal / Logo</label>
-                    <div className="border-2 border-dashed border-border rounded-xl p-4 text-center cursor-pointer hover:border-emerald-400 transition-colors">
-                      <Upload size={18} className="mx-auto mb-1 text-muted-foreground" />
-                      <p className="text-xs text-muted-foreground">Upload official seal (PNG, SVG)</p>
+                    <div className="flex items-center gap-3">
+                      {profileForm.seal_url ? (
+                        <img src={profileForm.seal_url} alt="Seal" className="w-16 h-16 rounded-xl object-contain border border-border" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center">
+                          <Upload size={16} className="text-muted-foreground" />
+                        </div>
+                      )}
+                      <label className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted cursor-pointer transition-colors">
+                        {profileForm.seal_url ? "Change" : "Upload"} (PNG/SVG)
+                        <input type="file" accept="image/png,image/svg+xml" className="hidden" onChange={async e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = async () => {
+                            setProfileForm(f => ({ ...f, seal_url: String(reader.result) }));
+                            mark("profile");
+                          };
+                          reader.readAsDataURL(file);
+                        }} />
+                      </label>
+                      {profileForm.seal_url && (
+                        <button onClick={() => { setProfileForm(f => ({ ...f, seal_url: "" })); mark("profile"); }} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
+                          <XIcon size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                   <button onClick={saveProfile} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm transition-all">
@@ -193,20 +218,81 @@ const AdminSettings: React.FC = () => {
             {activeTab === "templates" && (
               <div className="bg-white dark:bg-card border border-border rounded-2xl p-6 shadow-sm">
                 <h2 className="font-semibold text-foreground mb-5 text-sm">Certificate Templates</h2>
-                <div className="space-y-3">
-                  {["Barangay Clearance", "Barangay Certificate", "Certificate of Indigency", "Certificate of Residency", "Business Clearance", "Good Moral Certificate"].map(template => (
-                    <div key={template} className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FileText size={15} className="text-emerald-500 shrink-0" />
-                        <span className="text-sm text-foreground truncate">{template}</span>
-                      </div>
-                      <div className="flex gap-2 shrink-0">
-                        <button onClick={() => toast.info(`Preview ${template}`)} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted transition-colors">Preview</button>
-                        <button onClick={() => toast.info(`Edit ${template} template`)} className="px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors">Edit</button>
-                      </div>
+                {templateEditor ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-foreground text-sm">Editing: {templateEditor.name}</h3>
+                      <button onClick={() => setTemplateEditor(null)} className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+                        <XIcon size={15} />
+                      </button>
                     </div>
-                  ))}
-                </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1.5">Header Text</label>
+                      <input type="text" value={templateEditor.header} onChange={e => setTemplateEditor(t => ({ ...t!, header: e.target.value }))} className={inputCls} placeholder="Republic of the Philippines" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1.5">Footer Text</label>
+                      <input type="text" value={templateEditor.footer} onChange={e => setTemplateEditor(t => ({ ...t!, footer: e.target.value }))} className={inputCls} placeholder="Not valid without seal" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1.5">Signing Officer Title</label>
+                      <input type="text" value={templateEditor.officer} onChange={e => setTemplateEditor(t => ({ ...t!, officer: e.target.value }))} className={inputCls} placeholder="Barangay Captain" />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          try {
+                            const key = `template_${templateEditor.name.toLowerCase().replace(/\s+/g, "_")}`;
+                            await Promise.all([
+                              saveSettings(`${key}_header`, templateEditor.header),
+                              saveSettings(`${key}_footer`, templateEditor.footer),
+                              saveSettings(`${key}_officer`, templateEditor.officer),
+                            ]);
+                            toast.success(`${templateEditor.name} template saved`);
+                            setTemplateEditor(null);
+                          } catch { toast.error("Failed to save template"); }
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all"
+                      >
+                        <Save size={13} /> Save Template
+                      </button>
+                      <button onClick={() => setTemplateEditor(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-all">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {["Barangay Clearance", "Barangay Certificate", "Certificate of Indigency", "Certificate of Residency", "Business Clearance", "Good Moral Certificate"].map(template => {
+                      const key = `template_${template.toLowerCase().replace(/\s+/g, "_")}`;
+                      const savedHeader = settingsMap[`${key}_header`];
+                      const savedFooter = settingsMap[`${key}_footer`];
+                      const savedOfficer = settingsMap[`${key}_officer`];
+                      return (
+                        <div key={template} className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <FileText size={15} className="text-emerald-500 shrink-0" />
+                            <span className="text-sm text-foreground truncate">{template}</span>
+                            {(savedHeader || savedFooter) && <span className="text-[0.6rem] text-emerald-500 font-medium bg-emerald-100 dark:bg-emerald-900 px-1.5 py-0.5 rounded">custom</span>}
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <button
+                              onClick={() => setTemplateEditor({
+                                name: template,
+                                header: savedHeader || "Republic of the Philippines",
+                                footer: savedFooter || "Not valid without seal",
+                                officer: savedOfficer || "Barangay Captain",
+                              })}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -330,9 +416,34 @@ const AdminSettings: React.FC = () => {
                   <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
                     <h3 className="font-semibold text-amber-700 dark:text-amber-300 text-sm mb-2">Danger Zone</h3>
                     <p className="text-amber-600/80 dark:text-amber-400/80 text-xs mb-3">Irreversible actions. Proceed with extreme caution.</p>
-                    <button onClick={() => toast.error("This action requires IT Admin confirmation")} className="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors">
-                      Clear Test Data
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Clear ALL document requests? This cannot be undone.")) return;
+                          try {
+                            if (!supabase) return;
+                            await supabase.from('documents').delete().neq('id', '');
+                            toast.success("Document requests cleared");
+                          } catch { toast.error("Failed to clear data"); }
+                        }}
+                        className="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors"
+                      >
+                        Clear Document Requests
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Delete all resident records? This cannot be undone.")) return;
+                          try {
+                            if (!supabase) return;
+                            await supabase.from('residents').delete().neq('id', '');
+                            toast.success("Residents cleared");
+                          } catch { toast.error("Failed to clear data"); }
+                        }}
+                        className="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors"
+                      >
+                        Clear Residents
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

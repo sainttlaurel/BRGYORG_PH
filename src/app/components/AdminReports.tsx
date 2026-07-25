@@ -4,8 +4,18 @@ import {
   PieChart, Pie, Cell
 } from "recharts";
 import { Download, Users, FileText, Shield } from "lucide-react";
-import { toast } from "sonner";
 import { useData } from "./DataContext";
+
+function exportCSV(rows: Record<string, string | number>[], filename: string) {
+  if (!rows.length) return;
+  const headers = Object.keys(rows[0]);
+  const csv = [headers.join(","), ...rows.map(r => headers.map(h => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  a.click(); URL.revokeObjectURL(url);
+}
 
 const CHART_COLORS = ["#059669", "#0ea5e9", "#16a34a", "#38bdf8", "#84cc16", "#f59e0b"];
 
@@ -61,11 +71,23 @@ const AdminReports: React.FC = () => {
             <option>2026</option>
             <option>2025</option>
           </select>
-          <button onClick={() => toast.success("PDF export coming soon")} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
-            <Download size={14} /> PDF
+          <button
+            onClick={() => exportCSV(
+              docTypeStats.map(d => ({ Type: d.type, Count: d.count })),
+              `doc-requests-${period}.csv`
+            )}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors"
+          >
+            <Download size={14} /> CSV
           </button>
-          <button onClick={() => toast.success("Excel export coming soon")} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all shadow-sm">
-            <Download size={14} /> Excel
+          <button
+            onClick={() => exportCSV(
+              docsPeriod.map(d => ({ ID: d.id, Resident: d.resident, Type: d.type, Status: d.status, Date: d.date })),
+              `all-requests-${period}.csv`
+            )}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all shadow-sm"
+          >
+            <Download size={14} /> Export All
           </button>
         </div>
       </div>
