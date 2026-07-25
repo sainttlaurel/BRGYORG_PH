@@ -146,7 +146,8 @@ const AdminRequests: React.FC = () => {
         {selected && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/30 z-40" onClick={() => setSelected(null)} />
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30 }} className="fixed right-0 top-0 h-full w-96 bg-white dark:bg-card border-l border-border shadow-2xl z-50 overflow-y-auto">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
+              <div className="bg-white dark:bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto pointer-events-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="font-bold text-foreground">Request Details</h2>
@@ -209,6 +210,7 @@ const AdminRequests: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
             </motion.div>
           </>
         )}
