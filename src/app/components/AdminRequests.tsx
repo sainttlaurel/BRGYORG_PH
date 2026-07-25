@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { FileText, Search, CheckCircle, Clock, XCircle, Eye, Printer, Filter, Download } from "lucide-react";
+import { FileText, Search, CheckCircle, Clock, X, XCircle, Eye, Printer, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 import { updateDocumentStatus } from "@/lib/supabaseWrite";
@@ -151,7 +151,7 @@ const AdminRequests: React.FC = () => {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="font-bold text-foreground">Request Details</h2>
-                  <button onClick={() => setSelected(null)} className="p-1.5 rounded-lg hover:bg-muted"><XCircle size={16} /></button>
+                  <button onClick={() => setSelected(null)} className="p-1.5 rounded-lg hover:bg-muted"><X size={16} /></button>
                 </div>
 
                 <div className="mb-6">

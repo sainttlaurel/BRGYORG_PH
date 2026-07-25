@@ -36,7 +36,7 @@ const AdminBlotter: React.FC = () => {
       c.complainant.toLowerCase().includes(query.toLowerCase()) || 
       c.respondent.toLowerCase().includes(query.toLowerCase()) ||
       c.incident.toLowerCase().includes(query.toLowerCase()) ||
-      c.incident.toLowerCase().includes(query.toLowerCase()))
+      c.location.toLowerCase().includes(query.toLowerCase()))
   );
 
   const updateStatus = async (id: string, newStatus: string) => {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { FileText, CheckCircle, Copy, ArrowRight, Leaf, Clock, AlertCircle, Printer, Upload } from "lucide-react";
+import { FileText, CheckCircle, Copy, ArrowRight, Clock, AlertCircle, Printer, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 import { insertDocument } from "@/lib/supabaseWrite";
@@ -31,6 +31,7 @@ const PublicDocumentApplication: React.FC = () => {
   const [idUpload, setIdUpload] = useState("");
   const [idUploadName, setIdUploadName] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const result = documentRequestSchema.safeParse(form);
@@ -49,6 +50,7 @@ const PublicDocumentApplication: React.FC = () => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    setLoading(true);
     const ref = generateRef();
     try {
       await insertDocument({
@@ -60,9 +62,10 @@ const PublicDocumentApplication: React.FC = () => {
         contact: form.contact,
         id_upload: idUpload || undefined,
       });
-    } catch { toast.error("Failed to submit — try again"); return; }
-    setRefNumber(ref);
-    setStep("success");
+      setRefNumber(ref);
+      setStep("success");
+    } catch { toast.error("Failed to submit — try again"); }
+    finally { setLoading(false); }
   };
 
   const copyRef = () => {
@@ -275,9 +278,10 @@ const PublicDocumentApplication: React.FC = () => {
 
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md transition-all"
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md transition-all disabled:opacity-50"
                   >
-                    Submit Application <ArrowRight size={16} />
+                    {loading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />} {loading ? "Submitting…" : "Submit Application"}
                   </button>
                 </form>
               </div>

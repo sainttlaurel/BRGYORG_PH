@@ -47,6 +47,7 @@ const AdminAnnouncements: React.FC = () => {
         category: form.category,
         content: form.content,
         date: (new Date().toISOString().split("T")[0] ?? ""),
+        priority: form.priority,
       });
       setForm({ title: "", category: "Governance", content: "", priority: "normal" });
       setShowForm(false);
@@ -85,6 +86,7 @@ const AdminAnnouncements: React.FC = () => {
         title: editForm.title,
         category: editForm.category,
         content: editForm.content,
+        priority: editForm.priority,
       });
       setShowEditId(null);
       toast.success("Announcement updated");

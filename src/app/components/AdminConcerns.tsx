@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, Search, X, ChevronDown, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
-import { updateReportStatus } from "../../lib/supabaseWrite";
-import type { ReportItem } from "../../lib/useSupabaseData";
+import { updateReportStatus } from "@/lib/supabaseWrite";
+import type { ReportItem } from "@/lib/useSupabaseData";
 
 const urgencyColor: Record<string, string> = {
   low: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",

@@ -170,15 +170,15 @@ function mapComplaint(c: Record<string, unknown>): BlotterCase {
   return {
     id:          String(c.id ?? ""),
     complainant: String(c.complainant ?? ""),
-    respondent:  "",
+    respondent:  String(c.respondent ?? ""),
     incident:    String(c.category ?? ""),
     date:        String(c.date ?? ""),
-    time:        "",
-    status:      String(c.status ?? "pending").toLowerCase() === "pending" ? "ongoing" : "settled",
-    location:    "",
+    time:        String(c.time ?? ""),
+    status:      (String(c.status ?? "pending").toLowerCase()),
+    location:    String(c.location ?? ""),
     summary:     String(c.description ?? ""),
-    handler:     "",
-    hearingDate: "",
+    handler:     String(c.handler ?? ""),
+    hearingDate: String(c.hearing_date ?? ""),
   };
 }
 

@@ -8,16 +8,20 @@ export function genId(prefix: string, len = 4): string {
   return `${prefix}-${n}`;
 }
 
-export async function insertAnnouncement(data: { title: string; category: string; content: string; date: string }) {
+export async function insertAnnouncement(data: { title: string; category: string; content: string; date: string; priority?: string }) {
   if (!supabase) return;
   const { error } = await supabase.from('announcements').insert({
     id: genId('ANN'),
-    ...data,
+    title: data.title,
+    category: data.category,
+    content: data.content,
+    date: data.date,
+    priority: data.priority ?? 'normal',
   });
   if (error) throw new Error(error.message);
 }
 
-export async function updateAnnouncement(id: string, data: { title?: string; category?: string; content?: string; visible?: boolean }) {
+export async function updateAnnouncement(id: string, data: { title?: string; category?: string; content?: string; visible?: boolean; priority?: string }) {
   if (!supabase) return;
   const { error } = await supabase.from('announcements').update(data).eq('id', id);
   if (error) throw new Error(error.message);
@@ -47,6 +51,10 @@ export async function insertBlotterCase(data: {
     date: data.date,
     status: 'ongoing',
     description: data.summary,
+    respondent: data.respondent,
+    location: data.location,
+    time: data.time,
+    handler: data.handler,
   });
   if (error) throw new Error(error.message);
 }

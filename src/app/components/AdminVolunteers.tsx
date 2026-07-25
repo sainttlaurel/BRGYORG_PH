@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Heart, Search, X, ChevronDown, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
-import { updateVolunteerStatus } from "../../lib/supabaseWrite";
+import { updateVolunteerStatus } from "@/lib/supabaseWrite";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" },
