@@ -13,10 +13,12 @@ CREATE TABLE IF NOT EXISTS reports (
 
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can insert reports" ON reports;
 CREATE POLICY "Anyone can insert reports"
   ON reports FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Anyone can view reports by ref" ON reports;
 CREATE POLICY "Anyone can view reports by ref"
   ON reports FOR SELECT
   USING (true);
