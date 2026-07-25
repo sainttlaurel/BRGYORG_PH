@@ -12,14 +12,21 @@ import { Link } from "react-router";
 import { useAuth } from "./AuthContext";
 import { useData } from "./DataContext";
 
-// ── activity feed stays as static audit log until audit table is wired ─────
-const activityFeed = [
-  { user: "Carlos Ramos",  action: "Approved", detail: "Certificate of Indigency for Maria Santos",       time: "2 mins ago",  icon: CheckCircle, color: "text-emerald-500" },
-  { user: "Juan Dela Cruz",action: "Updated",  detail: "BLT-2026-042 – Hearing scheduled Jul 25",        time: "15 mins ago", icon: Shield,      color: "text-amber-500"  },
-  { user: "Grace Fernan",  action: "Released", detail: "Barangay Clearance for Pedro Dela Cruz",         time: "1 hour ago",  icon: FileText,    color: "text-sky-500"    },
-  { user: "Carlos Ramos",  action: "Published",detail: "COVID-19 Vaccination Announcement",              time: "2 hours ago", icon: Megaphone,   color: "text-purple-500" },
-  { user: "IT Admin",      action: "Updated",  detail: "Certificate template for Barangay Clearance",   time: "Yesterday",   icon: TrendingUp,  color: "text-orange-500" },
-];
+const feedIcon = (action: string) => {
+  if (/approve|releas/i.test(action)) return CheckCircle;
+  if (/update|edit/i.test(action)) return TrendingUp;
+  if (/creat|add|insert/i.test(action)) return Plus;
+  if (/delet|archiv/i.test(action)) return Shield;
+  return FileText;
+};
+const feedColor = (action: string) => {
+  if (/approve/i.test(action)) return "text-emerald-500";
+  if (/releas/i.test(action)) return "text-sky-500";
+  if (/update|edit/i.test(action)) return "text-amber-500";
+  if (/creat|add/i.test(action)) return "text-purple-500";
+  if (/delet|archiv/i.test(action)) return "text-red-500";
+  return "text-muted-foreground";
+};
 
 const statusBadge = (status: string) => {
   const map: Record<string, string> = {
@@ -34,7 +41,13 @@ const statusBadge = (status: string) => {
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { residents, docRequests, blotter, announcements, barangayInfo, loading, offline } = useData();
+  const { residents, docRequests, blotter, announcements, barangayInfo, auditLogs, loading, offline } = useData();
+  const activityFeed = auditLogs.length > 0
+    ? auditLogs.slice(0, 5).map(log => {
+        const Icon = feedIcon(log.action);
+        return { user: log.user, action: log.action, detail: log.detail, time: log.date, icon: Icon, color: feedColor(log.action) };
+      })
+    : [];
 
   // Compute chart data from live records
   const docTypeCounts: Record<string, number> = {};
@@ -99,7 +112,7 @@ const AdminDashboard: React.FC = () => {
       {/* Welcome */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="font-bold text-foreground" style={{ fontSize: "1.4rem" }}>
+          <h1 className="font-bold text-foreground text-[1.4rem]">
             Good morning, {user?.name.split(" ")[0]}! 👋
           </h1>
           <p className="text-muted-foreground text-sm mt-0.5">

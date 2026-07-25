@@ -58,8 +58,8 @@ const AdminLayout: React.FC = () => {
         </div>
         {!collapsed && (
           <div>
-              <div className="font-bold text-white" style={{ fontSize: "0.85rem" }}>Payatas Ledger</div>
-            <div className="text-emerald-400/60" style={{ fontSize: "0.6rem" }}>Admin Portal</div>
+<div className="font-bold text-white text-[0.85rem]">Payatas Ledger</div>
+              <div className="text-emerald-400/60 text-[0.6rem]">Admin Portal</div>
           </div>
         )}
       </div>
@@ -123,8 +123,7 @@ const AdminLayout: React.FC = () => {
       <motion.aside
         animate={{ width: collapsed ? 64 : 224 }}
         transition={{ duration: 0.2 }}
-        className="hidden md:flex flex-col bg-sidebar text-sidebar-foreground shrink-0 relative z-10"
-        style={{ minHeight: "100vh" }}
+        className="hidden md:flex flex-col bg-sidebar text-sidebar-foreground shrink-0 relative z-10 min-h-screen"
       >
         <SidebarContent />
         <button

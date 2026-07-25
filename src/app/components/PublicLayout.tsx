@@ -102,8 +102,8 @@ const PublicLayout: React.FC = () => {
           <Link to="/" className="flex items-center gap-2.5 group">
             <img src="/img/logo-payatas.png" alt="Payatas Logo" className="w-9 h-9 rounded-xl object-contain shadow-sm group-hover:shadow-emerald-300 transition-shadow" />
             <div className="leading-tight">
-              <div className="font-bold text-emerald-700 dark:text-emerald-400" style={{ fontSize: "0.95rem", lineHeight: 1.2 }}>Payatas Ledger</div>
-              <div className="text-emerald-600/70 dark:text-emerald-500/70" style={{ fontSize: "0.65rem", lineHeight: 1 }}>Barangay Payatas</div>
+              <div className="font-bold text-emerald-700 dark:text-emerald-400 text-[0.95rem] leading-tight">Payatas Ledger</div>
+              <div className="text-emerald-600/70 dark:text-emerald-500/70 text-[0.65rem] leading-none">Barangay Payatas</div>
             </div>
           </Link>
 
@@ -252,9 +252,9 @@ const PublicLayout: React.FC = () => {
                 {barangayInfo.name}, {barangayInfo.municipality}. Serving our community with transparency and dedication.
               </p>
               <div className="flex gap-2">
-                <a href="#" className="p-2 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-300 transition-colors"><Facebook size={14} /></a>
-                <a href="#" className="p-2 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-300 transition-colors"><Twitter size={14} /></a>
-                <a href="#" className="p-2 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-300 transition-colors"><Youtube size={14} /></a>
+                <a href="https://www.facebook.com/quezoncitygovernment" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-300 transition-colors"><Facebook size={14} /></a>
+                <a href="https://twitter.com/QuezonCityGov" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-300 transition-colors"><Twitter size={14} /></a>
+                <a href="https://www.youtube.com/@quezoncitygovernment" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-300 transition-colors"><Youtube size={14} /></a>
               </div>
             </div>
 

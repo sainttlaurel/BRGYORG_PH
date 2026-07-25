@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertTriangle, CheckCircle, Upload, X, Search, Clock, Copy, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle, Search, Clock, Copy, Loader2 } from "lucide-react";
 import { insertReport, getReportByRef, genId } from "../../lib/supabaseWrite";
 
 type Step = "form" | "success" | "track";
@@ -21,7 +21,6 @@ const PublicReportConcern: React.FC = () => {
   const [view, setView] = useState<"form" | "track">("form");
   const [step, setStep] = useState<Step>("form");
   const [refNumber, setRefNumber] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
   const [trackQuery, setTrackQuery] = useState("");
   const [trackResult, setTrackResult] = useState<Record<string, string> | null | "not_found">(null);
   const [copied, setCopied] = useState(false);
@@ -82,11 +81,6 @@ const PublicReportConcern: React.FC = () => {
     } finally {
       setTrackLoading(false);
     }
-  };
-
-  const addFiles = (newFiles: FileList | null) => {
-    if (!newFiles) return;
-    setFiles(f => [...f, ...Array.from(newFiles)].slice(0, 5));
   };
 
   const inputCls = (field: string) =>
@@ -179,29 +173,6 @@ const PublicReportConcern: React.FC = () => {
                         className={`${inputCls("description")} resize-none`}
                       />
                       {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
-                    </div>
-
-                    {/* File upload */}
-                    <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">Evidence / Photos (Optional, max 5)</label>
-                      <label className="flex flex-col items-center justify-center w-full border-2 border-dashed border-border rounded-xl py-6 px-4 cursor-pointer hover:border-orange-300 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 transition-all">
-                        <Upload size={20} className="text-muted-foreground mb-2" />
-                        <span className="text-sm text-muted-foreground">Click or drag files here</span>
-                        <span className="text-xs text-muted-foreground mt-1">JPG, PNG, MP4 — max 10MB each</span>
-                        <input type="file" multiple accept="image/*,video/*" className="hidden" onChange={e => addFiles(e.target.files)} />
-                      </label>
-                      {files.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {files.map((f, i) => (
-                            <div key={i} className="flex items-center gap-1.5 bg-muted px-2.5 py-1 rounded-lg text-xs text-muted-foreground">
-                              {f.name}
-                              <button type="button" onClick={() => setFiles(files => files.filter((_, idx) => idx !== i))}>
-                                <X size={12} className="hover:text-red-500" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
 
                     {/* Optional reporter info */}

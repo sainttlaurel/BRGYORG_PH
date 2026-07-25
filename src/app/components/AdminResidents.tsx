@@ -139,7 +139,7 @@ const AdminResidents: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h1 className="font-bold text-foreground" style={{ fontSize: "1.3rem" }}>Residents Registry</h1>
+          <h1 className="font-bold text-foreground text-[1.3rem]">Residents Registry</h1>
           <p className="text-muted-foreground text-sm mt-0.5">{residents.length.toLocaleString()} total residents · {filtered.length} showing</p>
         </div>
         <div className="flex gap-2">

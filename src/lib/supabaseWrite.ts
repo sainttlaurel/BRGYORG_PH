@@ -219,6 +219,12 @@ export async function updateVolunteerStatus(id: string, status: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function insertContactMessage(data: { name: string; email: string; subject: string; message: string }) {
+  if (!supabase) throw new Error('offline');
+  const { error } = await supabase.from('contact_messages').insert(data);
+  if (error) throw new Error(error.message);
+}
+
 export async function submitVote(pollId: string, optionIndex: string) {
   if (!supabase) throw new Error('offline');
   const { data: poll, error: fetchErr } = await supabase.from('polls').select('votes').eq('id', pollId).single();

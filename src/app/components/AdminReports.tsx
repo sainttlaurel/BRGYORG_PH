@@ -13,18 +13,23 @@ const AdminReports: React.FC = () => {
   const { residents, docRequests, blotter, loading } = useData();
   const [period, setPeriod] = useState("2026");
 
-  const releasedCount = docRequests.filter(r => r.status === "released").length;
-  const approvedCount = docRequests.filter(r => r.status === "approved").length;
-  const pendingCount = docRequests.filter(r => r.status === "pending").length;
-  const processingCount = docRequests.filter(r => r.status === "processing").length;
-  const readyCount = docRequests.filter(r => r.status === "ready").length;
-  const totalRequests = docRequests.length;
-  const totalResidents = residents.length;
-  const ongoingCases = blotter.filter(c => c.status === "ongoing").length;
-  const settledCases = blotter.filter(c => c.status === "settled").length;
+  const yearMatch = (d: string) => d?.startsWith(period);
+  const docsPeriod = docRequests.filter(r => yearMatch(r.date));
+  const blotsPeriod = blotter.filter(c => yearMatch(c.date));
+  const residentsPeriod = residents.filter(r => yearMatch(r.registered));
+
+  const releasedCount = docsPeriod.filter(r => r.status === "released").length;
+  const approvedCount = docsPeriod.filter(r => r.status === "approved").length;
+  const pendingCount = docsPeriod.filter(r => r.status === "pending").length;
+  const processingCount = docsPeriod.filter(r => r.status === "processing").length;
+  const readyCount = docsPeriod.filter(r => r.status === "ready").length;
+  const totalRequests = docsPeriod.length;
+  const totalResidents = residentsPeriod.length;
+  const ongoingCases = blotsPeriod.filter(c => c.status === "ongoing").length;
+  const settledCases = blotsPeriod.filter(c => c.status === "settled").length;
 
   const docTypeStats = Object.entries(
-    docRequests.reduce<Record<string, number>>((acc, r) => {
+    docsPeriod.reduce<Record<string, number>>((acc, r) => {
       acc[r.type] = (acc[r.type] ?? 0) + 1;
       return acc;
     }, {})
@@ -32,9 +37,9 @@ const AdminReports: React.FC = () => {
     .sort((a, b) => b.count - a.count);
 
   const ageGroups = [
-    { name: "Ages 0-17", value: residents.filter(r => r.age < 18).length, fill: "#22c55e" },
-    { name: "Ages 18-59", value: residents.filter(r => r.age >= 18 && r.age < 60).length, fill: "#059669" },
-    { name: "Ages 60+", value: residents.filter(r => r.age >= 60).length, fill: "#0ea5e9" },
+    { name: "Ages 0-17", value: residentsPeriod.filter(r => r.age < 18).length, fill: "#22c55e" },
+    { name: "Ages 18-59", value: residentsPeriod.filter(r => r.age >= 18 && r.age < 60).length, fill: "#059669" },
+    { name: "Ages 60+", value: residentsPeriod.filter(r => r.age >= 60).length, fill: "#0ea5e9" },
   ];
 
   const summaryKPIs = [
@@ -48,7 +53,7 @@ const AdminReports: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h1 className="font-bold text-foreground" style={{ fontSize: "1.3rem" }}>Reports & Analytics</h1>
+          <h1 className="font-bold text-foreground text-[1.3rem]">Reports & Analytics</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Data insights for Barangay Payatas · live from database</p>
         </div>
         <div className="flex gap-2">
@@ -164,8 +169,8 @@ const AdminReports: React.FC = () => {
                   {[
                     { label: "Ongoing", count: ongoingCases, color: "text-amber-600", bg: "bg-amber-100 dark:bg-amber-900/40" },
                     { label: "Settled", count: settledCases, color: "text-emerald-600", bg: "bg-emerald-100 dark:bg-emerald-900" },
-                    { label: "Referred", count: blotter.filter(c => c.status === "referred").length, color: "text-red-600", bg: "bg-red-100 dark:bg-red-900/40" },
-                    { label: "Closed", count: blotter.filter(c => c.status === "closed").length, color: "text-gray-600", bg: "bg-gray-100 dark:bg-gray-800" },
+                    { label: "Referred", count: blotsPeriod.filter(c => c.status === "referred").length, color: "text-red-600", bg: "bg-red-100 dark:bg-red-900/40" },
+                    { label: "Closed", count: blotsPeriod.filter(c => c.status === "closed").length, color: "text-gray-600", bg: "bg-gray-100 dark:bg-gray-800" },
                   ].map(s => (
                     <div key={s.label} className={`${s.bg} rounded-2xl p-4`}>
                       <div className={`text-2xl font-bold ${s.color}`}>{s.count}</div>

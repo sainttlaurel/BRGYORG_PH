@@ -85,7 +85,7 @@ const AdminSettings: React.FC = () => {
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h1 className="font-bold text-foreground" style={{ fontSize: "1.3rem" }}>Settings</h1>
+        <h1 className="font-bold text-foreground text-[1.3rem]">Settings</h1>
         <p className="text-muted-foreground text-sm mt-0.5">Configure your barangay platform</p>
       </div>
 

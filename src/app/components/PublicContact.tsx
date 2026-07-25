@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle, Facebook, Twitter, Youtube } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle, Facebook, Twitter, Youtube, Loader2 } from "lucide-react";
 import { useData } from "./DataContext";
+import { insertContactMessage } from "@/lib/supabaseWrite";
+import { toast } from "sonner";
 
 const officeSchedule = [
   { day: "Monday – Friday", hours: "8:00 AM – 5:00 PM", open: true },
@@ -29,6 +31,7 @@ const PublicContact: React.FC = () => {
     { icon: MapPin, label: "Address", value: barangayInfo.address, sub: "Quezon City, Metro Manila" },
   ];
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", contact: "", department: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -45,11 +48,16 @@ const PublicContact: React.FC = () => {
     return e;
   };
 
-  const handleSubmit = (ev: React.FormEvent) => {
+  const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    setSubmitted(true);
+    setLoading(true);
+    try {
+      await insertContactMessage({ name: form.name, email: form.email, subject: form.department || "General Inquiry", message: form.message });
+      setSubmitted(true);
+    } catch { toast.error("Failed to send message"); }
+    finally { setLoading(false); }
   };
 
   const inputCls = (field: string) =>
@@ -107,13 +115,13 @@ const PublicContact: React.FC = () => {
               <div className="bg-white dark:bg-card border border-border rounded-xl p-4">
                 <h3 className="font-semibold text-foreground mb-3 text-sm">Follow Us</h3>
                 <div className="flex gap-3">
-                  <a href="#" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors">
+                  <a href="https://www.facebook.com/quezoncitygovernment" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors">
                     <Facebook size={14} /> Facebook
                   </a>
-                  <a href="#" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 text-xs font-medium hover:bg-sky-100 dark:hover:bg-sky-900 transition-colors">
+                  <a href="https://twitter.com/QuezonCityGov" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 text-xs font-medium hover:bg-sky-100 dark:hover:bg-sky-900 transition-colors">
                     <Twitter size={14} /> Twitter
                   </a>
-                  <a href="#" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900 transition-colors">
+                  <a href="https://www.youtube.com/@quezoncitygovernment" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900 transition-colors">
                     <Youtube size={14} /> YouTube
                   </a>
                 </div>
@@ -170,8 +178,8 @@ const PublicContact: React.FC = () => {
                       <textarea rows={5} value={form.message} onChange={e => set("message", e.target.value)} className={`${inputCls("message")} resize-none`} placeholder="Write your message, question, or concern here…" />
                       {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
                     </div>
-                    <button type="submit" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md transition-all">
-                      <Send size={15} /> Send Message
+                    <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-semibold shadow-md transition-all">
+                      {loading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />} {loading ? "Sending..." : "Send Message"}
                     </button>
                   </motion.form>
                 ) : (

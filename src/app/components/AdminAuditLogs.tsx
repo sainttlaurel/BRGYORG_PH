@@ -41,7 +41,7 @@ const AdminAuditLogs: React.FC = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h1 className="font-bold text-foreground" style={{ fontSize: "1.3rem" }}>Audit Logs</h1>
+          <h1 className="font-bold text-foreground text-[1.3rem]">Audit Logs</h1>
           <p className="text-muted-foreground text-sm mt-0.5">System activity trail · {auditLogs.length} entries · {filtered.length} showing</p>
         </div>
         <button onClick={() => csvExport(filtered.map(l => ({ Timestamp: l.date, User: l.user, Action: l.action, Details: l.detail, Module: l.module })), "audit-logs.csv")} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
