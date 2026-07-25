@@ -37,6 +37,8 @@ import AdminAnnouncements from "./components/AdminAnnouncements";
 import AdminPolls from "./components/AdminPolls";
 import AdminReports from "./components/AdminReports";
 import AdminConcerns from "./components/AdminConcerns";
+import AdminSuggestions from "./components/AdminSuggestions";
+import AdminVolunteers from "./components/AdminVolunteers";
 import AdminUsers from "./components/AdminUsers";
 import AdminAuditLogs from "./components/AdminAuditLogs";
 import AdminSettings from "./components/AdminSettings";
@@ -102,6 +104,8 @@ const AppRoutes: React.FC = () => {
           <Route path="polls" element={<AdminPolls />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="concerns" element={<AdminConcerns />} />
+          <Route path="suggestions" element={<AdminSuggestions />} />
+          <Route path="volunteers" element={<AdminVolunteers />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="audit-logs" element={<AdminAuditLogs />} />
           <Route path="settings" element={<AdminSettings />} />

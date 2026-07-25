@@ -192,3 +192,21 @@ export async function updateReportStatus(id: string, status: string) {
   const { error } = await supabase.from('reports').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
   if (error) throw new Error(error.message);
 }
+
+export async function updateSuggestionStatus(id: string, status: string) {
+  if (!supabase) return;
+  const { error } = await supabase.from('suggestions').update({ status }).eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateSuggestionReply(id: string, admin_reply: string) {
+  if (!supabase) return;
+  const { error } = await supabase.from('suggestions').update({ admin_reply, status: 'published' }).eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateVolunteerStatus(id: string, status: string) {
+  if (!supabase) return;
+  const { error } = await supabase.from('volunteer_signups').update({ status }).eq('id', id);
+  if (error) throw new Error(error.message);
+}

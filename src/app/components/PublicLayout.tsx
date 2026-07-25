@@ -20,6 +20,7 @@ const navLinks = [
 
 const moreLinks = [
   { path: "/registry", label: "Public Registry", icon: Users },
+  { path: "/document-application", label: "Request Document", icon: FileText },
   { path: "/citizens-voice", label: "Citizens' Voice", icon: MessageSquare },
   { path: "/community-vote", label: "Community Vote", icon: Vote },
   { path: "/volunteer", label: "Volunteer", icon: Heart },
