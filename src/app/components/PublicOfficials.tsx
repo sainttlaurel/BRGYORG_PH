@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Leaf, Phone, Mail, Users } from "lucide-react";
+import { Phone, Users } from "lucide-react";
 import { useData } from "./DataContext";
 
 const fade = {

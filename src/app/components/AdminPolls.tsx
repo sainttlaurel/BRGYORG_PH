@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { BarChart2, Plus, Edit, Trash2, Users, Clock, Trophy, CheckCircle } from "lucide-react";
+import { BarChart2, Plus, Edit, Trash2, Users, Clock, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 import type { Poll } from "@/lib/useSupabaseData";

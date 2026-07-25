@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Shield, Search, Plus, Eye, X, Calendar, MapPin, Users } from "lucide-react";
+import { Shield, Search, Plus, Eye, X, Calendar, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 import { updateBlotterStatus, insertBlotterCase } from "@/lib/supabaseWrite";

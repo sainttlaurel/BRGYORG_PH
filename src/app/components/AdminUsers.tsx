@@ -45,7 +45,7 @@ const AdminUsers: React.FC = () => {
   };
 
   const openEdit = (user: typeof users[0]) => {
-    setForm({ name: user.name, username: "", email: user.email, password: "", role: user.role, initials: "" });
+    setForm({ name: user.name, username: user.username || "", email: user.email, password: "", role: user.role, initials: "" });
     setShowEditId(user.id);
   };
 

@@ -1,21 +1,30 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { BarChart2, CheckCircle, Lock, Users, Clock, Trophy } from "lucide-react";
+import { motion } from "motion/react";
+import { BarChart2, CheckCircle, Lock, Users, Clock, Trophy, Loader2 } from "lucide-react";
 import { useData } from "./DataContext";
+import { submitVote } from "@/lib/supabaseWrite";
+import { toast } from "sonner";
 
 const PublicCommunityVote: React.FC = () => {
   const { polls } = useData();
   const [votes, setVotes] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
 
   const handleVote = (pollId: string, optionId: string) => {
     if (submitted.has(pollId)) return;
     setVotes(v => ({ ...v, [pollId]: optionId }));
   };
 
-  const handleSubmit = (pollId: string) => {
-    if (!votes[pollId]) return;
-    setSubmitted(s => new Set([...s, pollId]));
+  const handleSubmit = async (pollId: string) => {
+    const optionId = votes[pollId];
+    if (!optionId) return;
+    setLoading(l => ({ ...l, [pollId]: true }));
+    try {
+      await submitVote(pollId, optionId);
+      setSubmitted(s => new Set([...s, pollId]));
+    } catch { toast.error("Failed to submit vote"); }
+    finally { setLoading(l => ({ ...l, [pollId]: false })); }
   };
 
   const getPercent = (votes: number, total: number) => total === 0 ? 0 : Math.round((votes / total) * 100);
@@ -121,14 +130,14 @@ const PublicCommunityVote: React.FC = () => {
                         {!isVoted ? (
                           <button
                             onClick={() => handleSubmit(poll.id)}
-                            disabled={!selected}
+                            disabled={!selected || loading[poll.id]}
                             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                              selected
+                              selected && !loading[poll.id]
                                 ? "bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
                                 : "bg-muted text-muted-foreground cursor-not-allowed"
                             }`}
                           >
-                            Cast My Vote
+                            {loading[poll.id] ? <Loader2 size={14} className="animate-spin" /> : null} {loading[poll.id] ? "Submitting…" : "Cast My Vote"}
                           </button>
                         ) : (
                           <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm font-medium">

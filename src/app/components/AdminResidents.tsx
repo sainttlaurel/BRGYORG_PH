@@ -53,7 +53,7 @@ const AdminResidents: React.FC = () => {
   };
 
   const openEdit = (res: typeof residents[0]) => {
-    setEditForm({ fname: res.name.split(" ")[0] ?? "", lname: res.name.split(" ").slice(1).join(" ") || "", purok: res.purok, contact: res.contact, address: res.address, gender: res.gender, dob: "" });
+    setEditForm({ fname: res.name.split(" ")[0] ?? "", lname: res.name.split(" ").slice(1).join(" ") || "", purok: res.purok, contact: res.contact, address: res.address, gender: res.gender, dob: res.dob });
     setShowEditId(res.id);
     setSelected(null);
   };

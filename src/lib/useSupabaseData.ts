@@ -12,7 +12,7 @@ import { supabase, dbFetch, getUsers } from "./supabase";
 // ============================================================
 
 export interface Resident {
-  id: string; name: string; age: number; gender: string; address: string;
+  id: string; name: string; age: number; dob: string; gender: string; address: string;
   household: string; status: string; contact: string; occupation: string;
   civilStatus: string; purok: string; registered: string;
 }
@@ -42,7 +42,7 @@ export interface Poll {
 
 export interface AdminUser {
   id: number; name: string; email: string; role: string;
-  position: string; lastLogin: string; status: string; permissions: string[];
+  username: string; position: string; lastLogin: string; status: string; permissions: string[];
 }
 
 export interface AuditLog {
@@ -139,6 +139,7 @@ function mapResident(r: Record<string, unknown>): Resident {
     id:          String(r.id ?? ""),
     name:        `${r.fname ?? ""} ${r.lname ?? ""}`.trim(),
     age:         calcAge(String(r.dob ?? "")),
+    dob:         String(r.dob ?? ""),
     gender:      String(r.gender ?? "N/A"),
     address:     String(r.address ?? ""),
     household:   String(r.household ?? ""),

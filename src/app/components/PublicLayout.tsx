@@ -3,7 +3,7 @@ import { Outlet, Link, NavLink, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Leaf, Sun, Moon, Menu, X, Phone, Mail, MapPin,
-  ChevronDown, ExternalLink, Facebook, Twitter, Youtube,
+  ChevronDown, Facebook, Twitter, Youtube,
   Shield, FileText, Users, Megaphone, MessageSquare, Vote,
   Heart, AlertTriangle, Home, Info, Award
 } from "lucide-react";

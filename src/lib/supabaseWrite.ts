@@ -218,3 +218,13 @@ export async function updateVolunteerStatus(id: string, status: string) {
   const { error } = await supabase.from('volunteer_signups').update({ status }).eq('id', id);
   if (error) throw new Error(error.message);
 }
+
+export async function submitVote(pollId: string, optionIndex: string) {
+  if (!supabase) throw new Error('offline');
+  const { data: poll, error: fetchErr } = await supabase.from('polls').select('votes').eq('id', pollId).single();
+  if (fetchErr) throw new Error(fetchErr.message);
+  const votes = (poll?.votes as Record<string, number>) ?? {};
+  votes[optionIndex] = (votes[optionIndex] ?? 0) + 1;
+  const { error } = await supabase.from('polls').update({ votes }).eq('id', pollId);
+  if (error) throw new Error(error.message);
+}

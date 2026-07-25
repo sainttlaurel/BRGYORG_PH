@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area, Legend
+  PieChart, Pie, Cell
 } from "recharts";
-import { TrendingUp, Download, Calendar, Users, FileText, Shield, DollarSign } from "lucide-react";
+import { Download, Users, FileText, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 

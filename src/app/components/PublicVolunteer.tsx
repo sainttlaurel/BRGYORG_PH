@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
+import { Heart, ArrowRight, Loader2 } from "lucide-react";
 import { insertVolunteer } from "../../lib/supabaseWrite";
 
 const programs = [

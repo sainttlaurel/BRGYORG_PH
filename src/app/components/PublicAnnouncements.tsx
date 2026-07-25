@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Megaphone, Clock, Filter, Search, Tag } from "lucide-react";
+import { Megaphone, Clock, Search, Tag } from "lucide-react";
 import { useData } from "./DataContext";
 
 const categories = ["All", "Health", "Governance", "Social Services", "Environment", "Livelihood"];
