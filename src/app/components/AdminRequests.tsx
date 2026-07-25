@@ -147,32 +147,34 @@ const AdminRequests: React.FC = () => {
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/30 z-40" onClick={() => setSelected(null)} />
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
-              <div className="bg-white dark:bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto pointer-events-auto">
+              <div className="bg-white dark:bg-card border border-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto pointer-events-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="font-bold text-foreground">Request Details</h2>
                   <button onClick={() => setSelected(null)} className="p-1.5 rounded-lg hover:bg-muted"><XCircle size={16} /></button>
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex justify-between items-start">
+                <div className="mb-6">
+                  <div className="flex justify-between items-start mb-4">
                     <span className="text-sm font-bold text-foreground font-mono">{selected.id}</span>
                     {(() => { const st = statusConfig[selected.status]; return st ? <span className={`text-xs px-2 py-1 rounded-full font-medium ${st.color}`}>{st.label}</span> : null; })()}
                   </div>
-                  {[
-                    { label: "Resident", value: selected.resident },
-                    { label: "Document Type", value: selected.type },
-                    { label: "Purpose", value: selected.purpose },
-                    { label: "Date Filed", value: selected.date },
-                    { label: "Contact", value: selected.contact || "—" },
-                    { label: "Fee", value: selected.fee },
-                    { label: "Processed by", value: selected.processor || "—" },
-                  ].map(item => (
-                    <div key={item.label} className="flex justify-between border-b border-border pb-2">
-                      <span className="text-xs text-muted-foreground">{item.label}</span>
-                      <span className="text-xs font-medium text-foreground text-right">{item.value}</span>
-                    </div>
-                  ))}
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                    {[
+                      { label: "Resident", value: selected.resident },
+                      { label: "Document Type", value: selected.type },
+                      { label: "Purpose", value: selected.purpose },
+                      { label: "Date Filed", value: selected.date },
+                      { label: "Contact", value: selected.contact || "—" },
+                      { label: "Fee", value: selected.fee },
+                      { label: "Processed by", value: selected.processor || "—" },
+                    ].map(item => (
+                      <div key={item.label} className="flex justify-between border-b border-border pb-2">
+                        <span className="text-xs text-muted-foreground">{item.label}</span>
+                        <span className="text-xs font-medium text-foreground text-right">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Certificate preview */}
