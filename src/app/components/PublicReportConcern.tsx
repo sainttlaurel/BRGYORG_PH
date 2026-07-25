@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertTriangle, CheckCircle, Upload, X, Search, Clock, Copy } from "lucide-react";
+import { AlertTriangle, CheckCircle, Upload, X, Search, Clock, Copy, Loader2 } from "lucide-react";
+import { insertReport, getReportByRef, genId } from "../../lib/supabaseWrite";
 
 type Step = "form" | "success" | "track";
 
@@ -12,12 +13,7 @@ const urgencyLevels = [
 
 const categories = ["Illegal Dumping", "Road/Sidewalk Damage", "Broken Street Light", "Noise Complaint", "Health Hazard", "Drug Activity", "Illegal Structure", "Water Leak", "Flooding", "Other"];
 
-const generateRef = () => `RPT-2026-${Math.floor(Math.random() * 9000) + 1000}`;
-
-const mockReports: Record<string, { status: string; created: string; lastUpdate: string; category: string }> = {
-  "RPT-2026-1234": { status: "Under Review", created: "2026-07-15", lastUpdate: "2026-07-18", category: "Road/Sidewalk Damage" },
-  "RPT-2026-5678": { status: "Action Taken", created: "2026-07-10", lastUpdate: "2026-07-20", category: "Broken Street Light" },
-};
+const generateRef = () => genId('RPT');
 
 const barangayHotline = "(02) 8-1234-5678";
 
@@ -27,8 +23,11 @@ const PublicReportConcern: React.FC = () => {
   const [refNumber, setRefNumber] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [trackQuery, setTrackQuery] = useState("");
-  const [trackResult, setTrackResult] = useState<typeof mockReports[string] | null | "not_found">(null);
+  const [trackResult, setTrackResult] = useState<Record<string, string> | null | "not_found">(null);
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [trackLoading, setTrackLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     category: "", description: "", location: "", urgency: "",
     reporterName: "", reporterContact: "",
@@ -49,18 +48,40 @@ const PublicReportConcern: React.FC = () => {
     return e;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    setRefNumber(generateRef());
-    setStep("success");
+    setLoading(true);
+    setError("");
+    try {
+      const ref = generateRef();
+      await insertReport({
+        id: ref, category: form.category, description: form.description,
+        location: form.location, urgency: form.urgency,
+        reporter_name: form.reporterName || undefined,
+        reporter_contact: form.reporterContact || undefined,
+      });
+      setRefNumber(ref);
+      setStep("success");
+    } catch (err: any) {
+      setError(err.message || "Failed to submit report. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleTrack = (e: React.FormEvent) => {
+  const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = mockReports[trackQuery.toUpperCase()];
-    setTrackResult(result || "not_found");
+    setTrackLoading(true);
+    try {
+      const result = await getReportByRef(trackQuery.toUpperCase());
+      setTrackResult(result as Record<string, string> || "not_found");
+    } catch {
+      setTrackResult("not_found");
+    } finally {
+      setTrackLoading(false);
+    }
   };
 
   const addFiles = (newFiles: FileList | null) => {
@@ -192,8 +213,9 @@ const PublicReportConcern: React.FC = () => {
                       </div>
                     </div>
 
-                    <button type="submit" className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold shadow-md transition-all">
-                      <AlertTriangle size={16} /> Submit Report
+                    {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+                    <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold shadow-md transition-all disabled:opacity-50">
+                      {loading ? <Loader2 size={16} className="animate-spin" /> : <AlertTriangle size={16} />} {loading ? "Submitting…" : "Submit Report"}
                     </button>
                   </form>
                 </div>
@@ -236,9 +258,10 @@ const PublicReportConcern: React.FC = () => {
                   placeholder="Enter reference number (e.g. RPT-2026-1234)"
                   className="flex-1 px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all"
                 />
-                <button type="submit" className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium transition-all">Track</button>
+                <button type="submit" disabled={trackLoading} className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium transition-all disabled:opacity-50">
+                  {trackLoading ? <Loader2 size={14} className="animate-spin" /> : "Track"}
+                </button>
               </form>
-              <p className="text-xs text-muted-foreground mt-2">Try: RPT-2026-1234 or RPT-2026-5678</p>
             </div>
 
             {trackResult !== null && (
@@ -254,13 +277,14 @@ const PublicReportConcern: React.FC = () => {
                     <div className="flex items-center justify-between mb-3">
                       <span className="font-bold text-foreground">{trackQuery.toUpperCase()}</span>
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                        trackResult.status === "Action Taken" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" : "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+                        trackResult.status === "resolved" || trackResult.status === "Action Taken" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" : "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
                       }`}>{trackResult.status}</span>
                     </div>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <div>Category: <span className="text-foreground font-medium">{trackResult.category}</span></div>
-                      <div>Filed: <span className="text-foreground font-medium">{trackResult.created}</span></div>
-                      <div>Last Update: <span className="text-foreground font-medium">{trackResult.lastUpdate}</span></div>
+                      <div>Location: <span className="text-foreground font-medium">{trackResult.location}</span></div>
+                      <div>Urgency: <span className="text-foreground font-medium capitalize">{trackResult.urgency}</span></div>
+                      <div>Filed: <span className="text-foreground font-medium">{new Date(trackResult.created_at).toLocaleDateString()}</span></div>
                     </div>
                   </div>
                 )}

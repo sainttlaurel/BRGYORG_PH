@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, Send, CheckCircle, Lock, Leaf } from "lucide-react";
+import { MessageSquare, Send, CheckCircle, Lock, Leaf, Loader2 } from "lucide-react";
+import { insertSuggestion } from "../../lib/supabaseWrite";
 
 type Category = "suggestion" | "complaint" | "commendation" | "inquiry";
 
@@ -13,6 +14,8 @@ const categories: { id: Category; label: string; color: string }[] = [
 
 const PublicCitizensVoice: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({ category: "" as Category | "", message: "", department: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -28,11 +31,21 @@ const PublicCitizensVoice: React.FC = () => {
     return e;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    setSubmitted(true);
+    setLoading(true);
+    setError("");
+    try {
+      const dept = form.department ? `\n\nAddressed To: ${form.department}` : "";
+      await insertSuggestion({ name: form.category, content: form.message + dept });
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to submit. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -120,8 +133,9 @@ const PublicCitizensVoice: React.FC = () => {
                     </div>
                   </div>
 
-                  <button type="submit" className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md transition-all">
-                    <Send size={16} /> Submit Anonymously
+                  {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+                  <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md transition-all disabled:opacity-50">
+                    {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} {loading ? "Submitting…" : "Submit Anonymously"}
                   </button>
                 </form>
               </div>

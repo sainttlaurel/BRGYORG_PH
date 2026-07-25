@@ -1,9 +1,10 @@
 import { supabase } from './supabase';
 
-function genId(prefix: string, len = 4): string {
+export function genId(prefix: string, len = 4): string {
   const n = Math.floor(Math.random() * 10 ** len).toString().padStart(len, '0');
   if (prefix === 'REQ') return `REQ-${new Date().getFullYear()}-${n}`;
   if (prefix === 'BLT') return `BLT-${new Date().getFullYear()}-${n.slice(-3)}`;
+  if (prefix === 'RPT') return `RPT-${new Date().getFullYear()}-${n}`;
   return `${prefix}-${n}`;
 }
 
@@ -154,4 +155,34 @@ export async function insertAuditLog(data: {
   if (!supabase) return;
   const { error } = await supabase.from('audit_logs').insert(data);
   if (error) throw new Error(error.message);
+}
+
+export async function insertSuggestion(data: { name: string; content: string }) {
+  if (!supabase) throw new Error('offline');
+  const { error } = await supabase.from('suggestions').insert(data);
+  if (error) throw new Error(error.message);
+}
+
+export async function insertVolunteer(data: {
+  full_name: string; email: string; contact: string; body_conditions: string;
+}) {
+  if (!supabase) throw new Error('offline');
+  const { error } = await supabase.from('volunteer_signups').insert(data);
+  if (error) throw new Error(error.message);
+}
+
+export async function insertReport(data: {
+  id: string; category: string; description: string; location: string;
+  urgency: string; reporter_name?: string; reporter_contact?: string;
+}) {
+  if (!supabase) throw new Error('offline');
+  const { error } = await supabase.from('reports').insert({ ...data, status: 'pending' });
+  if (error) throw new Error(error.message);
+}
+
+export async function getReportByRef(ref: string): Promise<Record<string, unknown> | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.from('reports').select('*').eq('id', ref).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
 }

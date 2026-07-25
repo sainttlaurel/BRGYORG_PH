@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, CheckCircle, Users, Leaf, ArrowRight, Calendar } from "lucide-react";
+import { Heart, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
+import { insertVolunteer } from "../../lib/supabaseWrite";
 
 const programs = [
   { id: "health", label: "Health & Medical Missions", desc: "Assist in medical missions, health screenings, and vaccination drives.", icon: "🏥" },
@@ -13,6 +14,8 @@ const programs = [
 
 const PublicVolunteer: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     firstName: "", lastName: "", age: "", gender: "", contact: "", email: "",
     address: "", occupation: "", availability: "", selectedPrograms: [] as string[],
@@ -45,11 +48,26 @@ const PublicVolunteer: React.FC = () => {
     return e;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    setSubmitted(true);
+    setLoading(true);
+    setError("");
+    try {
+      const programs = form.selectedPrograms.map(id => programs.find(p => p.id === id)?.label).join(", ");
+      await insertVolunteer({
+        full_name: `${form.firstName} ${form.lastName}`.trim(),
+        email: form.email,
+        contact: form.contact,
+        body_conditions: JSON.stringify({ age: form.age, gender: form.gender, address: form.address, occupation: form.occupation, availability: form.availability, programs, skills: form.skills, motivation: form.motivation }),
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to register. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputCls = (field: string) =>
@@ -184,8 +202,9 @@ const PublicVolunteer: React.FC = () => {
                     <textarea rows={4} value={form.motivation} onChange={e => set("motivation", e.target.value)} className={`${inputCls("motivation")} resize-none`} placeholder="Share your motivation for volunteering…" />
                   </div>
 
-                  <button type="submit" className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md transition-all">
-                    <Heart size={16} /> Register as Volunteer <ArrowRight size={16} />
+                  {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+                  <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md transition-all disabled:opacity-50">
+                    {loading ? <Loader2 size={16} className="animate-spin" /> : <Heart size={16} />} {loading ? "Registering…" : "Register as Volunteer"} {!loading && <ArrowRight size={16} />}
                   </button>
                 </form>
               </div>
