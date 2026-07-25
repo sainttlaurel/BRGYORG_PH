@@ -84,6 +84,12 @@ export interface Service {
   requirements: string[];
 }
 
+export interface ReportItem {
+  id: string; category: string; description: string; location: string;
+  urgency: string; status: string; reporter_name: string;
+  reporter_contact: string; created_at: string; updated_at: string;
+}
+
 export interface AppData {
   residents:     Resident[];
   docRequests:   DocRequest[];
@@ -95,6 +101,7 @@ export interface AppData {
   officials:     Official[];
   barangayInfo:  BarangayInfo;
   services:      Service[];
+  reports:       ReportItem[];
   loading:       boolean;
   offline:       boolean;
   refetch:       () => void;
@@ -238,6 +245,7 @@ const defaultServices: Service[] = [
     officials:     [],
     barangayInfo:  defaultBarangayInfo,
     services:      defaultServices,
+    reports:       [],
   });
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
@@ -253,7 +261,7 @@ const defaultServices: Service[] = [
     try {
       const [
         resRows, docRows, cmpRows, annRows, pollRows, userRows,
-        offRows, audRows, infoRows, svcRows,
+        offRows, audRows, infoRows, svcRows, rptRows,
       ] = await Promise.allSettled([
         dbFetch<Record<string, unknown>>("residents"),
         dbFetch<Record<string, unknown>>("documents"),
@@ -265,6 +273,7 @@ const defaultServices: Service[] = [
         dbFetch<Record<string, unknown>>("audit_logs"),
         dbFetch<Record<string, unknown>>("barangay_info"),
         dbFetch<Record<string, unknown>>("services"),
+        dbFetch<Record<string, unknown>>("reports"),
       ]);
 
       function mapOfficial(o: Record<string, unknown>): Official {
@@ -334,6 +343,21 @@ const defaultServices: Service[] = [
         };
       }
 
+      function mapReport(r: Record<string, unknown>): ReportItem {
+        return {
+          id:              String(r.id ?? ""),
+          category:        String(r.category ?? ""),
+          description:     String(r.description ?? ""),
+          location:        String(r.location ?? ""),
+          urgency:         String(r.urgency ?? "low"),
+          status:          String(r.status ?? "pending"),
+          reporter_name:   String(r.reporter_name ?? ""),
+          reporter_contact: String(r.reporter_contact ?? ""),
+          created_at:      String(r.created_at ?? ""),
+          updated_at:      String(r.updated_at ?? ""),
+        };
+      }
+
       setData(() => ({
         residents:     resRows.status  === "fulfilled" ? (resRows.value as Record<string, unknown>[]).map(mapResident)        : [],
         docRequests:   docRows.status  === "fulfilled" ? (docRows.value as Record<string, unknown>[]).map(mapDocument)        : [],
@@ -345,6 +369,7 @@ const defaultServices: Service[] = [
         officials:     offRows.status  === "fulfilled" ? (offRows.value as Record<string, unknown>[]).map(mapOfficial)       : [],
         barangayInfo:  infoRows.status === "fulfilled" ? mapBarangayInfo(infoRows.value as Record<string, unknown>[])         : defaultBarangayInfo,
         services:      svcRows.status  === "fulfilled" ? (svcRows.value as Record<string, unknown>[]).map(mapService)        : defaultServices,
+        reports:       rptRows.status  === "fulfilled" ? (rptRows.value as Record<string, unknown>[]).map(mapReport)         : [],
       }));
 
       setOffline(false);
@@ -361,7 +386,7 @@ const defaultServices: Service[] = [
   useEffect(() => {
     if (!supabase) return;
 
-    const tables = ["residents", "documents", "complaints", "announcements", "polls", "officials", "audit_logs", "barangay_info", "services"] as const;
+    const tables = ["residents", "documents", "complaints", "announcements", "polls", "officials", "audit_logs", "barangay_info", "services", "reports"] as const;
     const channels = tables.map(table =>
       supabase!
         .channel(`rt:${table}`)

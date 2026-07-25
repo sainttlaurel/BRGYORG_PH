@@ -186,3 +186,9 @@ export async function getReportByRef(ref: string): Promise<Record<string, unknow
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function updateReportStatus(id: string, status: string) {
+  if (!supabase) return;
+  const { error } = await supabase.from('reports').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) throw new Error(error.message);
+}

@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Leaf, LayoutDashboard, Users, FileText, Shield, Award,
-  Megaphone, BarChart2, TrendingUp, UserCog, ScrollText,
+  Megaphone, BarChart2, TrendingUp, AlertTriangle, UserCog, ScrollText,
   Settings, LogOut, ChevronLeft, ChevronRight, Bell,
   Sun, Moon, Menu, X, Globe
 } from "lucide-react";
@@ -19,7 +19,8 @@ const navItems = [
   { path: "/admin/officials", label: "Officials", icon: Award },
   { path: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { path: "/admin/polls", label: "Polls", icon: BarChart2 },
-  { path: "/admin/reports", label: "Reports", icon: TrendingUp },
+  { path: "/admin/reports", label: "Analytics", icon: TrendingUp },
+  { path: "/admin/concerns", label: "Concerns", icon: AlertTriangle },
   { path: "/admin/users", label: "Users", icon: UserCog },
   { path: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText },
   { path: "/admin/settings", label: "Settings", icon: Settings },
