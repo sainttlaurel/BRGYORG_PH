@@ -4,6 +4,80 @@ All notable changes to this project are documented here.
 
 ---
 
+## [4.0.0] — July 2026
+
+### Added
+
+#### Public features — all 12 pages now live
+- **PublicCitizensVoice** — form persists suggestions to `suggestions` table
+- **PublicVolunteer** — form persists to `volunteer_signups` table with parsed `body_conditions`
+- **PublicReportConcern** — form persists to `reports` table with live status tracking via reference number
+- **PublicDocumentApplication** — loading state + spinner on submit
+- **PublicCommunityVote** — vote submissions persist via `submitVote()` to `polls.votes` JSONB
+- **PublicContact** — new `contact_messages` table; form persists with loading state
+
+#### Admin features — all 14 pages built with live data
+- **AdminConcerns** — status badge + workflow actions (Start Review, Dismiss, Mark Resolved, Reopen)
+- **AdminSuggestions** — detail modal with reply textarea + archive button
+- **AdminVolunteers** — parsed `body_conditions`, Accept/Complete workflow
+- **AdminResidents** — `dob` preserved in edit modal
+- **AdminUsers** — `username` preserved in edit modal
+- **AdminReports** — period dropdown now filters charts/tables by year; CSV export replaces "coming soon" stubs
+- **AdminDashboard** — activity feed now sourced from live `auditLogs` instead of static mock array
+- **AdminAnnouncements** — `priority` field persisted on create and edit
+- **AdminBlotter** — filter column name fix (`incident` → `location`); unused imports cleaned
+
+#### RBAC — Role-Based Access Control
+- Sidebar nav items filtered by user role (`admin`, `captain`, `secretary`, `treasurer`, `staff`)
+- Route-level protection via `<RoleRoute>` — unauthorized paths redirect to `/admin/dashboard`
+- `getVisiblePaths()` exported for route guards in `App.tsx`
+
+#### Certificate template editor
+- Inline editor for 6 certificate types (Barangay Clearance, Certificate, Indigency, Residency, Business Clearance, Good Moral)
+- Editable fields: Header Text, Footer Text, Signing Officer Title
+- Saves to `settings` table with `template_<name>_header/footer/officer` keys
+- "custom" badge shown when template has overrides
+
+#### AdminSettings — real functionality
+- **Logo upload** — file picker for PNG/SVG, converts to base64 data URL, stored in `seal_url` column with preview + remove
+- **Danger zone** — "Clear Document Requests" and "Clear Residents" buttons with confirmation dialogs (replaces toast stubs)
+
+#### CI Pipeline
+- `.github/workflows/deploy.yml` — runs `npm ci && npm run build` on every push to `main`
+
+### Fixed
+- **Missing UPDATE RLS policy** — `reports` table only had INSERT/SELECT policies; admin status updates silently failed. Added `reports_anon_update` policy.
+- **Social media links** — changed `#` placeholders to real QC Government URLs (Facebook, Twitter/X, YouTube) in footer and contact page
+- **Misleading file upload UI** — removed evidence upload section from ReportConcern (no storage backend)
+- **Inline styles → Tailwind** — converted all admin page headers and sidebar titles from `style={{fontSize}}` to `text-[...]` utility classes
+- **AdminReports unused imports** — removed 6 unused imports (AreaChart, Area, Legend, TrendingUp, Calendar, DollarSign)
+- **AdminPolls** — unused `CheckCircle` import removed
+- **AdminAuditLogs** — unused `Filter`, `Globe` imports removed
+- **PublicOfficials** — unused `Leaf`, `Mail` imports removed
+- **PublicAnnouncements** — unused `Filter` import removed
+- **PublicVolunteer** — unused `CheckCircle` import removed
+- **PublicLayout** — unused `ExternalLink` import removed
+
+### Changed
+- All admin components now use `refetch()` after mutations to keep UI in sync with DB
+- `useData()` returns `reports`, `suggestions`, `volunteers` in `AppData` interface + fetched in `useSupabaseData`
+- `mockData.ts` deleted — no mock data remains
+- Admin sidebar has 14 entries including Concerns, Suggestions, Volunteers
+- All write functions in `supabaseWrite.ts` throw `new Error('offline')` when Supabase is unavailable
+
+### Security
+- Added `reports_anon_update` RLS policy for reports table
+- Added `contact_messages_anon_update` RLS policy for contact_messages table
+
+### Removed
+- `mockData.ts` — all mock/report dummy data deleted
+- Evidence file upload UI from PublicReportConcern (no storage backend)
+- Static activity feed mock array from AdminDashboard
+- `toast` import from AdminReports (CSV export no longer uses toasts)
+- PDF/Excel "coming soon" toast stubs from AdminReports
+
+---
+
 ## [3.2.0] — July 2026
 
 ### Security
