@@ -56,12 +56,12 @@ const PublicVolunteer: React.FC = () => {
     setLoading(true);
     setError("");
     try {
-      const programs = form.selectedPrograms.map(id => programs.find(p => p.id === id)?.label).join(", ");
+      const selectedNames = form.selectedPrograms.map(id => programs.find(p => p.id === id)?.label).join(", ");
       await insertVolunteer({
         full_name: `${form.firstName} ${form.lastName}`.trim(),
         email: form.email,
         contact: form.contact,
-        body_conditions: JSON.stringify({ age: form.age, gender: form.gender, address: form.address, occupation: form.occupation, availability: form.availability, programs, skills: form.skills, motivation: form.motivation }),
+        body_conditions: JSON.stringify({ age: form.age, gender: form.gender, address: form.address, occupation: form.occupation, availability: form.availability, programs: selectedNames, skills: form.skills, motivation: form.motivation }),
       });
       setSubmitted(true);
     } catch (err: any) {
