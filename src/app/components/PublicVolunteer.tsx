@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { insertVolunteer } from "../../lib/supabaseWrite";
 
 const programs = [
@@ -64,7 +65,9 @@ const PublicVolunteer: React.FC = () => {
       });
       setSubmitted(true);
     } catch (err: any) {
-      setError(err.message || "Failed to register. Please try again.");
+      const msg = err.message || "Failed to register. Please try again.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Settings, Save, Bell, Shield, FileText, DollarSign, Leaf, Upload, Check, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase, dbFetch, dbUpdate } from "@/lib/supabase";

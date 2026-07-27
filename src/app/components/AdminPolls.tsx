@@ -19,45 +19,40 @@ const AdminPolls: React.FC = () => {
     [livePolls, pollOverrides]
   );
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: "", category: "Governance", description: "", endDate: "" });
+  const [form, setForm] = useState({ title: "", category: "Governance", description: "", endDate: "", options: ["", ""] });
   const [showEditId, setShowEditId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ title: "", category: "Governance", description: "", endDate: "" });
+  const [editForm, setEditForm] = useState({ title: "", category: "Governance", description: "", endDate: "", options: ["", ""] });
 
   const getPercent = (v: number, t: number) => t === 0 ? 0 : Math.round((v / t) * 100);
 
   const handleCreate = async () => {
-    const parsed = pollSchema.safeParse(form);
-    if (!parsed.success) {
-      parsed.error.issues.forEach(i => toast.error(i.message));
-      return;
-    }
+    const opts = form.options.map(o => o.trim()).filter(Boolean);
+    if (opts.length < 2) { toast.error("At least 2 options required"); return; }
     try {
       await insertPoll({
         question: form.title,
-        options: ["Yes", "No"],
+        options: opts,
         expires_at: form.endDate || null,
       });
-      setForm({ title: "", category: "Governance", description: "", endDate: "" });
+      setForm({ title: "", category: "Governance", description: "", endDate: "", options: ["", ""] });
       setShowForm(false);
       toast.success("Poll created!");
     } catch { toast.error("Failed to create poll"); }
   };
 
   const openEdit = (poll: typeof pollsList[0]) => {
-    setEditForm({ title: poll.title, category: poll.category, description: poll.description, endDate: poll.endDate });
+    setEditForm({ title: poll.title, category: poll.category, description: poll.description, endDate: poll.endDate, options: poll.options.map(o => o.label) });
     setShowEditId(poll.id);
   };
 
   const handleEdit = async () => {
     if (!showEditId) return;
-    const parsed = pollSchema.safeParse(editForm);
-    if (!parsed.success) {
-      parsed.error.issues.forEach(i => toast.error(i.message));
-      return;
-    }
+    const opts = editForm.options.map(o => o.trim()).filter(Boolean);
+    if (opts.length < 2) { toast.error("At least 2 options required"); return; }
     try {
       await updatePoll(showEditId, {
         question: editForm.title,
+        options: opts,
         expires_at: editForm.endDate || null,
       });
       setShowEditId(null);
@@ -109,6 +104,20 @@ const AdminPolls: React.FC = () => {
               <input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
             </div>
             <textarea rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Description (optional)…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1.5">Options <span className="text-red-500">*</span> (at least 2)</label>
+              <div className="space-y-1.5">
+                {form.options.map((opt, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input type="text" value={opt} onChange={e => setForm(f => { const o = [...f.options]; o[i] = e.target.value; return { ...f, options: o }; })} placeholder={`Option ${i + 1}`} className="flex-1 px-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+                    {form.options.length > 2 && (
+                      <button onClick={() => setForm(f => ({ ...f, options: f.options.filter((_, idx) => idx !== i) }))} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors text-xs">Remove</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setForm(f => ({ ...f, options: [...f.options, ""] }))} className="mt-1.5 text-xs text-emerald-600 dark:text-emerald-400 hover:underline">+ Add option</button>
+            </div>
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
               <button onClick={handleCreate} className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all">Create</button>
@@ -133,6 +142,20 @@ const AdminPolls: React.FC = () => {
                 <input type="date" value={editForm.endDate} onChange={e => setEditForm(f => ({ ...f, endDate: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
               </div>
               <textarea rows={2} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} placeholder="Description…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5">Options</label>
+                <div className="space-y-1.5">
+                  {editForm.options.map((opt, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input type="text" value={opt} onChange={e => setEditForm(f => { const o = [...f.options]; o[i] = e.target.value; return { ...f, options: o }; })} placeholder={`Option ${i + 1}`} className="flex-1 px-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+                      {editForm.options.length > 2 && (
+                        <button onClick={() => setEditForm(f => ({ ...f, options: f.options.filter((_, idx) => idx !== i) }))} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors text-xs">Remove</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => setEditForm(f => ({ ...f, options: [...f.options, ""] }))} className="mt-1.5 text-xs text-emerald-600 dark:text-emerald-400 hover:underline">+ Add option</button>
+              </div>
               <div className="flex gap-2 justify-end">
                 <button onClick={() => setShowEditId(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
                 <button onClick={handleEdit} className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium transition-all">Update</button>
