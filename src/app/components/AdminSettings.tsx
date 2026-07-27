@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Settings, Save, Bell, Shield, FileText, DollarSign, Leaf, Upload, Check, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase, dbFetch, dbUpdate } from "@/lib/supabase";
+import { uploadLogo } from "@/lib/supabaseWrite";
 
 const tabs = [
   { id: "profile", label: "Barangay Profile", icon: Leaf },
@@ -162,15 +163,15 @@ const AdminSettings: React.FC = () => {
                       )}
                       <label className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted cursor-pointer transition-colors">
                         {profileForm.seal_url ? "Change" : "Upload"} (PNG/SVG)
-                        <input type="file" accept="image/png,image/svg+xml" className="hidden" onChange={async e => {
+                        <input type="file" accept="image/png,image/svg+xml,image/jpeg" className="hidden" onChange={async e => {
                           const file = e.target.files?.[0];
                           if (!file) return;
-                          const reader = new FileReader();
-                          reader.onload = async () => {
-                            setProfileForm(f => ({ ...f, seal_url: String(reader.result) }));
+                          try {
+                            const url = await uploadLogo(file);
+                            setProfileForm(f => ({ ...f, seal_url: url }));
                             mark("profile");
-                          };
-                          reader.readAsDataURL(file);
+                            toast.success("Logo uploaded");
+                          } catch { toast.error("Failed to upload logo"); }
                         }} />
                       </label>
                       {profileForm.seal_url && (

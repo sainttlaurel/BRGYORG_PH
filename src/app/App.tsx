@@ -40,6 +40,7 @@ import AdminConcerns from "./components/AdminConcerns";
 import AdminSuggestions from "./components/AdminSuggestions";
 import AdminVolunteers from "./components/AdminVolunteers";
 import AdminUsers from "./components/AdminUsers";
+import AdminContactMessages from "./components/AdminContactMessages";
 import AdminAuditLogs from "./components/AdminAuditLogs";
 import AdminSettings from "./components/AdminSettings";
 import { getVisiblePaths } from "./components/AdminLayout";
@@ -114,6 +115,7 @@ const AppRoutes: React.FC = () => {
           <Route path="concerns" element={<RoleRoute path="/admin/concerns"><AdminConcerns /></RoleRoute>} />
           <Route path="suggestions" element={<RoleRoute path="/admin/suggestions"><AdminSuggestions /></RoleRoute>} />
           <Route path="volunteers" element={<RoleRoute path="/admin/volunteers"><AdminVolunteers /></RoleRoute>} />
+          <Route path="contact-messages" element={<RoleRoute path="/admin/contact-messages"><AdminContactMessages /></RoleRoute>} />
           <Route path="users" element={<RoleRoute path="/admin/users"><AdminUsers /></RoleRoute>} />
           <Route path="audit-logs" element={<RoleRoute path="/admin/audit-logs"><AdminAuditLogs /></RoleRoute>} />
           <Route path="settings" element={<RoleRoute path="/admin/settings"><AdminSettings /></RoleRoute>} />

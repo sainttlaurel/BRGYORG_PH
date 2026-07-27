@@ -3,8 +3,8 @@ import { Outlet, NavLink, useNavigate, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Leaf, LayoutDashboard, Users, FileText, Shield, Award,
-  Megaphone, BarChart2, TrendingUp, AlertTriangle, MessageSquare, Heart, UserCog, ScrollText,
-  Settings, LogOut, ChevronLeft, ChevronRight, Bell,
+  Megaphone,   BarChart2, TrendingUp, AlertTriangle, MessageSquare, Heart, UserCog, ScrollText,
+  Settings, LogOut, ChevronLeft, ChevronRight, Bell, Mail as MailIcon,
   Sun, Moon, Menu, X, Globe
 } from "lucide-react";
 import { useAuth } from "./AuthContext";
@@ -22,6 +22,7 @@ const navItems: { path: string; label: string; icon: React.FC<React.SVGProps<SVG
   { path: "/admin/reports", label: "Analytics", icon: TrendingUp },
   { path: "/admin/concerns", label: "Concerns", icon: AlertTriangle, roles: ["admin", "captain", "secretary", "staff"] },
   { path: "/admin/suggestions", label: "Suggestions", icon: MessageSquare, roles: ["admin", "captain", "secretary"] },
+  { path: "/admin/contact-messages", label: "Contact Msgs", icon: MailIcon, roles: ["admin", "captain", "secretary"] },
   { path: "/admin/volunteers", label: "Volunteers", icon: Heart, roles: ["admin", "captain", "secretary"] },
   { path: "/admin/users", label: "Users", icon: UserCog, roles: ["admin"] },
   { path: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["admin", "captain"] },

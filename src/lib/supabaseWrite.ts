@@ -190,9 +190,14 @@ export async function insertReport(data: {
 
 export async function getReportByRef(ref: string): Promise<Record<string, unknown> | null> {
   if (!supabase) return null;
-  const { data, error } = await supabase.from('reports').select('*').eq('id', ref).maybeSingle();
+  const trimmed = ref.trim();
+  let { data, error } = await supabase.from('reports').select('*').eq('id', trimmed).maybeSingle();
   if (error) throw new Error(error.message);
-  return data;
+  if (data) return data;
+  const { data: fuzzy, error: fuzzyErr } = await supabase
+    .from('reports').select('*').ilike('id', `%${trimmed}%`).limit(1).maybeSingle();
+  if (fuzzyErr) throw new Error(fuzzyErr.message);
+  return fuzzy ?? null;
 }
 
 export async function updateReportStatus(id: string, status: string) {
@@ -233,4 +238,17 @@ export async function submitVote(pollId: string, optionIndex: string) {
   votes[optionIndex] = (votes[optionIndex] ?? 0) + 1;
   const { error } = await supabase.from('polls').update({ votes }).eq('id', pollId);
   if (error) throw new Error(error.message);
+}
+
+export async function uploadLogo(file: File): Promise<string> {
+  if (!supabase) throw new Error('offline');
+  const ext = file.name.split('.').pop() ?? 'png';
+  const path = `logo-${Date.now()}.${ext}`;
+  const { error: uploadErr } = await supabase.storage.from('logos').upload(path, file, {
+    cacheControl: '3600',
+    upsert: true,
+  });
+  if (uploadErr) throw new Error(uploadErr.message);
+  const { data: urlData } = supabase.storage.from('logos').getPublicUrl(path);
+  return urlData.publicUrl;
 }
