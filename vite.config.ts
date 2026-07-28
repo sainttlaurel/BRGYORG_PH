@@ -25,60 +25,75 @@ function prerenderPlugin(): import('vite').Plugin {
     apply: 'build',
     enforce: 'post',
     async closeBundle() {
-      const { default: puppeteer } = await import('puppeteer')
-      const { existsSync, writeFileSync, mkdirSync } = await import('fs')
-      const { join, dirname, relative } = await import('path')
-      const { preview } = await import('vite')
-
+      const { existsSync } = await import('fs')
       const distDir = process.cwd() + '/dist'
       if (!existsSync(distDir)) {
-        console.error('[prerender] dist/ not found — skipping')
+        console.warn('[prerender] dist/ not found — skipping')
         return
       }
 
-      const PORT = 4199
-      const server = await preview({
-        preview: { port: PORT, host: '127.0.0.1', strictPort: true },
-      })
-      console.log(`[prerender] preview server on http://127.0.0.1:${PORT}`)
+      // Skip if NO_PRERENDER is set or running on Vercel (no Chrome libs)
+      if (process.env.NO_PRERENDER === '1' || process.env.VERCEL === '1') {
+        console.log('[prerender] skipped — SPA fallback will be used for public routes')
+        return
+      }
 
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
-      })
-
-      let success = 0, failed = 0
+      let server: Awaited<ReturnType<typeof import('vite').preview>> | null = null
 
       try {
-        const page = await browser.newPage()
-        await page.setViewport({ width: 1280, height: 720 })
+        const { default: puppeteer } = await import('puppeteer')
+        const { writeFileSync, mkdirSync } = await import('fs')
+        const { join, dirname, relative } = await import('path')
+        const { preview } = await import('vite')
 
-        for (const route of PUBLIC_ROUTES) {
-          const url = `http://127.0.0.1:${PORT}${route}`
-          process.stdout.write(`  ${route} ... `)
-          try {
-            await page.goto(url, { waitUntil: 'networkidle0', timeout: 25_000 })
-            await new Promise(r => setTimeout(r, 2000))
+        const PORT = 4199
+        server = await preview({
+          preview: { port: PORT, host: '127.0.0.1', strictPort: true },
+        })
+        console.log(`[prerender] preview server on http://127.0.0.1:${PORT}`)
 
-            const html = await page.content()
-            const outPath = route === '/'
-              ? join(distDir, 'index.html')
-              : join(distDir, route.slice(1), 'index.html')
+        const browser = await puppeteer.launch({
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+        })
 
-            mkdirSync(dirname(outPath), { recursive: true })
-            writeFileSync(outPath, html, 'utf-8')
-            console.log(`\x1b[32m✓\x1b[0m ${html.length.toLocaleString()} bytes → ${relative(process.cwd(), outPath)}`)
-            success++
-          } catch (err: any) {
-            console.log(`\x1b[31m✗\x1b[0m ${err.message}`)
-            failed++
+        let success = 0, failed = 0
+
+        try {
+          const page = await browser.newPage()
+          await page.setViewport({ width: 1280, height: 720 })
+
+          for (const route of PUBLIC_ROUTES) {
+            const url = `http://127.0.0.1:${PORT}${route}`
+            process.stdout.write(`  ${route} ... `)
+            try {
+              await page.goto(url, { waitUntil: 'networkidle0', timeout: 25_000 })
+              await new Promise(r => setTimeout(r, 2000))
+
+              const html = await page.content()
+              const outPath = route === '/'
+                ? join(distDir, 'index.html')
+                : join(distDir, route.slice(1), 'index.html')
+
+              mkdirSync(dirname(outPath), { recursive: true })
+              writeFileSync(outPath, html, 'utf-8')
+              console.log(`\x1b[32m✓\x1b[0m ${html.length.toLocaleString()} bytes → ${relative(process.cwd(), outPath)}`)
+              success++
+            } catch (err: any) {
+              console.log(`\x1b[31m✗\x1b[0m ${err.message}`)
+              failed++
+            }
           }
-        }
 
-        console.log(`[prerender] done — ${success} rendered, ${failed} failed`)
+          console.log(`[prerender] done — ${success} rendered, ${failed} failed`)
+        } finally {
+          await browser.close()
+        }
+      } catch (err: any) {
+        console.warn(`[prerender] skipped — ${err.message}`)
+        console.warn('[prerender] SPA fallback will be used for public routes')
       } finally {
-        await browser.close()
-        await server.close()
+        await server?.close()
       }
     },
   }
