@@ -60,14 +60,7 @@ export interface AuthResult {
   error?: string;
 }
 
-/** Generate a stable anonymous hash for rate limiting (not a user identifier). */
-function deviceHash(): string {
-  const raw = `${navigator.userAgent}-${screen.width}x${screen.height}`;
-  return Array.from(new TextEncoder().encode(raw))
-    .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-}
-
-/** Authenticate via the server-side bcrypt RPC (rate-limited by device fingerprint). */
+/** Authenticate via the server-side bcrypt RPC (rate-limited server-side by IP). */
 export async function authenticateUser(
   login: string,
   password: string,
@@ -77,7 +70,6 @@ export async function authenticateUser(
   const { data, error } = await supabase.rpc('authenticate_user', {
     p_login:    login,
     p_password: password,
-    p_ip_hash:  deviceHash(),
   });
 
   if (error) throw new Error(error.message);
@@ -173,12 +165,81 @@ export async function logoutSession(): Promise<void> {
 // USER MANAGEMENT
 // ============================================================
 
-/** Fetch all users (password-stripped) via the get_users RPC. */
+/** Fetch all users (password-stripped, admin-only). Auto-injects session token. */
 export async function getUsers() {
-  if (!supabase) return [];
-  const { data, error } = await supabase.rpc('get_users');
+  const token = getSessionToken();
+  if (!supabase || !token) return [];
+  const { data, error } = await supabase.rpc('get_users', { p_token: token });
   if (error) throw new Error(error.message);
   return data ?? [];
+}
+
+/** Public clearance status check using control number + verification code. */
+export async function checkClearanceStatus(
+  controlNumber: string,
+  verificationCode: string,
+): Promise<{ found: boolean; status?: string; doc_type?: string; full_name?: string; created_at?: string; approved_at?: string | null; rejected_at?: string | null; notes?: string; error?: string }> {
+  if (!supabase) return { found: false, error: 'offline' };
+  const { data, error } = await supabase.rpc('check_clearance_status', {
+    p_control_number: controlNumber,
+    p_verification_code: verificationCode,
+  });
+  if (error) throw new Error(error.message);
+  return data as { found: boolean; status?: string; doc_type?: string; full_name?: string; created_at?: string; approved_at?: string | null; rejected_at?: string | null; notes?: string; error?: string };
+}
+
+/** Admin: fetch officials (session-gated). */
+export async function adminGetOfficials(token: string): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_get_officials', { p_token: token });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Record<string, unknown>[];
+}
+
+/** Admin: fetch settings (session-gated). */
+export async function adminGetSettings(token: string): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_get_settings', { p_token: token });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Record<string, unknown>[];
+}
+
+/** Admin: fetch barangay info (session-gated). */
+export async function adminGetBarangayInfo(token: string): Promise<Record<string, unknown> | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.rpc('admin_get_barangay_info', { p_token: token });
+  if (error) throw new Error(error.message);
+  return data as Record<string, unknown> | null;
+}
+
+/** Admin: paginated contact messages (session-gated). */
+export async function adminGetContactMessages(token: string, limit = 100, offset = 0): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_get_contact_messages', { p_token: token, p_limit: limit, p_offset: offset });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Record<string, unknown>[];
+}
+
+export async function adminGetContactMessagesCount(token: string): Promise<number> {
+  if (!supabase) return 0;
+  const { data, error } = await supabase.rpc('admin_get_contact_messages_count', { p_token: token });
+  if (error) throw new Error(error.message);
+  return ((data as { count?: number })?.count ?? 0) as number;
+}
+
+/** Admin: paginated reports (session-gated). */
+export async function adminGetReports(token: string, limit = 100, offset = 0): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_get_reports', { p_token: token, p_limit: limit, p_offset: offset });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Record<string, unknown>[];
+}
+
+export async function adminGetReportsCount(token: string): Promise<number> {
+  if (!supabase) return 0;
+  const { data, error } = await supabase.rpc('admin_get_reports_count', { p_token: token });
+  if (error) throw new Error(error.message);
+  return ((data as { count?: number })?.count ?? 0) as number;
 }
 
 // ============================================================
@@ -226,13 +287,21 @@ export async function dbDelete(table: string, id: string | number): Promise<void
   if (error) throw new Error(error.message);
 }
 
-/** Create a new user via the create_user RPC (password hashed server-side). */
+/** Get the session token or throw. */
+function requireToken(): string {
+  const t = getSessionToken();
+  if (!t) throw new Error('No active session');
+  return t;
+}
+
+/** Create a new user via the create_user RPC (password hashed server-side, admin-only). */
 export async function createUser(data: {
   id: number; name: string; username: string; email: string;
   password: string; role: string; initials: string;
 }) {
   if (!supabase) throw new Error('offline');
   const { error } = await supabase.rpc('create_user', {
+    p_token: requireToken(),
     p_id: data.id, p_name: data.name, p_username: data.username,
     p_email: data.email, p_password: data.password,
     p_role: data.role, p_initials: data.initials,
@@ -240,30 +309,35 @@ export async function createUser(data: {
   if (error) throw new Error(error.message);
 }
 
-/** Update a user via the update_user RPC (no password change). */
+/** Update a user via the update_user RPC (no password change, admin-only). */
 export async function updateUser(data: {
   id: number; name: string; username: string; email: string;
   role: string; initials: string;
 }) {
   if (!supabase) throw new Error('offline');
   const { error } = await supabase.rpc('update_user', {
+    p_token: requireToken(),
     p_id: data.id, p_name: data.name, p_username: data.username,
     p_email: data.email, p_role: data.role, p_initials: data.initials,
   });
   if (error) throw new Error(error.message);
 }
 
-/** Set user status (active/suspended) via set_user_status RPC. */
+/** Set user status (active/suspended) via set_user_status RPC (admin-only). */
 export async function setUserStatus(id: number, status: string) {
   if (!supabase) throw new Error('offline');
-  const { error } = await supabase.rpc('set_user_status', { p_id: id, p_status: status });
+  const { error } = await supabase.rpc('set_user_status', {
+    p_token: requireToken(), p_id: id, p_status: status,
+  });
   if (error) throw new Error(error.message);
 }
 
-/** Delete a user via the delete_user RPC. */
+/** Delete a user via the delete_user RPC (admin-only). */
 export async function deleteUser(id: number) {
   if (!supabase) throw new Error('offline');
-  const { error } = await supabase.rpc('delete_user', { p_id: id });
+  const { error } = await supabase.rpc('delete_user', {
+    p_token: requireToken(), p_id: id,
+  });
   if (error) throw new Error(error.message);
 }
 

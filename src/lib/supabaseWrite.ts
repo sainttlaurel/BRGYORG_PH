@@ -307,11 +307,8 @@ export async function updateVolunteerStatus(id: string, status: string, loggedIn
 
 export async function submitVote(pollId: string, optionIndex: string) {
   if (!supabase) throw new Error('offline');
-  const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
-  const voterIp = Array.from(new TextEncoder().encode(identifier))
-    .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
   const { error } = await supabase.rpc('cast_vote', {
-    p_poll_id: pollId, p_voter_ip: voterIp, p_option_index: parseInt(optionIndex),
+    p_poll_id: pollId, p_option_index: parseInt(optionIndex),
   });
   if (error) throw new Error(error.message);
 }
