@@ -56,6 +56,7 @@ const RoleRoute: React.FC<{ children: React.ReactNode; path: string }> = ({ chil
   return <>{children}</>;
 };
 
+const NotFoundPage = lazy(() => import("./components/NotFoundPage"));
 const AdminFallback: React.FC = () => (
   <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Loading…</div>
 );
@@ -125,10 +126,19 @@ const AppRoutes: React.FC = () => {
           <Route path="users" element={<RoleRoute path="/admin/users"><Suspense fallback={<AdminFallback />}><AdminUsers /></Suspense></RoleRoute>} />
           <Route path="audit-logs" element={<RoleRoute path="/admin/audit-logs"><Suspense fallback={<AdminFallback />}><AdminAuditLogs /></Suspense></RoleRoute>} />
           <Route path="settings" element={<RoleRoute path="/admin/settings"><Suspense fallback={<AdminFallback />}><AdminSettings /></Suspense></RoleRoute>} />
+          <Route path="*" element={
+            <Suspense fallback={<AdminFallback />}>
+              <NotFoundPage />
+            </Suspense>
+          } />
         </Route>
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Catch-all — public */}
+        <Route path="*" element={
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">Loading…</div>}>
+            <NotFoundPage />
+          </Suspense>
+        } />
       </Routes>
 
       <ThemedToaster />
