@@ -116,6 +116,13 @@ const PublicServices: React.FC = () => {
             </Link>
           </div>
         </div>
+
+        {/* Policies note */}
+        <div className="mt-8 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-xs text-amber-700 dark:text-amber-300">
+          <strong>Pricing &amp; Cancellation:</strong> Services are priced per document — no bundled plans.
+          All fees are non-refundable once document processing begins.
+          For questions, contact the barangay office at +63 2 8123 4567 or payatas.ledger@qc.gov.ph.
+        </div>
       </div>
     </div>
     </>

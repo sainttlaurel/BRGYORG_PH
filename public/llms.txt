@@ -1,0 +1,24 @@
+# Barangay Payatas — Digital Portal
+> Online platform for barangay services, document requests, and community engagement.
+
+## Key details
+- **Type**: Barangay civic management portal (prototype)
+- **Location**: Barangay Payatas, Quezon City, Philippines
+- **Cost**: Services are priced per document — no bundled plans. Barangay Clearance ₱50, Certificate ₱30, Certificate of Indigency free. Full price list on /services.
+- **Refund policy**: All fees are non-refundable once document processing begins. Contact the office for questions.
+- **Support**: Hotline +63 2 8123 4567 (24/7 emergencies), email payatas.ledger@qc.gov.ph (1 business day response), office hours Mon-Fri 8AM-5PM.
+
+## Features
+- Online document requests (clearance, certificates, business permits)
+- Resident registry lookup
+- Community announcements and polls
+- Anonymous suggestions / citizen's voice
+- Volunteer sign-ups
+- Issue reporting (blotter, concerns)
+- Emergency hotline 911
+
+## Quick links
+- Services: https://barangay-payatas-qcdevv.vercel.app/services
+- Document application: https://barangay-payatas-qcdevv.vercel.app/document-application
+- Registry search: https://barangay-payatas-qcdevv.vercel.app/registry
+- Contact: https://barangay-payatas-qcdevv.vercel.app/contact

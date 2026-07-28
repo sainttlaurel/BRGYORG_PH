@@ -26,7 +26,7 @@ const departments = [
 const PublicContact: React.FC = () => {
   const { barangayInfo } = useData();
   const contacts = [
-    { icon: Phone, label: "Main Hotline", value: barangayInfo.hotline, sub: "For general inquiries" },
+    { icon: Phone, label: "Main Hotline", value: barangayInfo.hotline, sub: "Mon–Fri 8AM–5PM; answered within minutes" },
     { icon: Phone, label: "Emergency", value: "911", sub: "24/7 emergency response" },
     { icon: Mail, label: "Email", value: barangayInfo.email, sub: "Response within 1-2 days" },
     { icon: MapPin, label: "Address", value: barangayInfo.address, sub: "Quezon City, Metro Manila" },
