@@ -6,6 +6,7 @@ import {
   Clock, Wallet, ChevronRight, ArrowRight, Leaf, CheckCircle
 } from "lucide-react";
 import { useData } from "./DataContext";
+import SeoHead from "./SeoHead";
 
 const iconMap: Record<string, React.FC<{ size: number; className?: string }>> = {
   FileCheck, Award, Heart, Home, Briefcase, Shield, Star, Users
@@ -26,6 +27,8 @@ const fade = {
 const PublicServices: React.FC = () => {
   const { services } = useData();
   return (
+    <>
+      <SeoHead title="Services" description="View all barangay services including clearance, certificates, and document requests." path="/services" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
@@ -115,6 +118,7 @@ const PublicServices: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -2,28 +2,42 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Search, Users, FileText, Shield, CheckCircle, XCircle, Eye } from "lucide-react";
 import { useData } from "./DataContext";
+import { searchResidents } from "@/lib/supabase";
+import SeoHead from "./SeoHead";
+
+interface ResidentResult {
+  id: string; full_name: string; purok: string; status: string; registered: string;
+}
 
 type Tab = "documents" | "residents";
 
 const PublicRegistry: React.FC = () => {
-  const { docRequests, residents, loading } = useData();
+  const { docRequests, loading } = useData();
   const [tab, setTab] = useState<Tab>("documents");
   const [query, setQuery] = useState("");
   const [searched, setSearched] = useState(false);
+  const [residentResults, setResidentResults] = useState<ResidentResult[]>([]);
+  const [residentLoading, setResidentLoading] = useState(false);
 
   const docResults = docRequests.filter(r =>
     r.id.toLowerCase().includes(query.toLowerCase()) ||
     r.resident.toLowerCase().includes(query.toLowerCase())
   );
 
-  const residentResults = residents.filter(r =>
-    r.id.toLowerCase().includes(query.toLowerCase()) ||
-    r.name.toLowerCase().includes(query.toLowerCase())
-  );
-
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) setSearched(true);
+    if (!query.trim()) return;
+    setSearched(true);
+    if (tab === "residents") {
+      setResidentLoading(true);
+      try {
+        const results = await searchResidents(query);
+        setResidentResults(results);
+      } catch {
+        setResidentResults([]);
+      }
+      setResidentLoading(false);
+    }
   };
 
   const statusBadge = (status: string) => {
@@ -39,6 +53,8 @@ const PublicRegistry: React.FC = () => {
   };
 
   return (
+    <>
+      <SeoHead title="Public Registry" description="Search the public resident registry of Barangay Payatas, Quezon City." path="/registry" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-sky-800 to-sky-950 text-white py-16 px-4 text-center">
@@ -86,7 +102,7 @@ const PublicRegistry: React.FC = () => {
         </form>
 
         {/* Loading state */}
-        {loading && searched && (
+        {((loading && tab === "documents") || (residentLoading && tab === "residents")) && searched && (
           <div className="flex items-center justify-center py-12 text-muted-foreground">
             <svg className="animate-spin w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -147,10 +163,10 @@ const PublicRegistry: React.FC = () => {
                       <div className="flex items-center justify-between flex-wrap gap-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center text-white font-bold shrink-0">
-                            {res.name.charAt(0)}
+                            {res.full_name.charAt(0)}
                           </div>
                           <div>
-                            <div className="font-semibold text-foreground">{res.name}</div>
+                            <div className="font-semibold text-foreground">{res.full_name}</div>
                             <div className="text-muted-foreground text-xs">{res.id} · {res.purok}</div>
                           </div>
                         </div>
@@ -158,7 +174,7 @@ const PublicRegistry: React.FC = () => {
                           <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 font-medium">
                             {res.status}
                           </span>
-                          <div className="text-xs text-muted-foreground mt-1">Registered: {new Date(res.registered).toLocaleDateString("en-PH", { year: "numeric", month: "short" })}</div>
+                          <div className="text-xs text-muted-foreground mt-1">Registered: {res.registered ? new Date(res.registered).toLocaleDateString("en-PH", { year: "numeric", month: "short" }) : "—"}</div>
                         </div>
                       </div>
                     </div>
@@ -188,6 +204,7 @@ const PublicRegistry: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

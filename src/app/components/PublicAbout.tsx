@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Leaf, MapPin, Calendar, Eye, Target, Users, Award } from "lucide-react";
 import { useData } from "./DataContext";
+import SeoHead from "./SeoHead";
 
 const fade = {
   hidden: { opacity: 0, y: 24 },
@@ -11,6 +12,8 @@ const fade = {
 const PublicAbout: React.FC = () => {
   const { barangayInfo } = useData();
   return (
+    <>
+      <SeoHead title="About" description="Learn about Barangay Payatas — history, vision, mission, and community information." path="/about" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4">
@@ -119,6 +122,7 @@ const PublicAbout: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

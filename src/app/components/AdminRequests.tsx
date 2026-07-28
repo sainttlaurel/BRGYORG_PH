@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, CheckCircle, Clock, X, XCircle, Eye, Printer, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 import { useAuth } from "./AuthContext";
 import { updateDocumentStatus } from "@/lib/supabaseWrite";
+import { dbFetch } from "@/lib/supabase";
 import { TableLoading, TableEmpty } from "./ui/table-state";
 
 const statusConfig: Record<string, { color: string; label: string; icon: React.FC<{ size?: number; className?: string }> }> = {
@@ -65,6 +66,73 @@ const AdminRequests: React.FC = () => {
     };
     return next[status] || [];
   };
+
+  const [certSettings, setCertSettings] = useState<Record<string, string>>({});
+  useEffect(() => {
+    dbFetch<Record<string, unknown>>("settings").then(rows => {
+      const sm: Record<string, string> = {};
+      rows.forEach(r => { sm[String(r.key ?? "")] = String(r.value ?? ""); });
+      setCertSettings(sm);
+    }).catch(() => {});
+  }, []);
+
+  function getTemplateKey(type: string): string {
+    const map: Record<string, string> = {
+      "Barangay Clearance": "Barangay Clearance",
+      "Barangay Certificate": "Barangay Certificate",
+      "Certificate of Indigency": "Certificate of Indigency",
+      "Certificate of Residency": "Certificate of Residency",
+      "Business Clearance": "Business Clearance",
+      "Good Moral Certificate": "Good Moral Certificate",
+    };
+    return `template_${(map[type] || type).toLowerCase().replace(/\s+/g, "_")}`;
+  }
+
+  function getTemplateHeader(type: string): string {
+    const key = getTemplateKey(type);
+    return certSettings[`${key}_header`] || "Republic of the Philippines";
+  }
+
+  function getTemplateFooter(type: string): string {
+    const key = getTemplateKey(type);
+    return certSettings[`${key}_footer`] || "Not valid without seal";
+  }
+
+  function getTemplateOfficer(type: string): string {
+    const key = getTemplateKey(type);
+    return certSettings[`${key}_officer`] || "Barangay Secretary";
+  }
+
+  function buildCertificateHtml(req: typeof docRequests[0]): string {
+    const header = getTemplateHeader(req.type);
+    const footer = getTemplateFooter(req.type);
+    const officer = getTemplateOfficer(req.type);
+    const dateStr = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+    return `<!DOCTYPE html>
+<html><head><title>Certificate - ${req.id}</title>
+<style>
+  body{font-family:'Times New Roman',serif;padding:60px;text-align:center;}
+  h1{font-size:22px;margin-bottom:4px;}
+  .seal{font-size:48px;margin:20px 0;}
+  .content{max-width:500px;margin:auto;text-align:justify;font-size:14px;line-height:1.8;}
+  .sig{margin-top:50px;}
+  .sig-line{border-top:1px solid #000;width:220px;margin:auto;padding-top:6px;}
+</style></head><body>
+  <h1>${header}</h1>
+  <p style="font-size:16px;margin:0;">Barangay Payatas, Quezon City</p>
+  <div class="seal">&#9878;</div>
+  <h2>${req.type.toUpperCase()}</h2>
+  <div class="content">
+    <p>This is to certify that <strong>${req.resident}</strong> is a bona fide resident of Barangay Payatas, Quezon City, and has filed a request for <strong>${req.type}</strong> on ${req.date}.</p>
+    <p>This certificate is issued upon the request of the interested party for whatever legal purpose it may serve.</p>
+  </div>
+  <div class="sig">
+    <p>Issued this ${dateStr} at Barangay Payatas, Quezon City.</p>
+    <div class="sig-line"><strong>${officer}</strong></div>
+    <p style="font-size:11px;color:#666;margin-top:8px;">${footer}</p>
+  </div>
+</body></html>`;
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -183,12 +251,13 @@ const AdminRequests: React.FC = () => {
                 <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 mb-5">
                   <h3 className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-2">Certificate Preview</h3>
                   <div className="bg-white dark:bg-card rounded-lg border border-border p-3 text-center">
-                    <div className="text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-1">Republic of the Philippines</div>
+                    <div className="text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-1">{getTemplateHeader(selected.type)}</div>
                     <div className="text-xs text-muted-foreground">Barangay Payatas, Quezon City</div>
                     <div className="border-t border-b border-border py-2 my-2">
                       <div className="text-xs font-bold text-foreground">{selected.type.toUpperCase()}</div>
                     </div>
                     <div className="text-xs text-muted-foreground">This certifies that <strong className="text-foreground">{selected.resident}</strong> is a bona fide resident...</div>
+                    <div className="text-xs text-muted-foreground mt-2 italic">{getTemplateFooter(selected.type)}</div>
                   </div>
                 </div>
 
@@ -208,7 +277,7 @@ const AdminRequests: React.FC = () => {
                     </button>
                   ))}
                   {selected.status === "released" && (
-                    <button onClick={() => { const w = window.open("", "_blank"); if (!w) return; w.document.write(`<!DOCTYPE html><html><head><title>Certificate - ${selected.id}</title><style>body{font-family:'Times New Roman',serif;padding:60px;text-align:center;}h1{font-size:22px;margin-bottom:4px;}.seal{font-size:48px;margin:20px 0;}.content{max-width:500px;margin:auto;text-align:justify;font-size:14px;line-height:1.8;}.sig{margin-top:50px;}.sig-line{border-top:1px solid #000;width:220px;margin:auto;padding-top:6px;}</style></head><body><h1>Republic of the Philippines</h1><p style="font-size:16px;margin:0;">Barangay Payatas, Quezon City</p><div class="seal">&#9878;</div><h2>${selected.type.toUpperCase()}</h2><div class="content"><p>This is to certify that <strong>${selected.resident}</strong> is a bona fide resident of Barangay Payatas, Quezon City, and has filed a request for <strong>${selected.type}</strong> on ${selected.date}.</p><p>This certificate is issued upon the request of the interested party for whatever legal purpose it may serve.</p></div><div class="sig"><p>Issued this ${new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })} at Barangay Payatas, Quezon City.</p><div class="sig-line"><strong>Barangay Secretary</strong></div></div></body></html>`); w.document.close(); setTimeout(() => { w.focus(); w.print(); }, 300); }} className="w-full py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors flex items-center justify-center gap-2">
+                    <button onClick={() => { const w = window.open("", "_blank"); if (!w) return; const html = buildCertificateHtml(selected); w.document.write(html); w.document.close(); setTimeout(() => { w.focus(); w.print(); }, 300); }} className="w-full py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors flex items-center justify-center gap-2">
                       <Printer size={14} /> Print Certificate
                     </button>
                   )}

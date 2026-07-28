@@ -7,6 +7,7 @@ import {
   Clock, MapPin, Star, CheckCircle
 } from "lucide-react";
 import { useData } from "./DataContext";
+import SeoHead from "./SeoHead";
 
 const quickActions = [
   { to: "/document-application", label: "Request a Document", desc: "Clearance, Certificate, Indigency & more", icon: FileText, color: "from-emerald-500 to-emerald-600" },
@@ -31,6 +32,8 @@ const PublicHome: React.FC = () => {
     { label: "Serving Since", value: barangayInfo.established, icon: Star, color: "text-amber-600 bg-amber-100 dark:bg-amber-900 dark:text-amber-400" },
   ];
   return (
+    <>
+      <SeoHead title="Home" description="Welcome to Barangay Payatas — digital portal for document requests, community services, and resident management in Quezon City." path="/" />
     <div className="overflow-x-hidden">
       {/* Hero */}
       <section className="relative min-h-[88vh] flex items-center overflow-hidden">
@@ -264,6 +267,7 @@ const PublicHome: React.FC = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

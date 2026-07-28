@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useData } from "./DataContext";
 import { insertDocument } from "@/lib/supabaseWrite";
 import { documentRequestSchema } from "@/lib/validations";
+import SeoHead from "./SeoHead";
 
 type Step = "form" | "success";
 
@@ -153,6 +154,8 @@ const PublicDocumentApplication: React.FC = () => {
     }`;
 
   return (
+    <>
+      <SeoHead title="Request Document" description="Submit a document request online — Barangay Clearance, Certificate, and more." path="/document-application" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
@@ -330,6 +333,7 @@ const PublicDocumentApplication: React.FC = () => {
         </AnimatePresence>
       </div>
     </div>
+    </>
   );
 };
 

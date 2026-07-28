@@ -2,6 +2,8 @@
 // CENTRALIZED ERROR HANDLING — Payatas Ledger
 // ============================================================
 
+import * as Sentry from '@sentry/react';
+
 export enum ErrorType {
   NETWORK = 'NETWORK',
   AUTH = 'AUTH',
@@ -99,6 +101,12 @@ class ErrorHandler {
       originalError: error.originalError,
       context: error.context,
     });
+    if (typeof Sentry !== "undefined") {
+      Sentry.captureException(error.originalError instanceof Error ? error.originalError : error.message, {
+        tags: { errorType: error.type },
+        extra: { context: error.context },
+      });
+    }
   }
 
   /**

@@ -4,6 +4,7 @@ import { Phone, Mail, MapPin, Clock, Send, CheckCircle, Facebook, Twitter, Youtu
 import { useData } from "./DataContext";
 import { insertContactMessage } from "@/lib/supabaseWrite";
 import { toast } from "sonner";
+import SeoHead from "./SeoHead";
 
 const officeSchedule = [
   { day: "Monday – Friday", hours: "8:00 AM – 5:00 PM", open: true },
@@ -66,6 +67,8 @@ const PublicContact: React.FC = () => {
     }`;
 
   return (
+    <>
+      <SeoHead title="Contact Us" description="Get in touch with Barangay Payatas — contact information and office hours." path="/contact" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
@@ -198,6 +201,7 @@ const PublicContact: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

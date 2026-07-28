@@ -2,11 +2,18 @@ import { defineConfig } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    ...(process.env.SENTRY_AUTH_TOKEN ? [sentryVitePlugin({
+      org: process.env.SENTRY_ORG || 'payatas-ledger',
+      project: process.env.SENTRY_PROJECT || 'payatas-ledger',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      telemetry: false,
+    })] : []),
   ],
   resolve: {
     alias: {

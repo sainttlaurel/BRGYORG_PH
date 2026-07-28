@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Heart, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { insertVolunteer } from "../../lib/supabaseWrite";
+import SeoHead from "./SeoHead";
 
 const programs = [
   { id: "health", label: "Health & Medical Missions", desc: "Assist in medical missions, health screenings, and vaccination drives.", icon: "🏥" },
@@ -79,6 +80,8 @@ const PublicVolunteer: React.FC = () => {
     }`;
 
   return (
+    <>
+      <SeoHead title="Volunteer" description="Sign up to volunteer for community programs and events in Barangay Payatas." path="/volunteer" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-teal-700 to-emerald-900 text-white py-16 px-4 text-center">
@@ -230,6 +233,7 @@ const PublicVolunteer: React.FC = () => {
         </AnimatePresence>
       </div>
     </div>
+    </>
   );
 };
 

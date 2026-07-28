@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { MessageSquare, Send, CheckCircle, Lock, Leaf, Loader2 } from "lucide-react";
 import { insertSuggestion } from "../../lib/supabaseWrite";
+import SeoHead from "./SeoHead";
 
 type Category = "suggestion" | "complaint" | "commendation" | "inquiry";
 
@@ -49,6 +50,8 @@ const PublicCitizensVoice: React.FC = () => {
   };
 
   return (
+    <>
+      <SeoHead title="Citizens' Voice" description="Share your suggestions and feedback with Barangay Payatas leadership." path="/citizens-voice" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
@@ -180,6 +183,7 @@ const PublicCitizensVoice: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

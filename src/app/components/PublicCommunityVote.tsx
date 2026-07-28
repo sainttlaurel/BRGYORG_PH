@@ -4,6 +4,7 @@ import { BarChart2, CheckCircle, Lock, Users, Clock, Trophy, Loader2 } from "luc
 import { useData } from "./DataContext";
 import { submitVote } from "@/lib/supabaseWrite";
 import { toast } from "sonner";
+import SeoHead from "./SeoHead";
 
 const PublicCommunityVote: React.FC = () => {
   const { polls } = useData();
@@ -33,6 +34,8 @@ const PublicCommunityVote: React.FC = () => {
   const closedPolls = polls.filter(p => p.status === "closed");
 
   return (
+    <>
+      <SeoHead title="Community Vote" description="Participate in community polls and vote on barangay matters." path="/community-vote" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-purple-800 to-purple-950 text-white py-16 px-4 text-center">
@@ -199,6 +202,7 @@ const PublicCommunityVote: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "sonner";
 import { ThemeProvider, useTheme } from "./components/ThemeProvider";
 import { AuthProvider, useAuth } from "./components/AuthContext";
@@ -8,11 +9,9 @@ import { DataProvider } from "./components/DataContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { queryClient } from "../lib/queryClient";
 
-// Layouts
 import PublicLayout from "./components/PublicLayout";
 import AdminLayout from "./components/AdminLayout";
 
-// Public pages
 import PublicHome from "./components/PublicHome";
 import PublicAbout from "./components/PublicAbout";
 import PublicOfficials from "./components/PublicOfficials";
@@ -26,23 +25,22 @@ import PublicVolunteer from "./components/PublicVolunteer";
 import PublicReportConcern from "./components/PublicReportConcern";
 import PublicContact from "./components/PublicContact";
 
-// Admin pages
-import AdminLogin from "./components/AdminLogin";
-import AdminDashboard from "./components/AdminDashboard";
-import AdminResidents from "./components/AdminResidents";
-import AdminRequests from "./components/AdminRequests";
-import AdminBlotter from "./components/AdminBlotter";
-import AdminOfficials from "./components/AdminOfficials";
-import AdminAnnouncements from "./components/AdminAnnouncements";
-import AdminPolls from "./components/AdminPolls";
-import AdminReports from "./components/AdminReports";
-import AdminConcerns from "./components/AdminConcerns";
-import AdminSuggestions from "./components/AdminSuggestions";
-import AdminVolunteers from "./components/AdminVolunteers";
-import AdminUsers from "./components/AdminUsers";
-import AdminContactMessages from "./components/AdminContactMessages";
-import AdminAuditLogs from "./components/AdminAuditLogs";
-import AdminSettings from "./components/AdminSettings";
+const AdminLogin = lazy(() => import("./components/AdminLogin"));
+const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
+const AdminResidents = lazy(() => import("./components/AdminResidents"));
+const AdminRequests = lazy(() => import("./components/AdminRequests"));
+const AdminBlotter = lazy(() => import("./components/AdminBlotter"));
+const AdminOfficials = lazy(() => import("./components/AdminOfficials"));
+const AdminAnnouncements = lazy(() => import("./components/AdminAnnouncements"));
+const AdminPolls = lazy(() => import("./components/AdminPolls"));
+const AdminReports = lazy(() => import("./components/AdminReports"));
+const AdminConcerns = lazy(() => import("./components/AdminConcerns"));
+const AdminSuggestions = lazy(() => import("./components/AdminSuggestions"));
+const AdminVolunteers = lazy(() => import("./components/AdminVolunteers"));
+const AdminUsers = lazy(() => import("./components/AdminUsers"));
+const AdminContactMessages = lazy(() => import("./components/AdminContactMessages"));
+const AdminAuditLogs = lazy(() => import("./components/AdminAuditLogs"));
+const AdminSettings = lazy(() => import("./components/AdminSettings"));
 import { getVisiblePaths } from "./components/AdminLayout";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -58,11 +56,15 @@ const RoleRoute: React.FC<{ children: React.ReactNode; path: string }> = ({ chil
   return <>{children}</>;
 };
 
+const AdminFallback: React.FC = () => (
+  <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Loading…</div>
+);
+
 const ThemedToaster: React.FC = () => {
   const { theme } = useTheme();
   return (
     <Toaster
-      theme={theme}
+      theme={(theme === "dark" || theme === "light") ? theme : undefined}
       position="bottom-right"
       toastOptions={{
         style: { borderRadius: "0.875rem", fontSize: "0.875rem" },
@@ -92,7 +94,11 @@ const AppRoutes: React.FC = () => {
         </Route>
 
         {/* Admin login (standalone, no layout) */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/login" element={
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">Loading…</div>}>
+            <AdminLogin />
+          </Suspense>
+        } />
 
         {/* Admin protected routes */}
         <Route
@@ -104,21 +110,21 @@ const AppRoutes: React.FC = () => {
           }
         >
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<RoleRoute path="/admin/dashboard"><AdminDashboard /></RoleRoute>} />
-          <Route path="residents" element={<RoleRoute path="/admin/residents"><AdminResidents /></RoleRoute>} />
-          <Route path="requests" element={<RoleRoute path="/admin/requests"><AdminRequests /></RoleRoute>} />
-          <Route path="blotter" element={<RoleRoute path="/admin/blotter"><AdminBlotter /></RoleRoute>} />
-          <Route path="officials" element={<RoleRoute path="/admin/officials"><AdminOfficials /></RoleRoute>} />
-          <Route path="announcements" element={<RoleRoute path="/admin/announcements"><AdminAnnouncements /></RoleRoute>} />
-          <Route path="polls" element={<RoleRoute path="/admin/polls"><AdminPolls /></RoleRoute>} />
-          <Route path="reports" element={<RoleRoute path="/admin/reports"><AdminReports /></RoleRoute>} />
-          <Route path="concerns" element={<RoleRoute path="/admin/concerns"><AdminConcerns /></RoleRoute>} />
-          <Route path="suggestions" element={<RoleRoute path="/admin/suggestions"><AdminSuggestions /></RoleRoute>} />
-          <Route path="volunteers" element={<RoleRoute path="/admin/volunteers"><AdminVolunteers /></RoleRoute>} />
-          <Route path="contact-messages" element={<RoleRoute path="/admin/contact-messages"><AdminContactMessages /></RoleRoute>} />
-          <Route path="users" element={<RoleRoute path="/admin/users"><AdminUsers /></RoleRoute>} />
-          <Route path="audit-logs" element={<RoleRoute path="/admin/audit-logs"><AdminAuditLogs /></RoleRoute>} />
-          <Route path="settings" element={<RoleRoute path="/admin/settings"><AdminSettings /></RoleRoute>} />
+          <Route path="dashboard" element={<RoleRoute path="/admin/dashboard"><Suspense fallback={<AdminFallback />}><AdminDashboard /></Suspense></RoleRoute>} />
+          <Route path="residents" element={<RoleRoute path="/admin/residents"><Suspense fallback={<AdminFallback />}><AdminResidents /></Suspense></RoleRoute>} />
+          <Route path="requests" element={<RoleRoute path="/admin/requests"><Suspense fallback={<AdminFallback />}><AdminRequests /></Suspense></RoleRoute>} />
+          <Route path="blotter" element={<RoleRoute path="/admin/blotter"><Suspense fallback={<AdminFallback />}><AdminBlotter /></Suspense></RoleRoute>} />
+          <Route path="officials" element={<RoleRoute path="/admin/officials"><Suspense fallback={<AdminFallback />}><AdminOfficials /></Suspense></RoleRoute>} />
+          <Route path="announcements" element={<RoleRoute path="/admin/announcements"><Suspense fallback={<AdminFallback />}><AdminAnnouncements /></Suspense></RoleRoute>} />
+          <Route path="polls" element={<RoleRoute path="/admin/polls"><Suspense fallback={<AdminFallback />}><AdminPolls /></Suspense></RoleRoute>} />
+          <Route path="reports" element={<RoleRoute path="/admin/reports"><Suspense fallback={<AdminFallback />}><AdminReports /></Suspense></RoleRoute>} />
+          <Route path="concerns" element={<RoleRoute path="/admin/concerns"><Suspense fallback={<AdminFallback />}><AdminConcerns /></Suspense></RoleRoute>} />
+          <Route path="suggestions" element={<RoleRoute path="/admin/suggestions"><Suspense fallback={<AdminFallback />}><AdminSuggestions /></Suspense></RoleRoute>} />
+          <Route path="volunteers" element={<RoleRoute path="/admin/volunteers"><Suspense fallback={<AdminFallback />}><AdminVolunteers /></Suspense></RoleRoute>} />
+          <Route path="contact-messages" element={<RoleRoute path="/admin/contact-messages"><Suspense fallback={<AdminFallback />}><AdminContactMessages /></Suspense></RoleRoute>} />
+          <Route path="users" element={<RoleRoute path="/admin/users"><Suspense fallback={<AdminFallback />}><AdminUsers /></Suspense></RoleRoute>} />
+          <Route path="audit-logs" element={<RoleRoute path="/admin/audit-logs"><Suspense fallback={<AdminFallback />}><AdminAuditLogs /></Suspense></RoleRoute>} />
+          <Route path="settings" element={<RoleRoute path="/admin/settings"><Suspense fallback={<AdminFallback />}><AdminSettings /></Suspense></RoleRoute>} />
         </Route>
 
         {/* Catch-all */}
@@ -132,16 +138,18 @@ const AppRoutes: React.FC = () => {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <ErrorBoundary>
-          <AuthProvider>
-            <DataProvider>
-              <AppRoutes />
-            </DataProvider>
-          </AuthProvider>
-        </ErrorBoundary>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ErrorBoundary>
+            <AuthProvider>
+              <DataProvider>
+                <AppRoutes />
+              </DataProvider>
+            </AuthProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }

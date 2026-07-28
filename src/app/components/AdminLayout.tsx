@@ -43,7 +43,7 @@ const roleColors: Record<string, string> = {
 
 const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { barangayInfo } = useData();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
@@ -181,7 +181,7 @@ const AdminLayout: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={toggleTheme}
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
               className="p-2 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
             >
               {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}

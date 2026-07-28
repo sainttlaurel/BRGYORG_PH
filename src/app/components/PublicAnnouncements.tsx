@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Megaphone, Clock, Search, Tag } from "lucide-react";
 import { useData } from "./DataContext";
+import SeoHead from "./SeoHead";
 
 const categories = ["All", "Health", "Governance", "Social Services", "Environment", "Livelihood"];
 
@@ -24,6 +25,8 @@ const PublicAnnouncements: React.FC = () => {
   };
 
   return (
+    <>
+      <SeoHead title="Announcements" description="Stay informed with the latest announcements and updates from Barangay Payatas." path="/announcements" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
@@ -108,6 +111,7 @@ const PublicAnnouncements: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

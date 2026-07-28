@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, CheckCircle, Search, Clock, Copy, Loader2 } from "lucide-react";
 import { insertReport, getReportByRef, genId } from "../../lib/supabaseWrite";
+import SeoHead from "./SeoHead";
 
 type Step = "form" | "success" | "track";
 
@@ -98,6 +99,8 @@ const PublicReportConcern: React.FC = () => {
     }`;
 
   return (
+    <>
+      <SeoHead title="Report a Concern" description="Report a concern, issue, or incident to Barangay Payatas authorities." path="/report-concern" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-orange-700 to-red-900 text-white py-16 px-4 text-center">
@@ -274,6 +277,7 @@ const PublicReportConcern: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

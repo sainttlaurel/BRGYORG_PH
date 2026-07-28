@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Mail, Trash2, Search, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { supabase, getSessionToken } from "@/lib/supabase";
 
 interface ContactMessage {
   id: string; name: string; email: string; subject: string;
@@ -78,8 +78,9 @@ const AdminContactMessages: React.FC = () => {
                   </div>
                   <button
                     onClick={async () => {
-                      if (!supabase) return;
-                      const { error } = await supabase.from('contact_messages').delete().eq('id', selected.id);
+                      const token = getSessionToken();
+                      if (!token || !supabase) return;
+                      const { error } = await supabase.rpc('admin_delete_contact_message', { p_token: token, p_id: selected.id, p_logged_in_user: "Admin" });
                       if (error) toast.error("Failed to delete");
                       else { toast.success("Message deleted"); setMessages(m => m.filter(x => x.id !== selected.id)); setSelected(null); }
                     }}

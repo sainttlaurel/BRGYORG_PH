@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Phone, Users } from "lucide-react";
 import { useData } from "./DataContext";
+import SeoHead from "./SeoHead";
 
 const fade = {
   hidden: { opacity: 0, y: 24 },
@@ -24,6 +25,8 @@ const PublicOfficials: React.FC = () => {
   const others = officials.filter(o => !["Barangay Captain", "Barangay Kagawad"].includes(o.position));
 
   return (
+    <>
+      <SeoHead title="Officials" description="Meet the elected officials and staff of Barangay Payatas, Quezon City." path="/officials" />
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
@@ -121,6 +124,7 @@ const PublicOfficials: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

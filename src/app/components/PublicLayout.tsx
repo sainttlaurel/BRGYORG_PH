@@ -29,7 +29,7 @@ const moreLinks = [
 ];
 
 const PublicLayout: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { barangayInfo } = useData();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   useEffect(() => {
@@ -168,7 +168,7 @@ const PublicLayout: React.FC = () => {
           {/* Right actions */}
           <div className="flex items-center gap-2">
             <button
-              onClick={toggleTheme}
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
               className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-muted transition-all"
               title="Toggle theme"
             >

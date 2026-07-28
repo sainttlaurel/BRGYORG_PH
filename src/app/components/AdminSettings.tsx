@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Settings, Save, Bell, Shield, FileText, DollarSign, Leaf, Upload, Check, Eye, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
-import { supabase, dbFetch, dbUpdate } from "@/lib/supabase";
+import { supabase, dbFetch, getSessionToken } from "@/lib/supabase";
 import { uploadLogo } from "@/lib/supabaseWrite";
 import { Dialog, DialogContent, DialogTitle } from "@/app/components/ui/dialog";
 
@@ -18,7 +18,9 @@ const inputCls = "w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-
 
 async function saveSettings(key: string, value: string) {
   if (!supabase) return;
-  const { error } = await supabase.from('settings').upsert({ key, value }, { onConflict: 'key' });
+  const token = getSessionToken();
+  if (!token) throw new Error('No active session');
+  const { error } = await supabase.rpc('admin_upsert_setting', { p_token: token, p_key: key, p_value: value });
   if (error) throw new Error(error.message);
 }
 
@@ -71,7 +73,10 @@ const AdminSettings: React.FC = () => {
 
   const saveProfile = async () => {
     try {
-      await dbUpdate("barangay_info", 1, profileForm);
+      const token = getSessionToken();
+      if (!token || !supabase) throw new Error('No active session');
+      const { error } = await supabase.rpc('admin_update_barangay_info', { p_token: token, p_data: profileForm });
+      if (error) throw new Error(error.message);
       toast.success("Profile saved");
       setModified({});
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to save profile"); }
@@ -81,7 +86,10 @@ const AdminSettings: React.FC = () => {
     const item = fees.find(f => f.id === id);
     if (!item) return;
     try {
-      await dbUpdate("service_fees", id, { fee: item.fee });
+      const token = getSessionToken();
+      if (!token || !supabase) throw new Error('No active session');
+      const { error } = await supabase.rpc('admin_update_service_fee', { p_token: token, p_id: id, p_fee: item.fee });
+      if (error) throw new Error(error.message);
       toast.success(`${item.service} fee updated`);
       setModified(m => ({ ...m, [`fee-${id}`]: false }));
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update fee"); }
@@ -430,8 +438,10 @@ const AdminSettings: React.FC = () => {
                         onClick={async () => {
                           if (!confirm("Clear ALL document requests? This cannot be undone.")) return;
                           try {
-                            if (!supabase) return;
-                            await supabase.from('documents').delete().neq('id', '');
+                            const token = getSessionToken();
+                            if (!token || !supabase) return;
+                            const { error } = await supabase.rpc('admin_clear_documents', { p_token: token });
+                            if (error) throw new Error(error.message);
                             toast.success("Document requests cleared");
                           } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to clear data"); }
                         }}
@@ -443,8 +453,10 @@ const AdminSettings: React.FC = () => {
                         onClick={async () => {
                           if (!confirm("Delete all resident records? This cannot be undone.")) return;
                           try {
-                            if (!supabase) return;
-                            await supabase.from('residents').delete().neq('id', '');
+                            const token = getSessionToken();
+                            if (!token || !supabase) return;
+                            const { error } = await supabase.rpc('admin_clear_residents', { p_token: token });
+                            if (error) throw new Error(error.message);
                             toast.success("Residents cleared");
                           } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to clear data"); }
                         }}

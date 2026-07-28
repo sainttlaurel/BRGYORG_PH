@@ -278,14 +278,14 @@ export function useSupabaseData(): AppData {
         resRows, docRows, cmpRows, annRows, pollRows, userRows,
         offRows, audRows, infoRows, svcRows, rptRows, sugRows, volRows,
       ] = await Promise.allSettled([
-        dbFetch<Record<string, unknown>>("residents"),
-        dbFetch<Record<string, unknown>>("documents"),
-        dbFetch<Record<string, unknown>>("complaints"),
+        dbFetch<Record<string, unknown>>("residents", {}, 500),
+        dbFetch<Record<string, unknown>>("documents", {}, 500),
+        dbFetch<Record<string, unknown>>("complaints", {}, 500),
         dbFetch<Record<string, unknown>>("announcements"),
         dbFetch<Record<string, unknown>>("polls"),
         getUsers(),
         dbFetch<Record<string, unknown>>("officials"),
-        dbFetch<Record<string, unknown>>("audit_logs"),
+        dbFetch<Record<string, unknown>>("audit_logs", {}, 200),
         dbFetch<Record<string, unknown>>("barangay_info"),
         dbFetch<Record<string, unknown>>("services"),
         dbFetch<Record<string, unknown>>("reports"),
@@ -428,7 +428,7 @@ export function useSupabaseData(): AppData {
   useEffect(() => {
     if (!supabase) return;
 
-    const tables = ["residents", "documents", "complaints", "announcements", "polls", "officials", "audit_logs", "barangay_info", "services", "reports", "suggestions", "volunteer_signups"] as const;
+    const tables = ["announcements", "polls", "officials", "barangay_info", "services", "reports", "suggestions", "volunteer_signups"] as const;
     const channels = tables.map(table =>
       supabase!
         .channel(`rt:${table}`)
