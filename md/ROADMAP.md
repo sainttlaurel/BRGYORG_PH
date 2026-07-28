@@ -1,7 +1,7 @@
 # ROADMAP — Payatas Ledger
 
 Last Updated: July 28, 2026
-Status: **Feature-complete web app.** All public forms persist to Supabase. All 14 admin pages exist with live data. RBAC, certificate editor, CSV export, CI pipeline, audit logs, testing, linting done.
+Status: **Feature-complete web app.** All public forms persist to Supabase. All 14 admin pages exist with live data. RBAC, certificate editor, CSV export, CI pipeline done.
 
 Priority levels: Critical / High / Medium / Backlog
 
@@ -21,13 +21,13 @@ Priority levels: Critical / High / Medium / Backlog
 
 ### Known issues (not yet fixed)
 
-- ~~**Audit logs not wired** — admin write functions don't call `insertAuditLog()`, so the audit table stays empty.~~ **Done — July 2026**
-- ~~**No contact messages admin UI** — `contact_messages` table exists but admin has no way to view/reply.~~ **Done — July 2026**
-- ~~**No certificate preview** — template editor saves to DB but there's no render/preview.~~ **Done — July 2026**
-- ~~**Report tracking is exact-match only** — no fuzzy search or typo tolerance on reference numbers.~~ **Done — July 2026**
-- ~~**AdminReports age chart** — `age` derived from `dob` in mapper; invalid DOBs produce wrong chart data.~~ **Done — July 2026**
-- ~~**Zero error detail** — most `catch` blocks just `toast.error("Failed to ...")` with no specific error message.~~ **Done — July 2026**
-- ~~**Inconsistent loading states** — some admin tables show spinners, others flash empty before data arrives.~~ **Done — July 2026**
+- **Audit logs not wired** — admin write functions don't call `insertAuditLog()`, so the audit table stays empty.
+- **No contact messages admin UI** — `contact_messages` table exists but admin has no way to view/reply.
+- **No certificate preview** — template editor saves to DB but there's no render/preview.
+- **Report tracking is exact-match only** — no fuzzy search or typo tolerance on reference numbers.
+- **AdminReports age chart** — `age` derived from `dob` in mapper; invalid DOBs produce wrong chart data.
+- **Zero error detail** — most `catch` blocks just `toast.error("Failed to ...")` with no specific error message.
+- **Inconsistent loading states** — some admin tables show spinners, others flash empty before data arrives.
 
 ---
 
@@ -45,11 +45,11 @@ Priority levels: Critical / High / Medium / Backlog
 
 ### Still to improve
 
-- ~~**Audit log wiring** (Medium) — every admin mutation should call `insertAuditLog()` so the audit table has real data.~~ **Done — July 2026**
-- ~~**Certificate preview** (Medium) — render a mock certificate with the template values so admin can see before saving.~~ **Done — July 2026**
-- ~~**Contact messages admin UI** (Low) — simple inbox view for submitted contact messages.~~ **Done — July 2026**
-- ~~**Error detail pass** (Low) — surface Supabase error messages in catch blocks instead of generic text.~~ **Done — July 2026**
-- ~~**Loading state consistency** (Low) — ensure all data tables show a consistent skeleton/spinner pattern.~~ **Done — July 2026**
+- **Audit log wiring** (Medium) — every admin mutation should call `insertAuditLog()` so the audit table has real data.
+- **Certificate preview** (Medium) — render a mock certificate with the template values so admin can see before saving.
+- **Contact messages admin UI** (Low) — simple inbox view for submitted contact messages.
+- **Error detail pass** (Low) — surface Supabase error messages in catch blocks instead of generic text.
+- **Loading state consistency** (Low) — ensure all data tables show a consistent skeleton/spinner pattern.
 
 ---
 
@@ -99,8 +99,8 @@ All items complete. 14 admin pages built:
 
 ### Engineering
 
-- ~~CI pipeline~~ **Done — July 2026** (`.github/workflows/deploy.yml`: build + typecheck + lint + test on push to main)
-- ~~**Testing — Vitest + React Testing Library** (Medium) — set up with example test~~ **Done — July 2026**
+- ~~CI pipeline~~ **Done — July 2026** (`.github/workflows/deploy.yml`: build on push to main)
+- **Testing — Jest + React Testing Library** (Medium) — no test files exist yet
 - **Error monitoring — Sentry or equivalent** (Backlog)
 
 ### Desktop GUI — Offline Backup Client (Electron)
@@ -117,9 +117,8 @@ All items complete. 14 admin pages built:
 4. ~~React + TypeScript + Vite migration~~ **Done**
 5. ~~Build all public forms and admin pages~~ **Done**
 6. ~~RBAC, template editor, CI, CSV export, logo upload~~ **Done**
-7. ~~Contact messages admin inbox~~ **Done**
-8. ~~Wire audit logs to all admin write functions~~ **Done — July 2026**
-9. ~~Certificate preview render~~ **Done — July 2026**
-10. ~~Testing suite (Vitest/RTL)~~ **Done — July 2026**
-11. ~~Lint + Prettier setup~~ **Done — July 2026**
-12. Desktop GUI (Electron) — **Backlog**
+7. Wire audit logs to all admin write functions — **Next (Medium)**
+8. Certificate preview render — **Next (Medium)**
+9. Contact messages admin inbox — **Next (Low)**
+10. Testing suite (Jest/RTL) — **Next (Medium)**
+11. Desktop GUI (Electron) — **Backlog**

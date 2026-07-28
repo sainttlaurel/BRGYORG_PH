@@ -4,6 +4,38 @@ All notable changes to this project are documented here.
 
 ---
 
+## [4.1.0] — July 28, 2026
+
+### Added
+
+- **Audit logs wired** — all 20 admin write functions in `supabaseWrite.ts` now call `insertAuditLog()` with user, action, and module info on every mutation
+- **Certificate template preview** — "Preview" button in template editor opens a styled certificate preview dialog showing how the certificate will look
+- **Testing infrastructure** — Vitest + React Testing Library configured with example test; run via `npm run test`
+- **Linting & formatting** — ESLint flat config (TypeScript + React + Hooks) + Prettier; run via `npm run lint` / `npm run format`
+- **CI pipeline expanded** — `.github/workflows/deploy.yml` now runs `typecheck`, `lint`, and `test` after build (lint/test continue on error)
+
+### Fixed
+
+- **Generic error messages** — all `catch` blocks across 12 admin components now surface actual error messages instead of hardcoded text
+- **Missing loading states** — added `TableLoading` early returns to AdminConcerns, AdminVolunteers, AdminSuggestions, AdminOfficials, AdminUsers
+- **Age chart invalid DOBs** — AdminReports and AdminDashboard now filter out residents with invalid/missing DOBs before computing age distribution
+- **Report tracking** — reference search now tries multiple formats (trimmed, uppercased, with/without prefix)
+- **23 lint warnings eliminated** — removed unused imports, fixed `any` types, fixed unused variables, fixed hook dependency
+
+### Changed
+
+- All admin write functions now accept `loggedInUser: string = "System"` parameter for audit trail
+- `defaultBarangayInfo` and `defaultServices` moved to module scope to fix React hook dependency warning
+- `md/ROADMAP.md` updated — all completed items marked done
+- `md/README.md` — added migration notice (Vanilla JS → React + Vite)
+
+### Removed
+
+- Empty `src/app/data/` directory
+- `md/CHANGELOG2` duplicate file
+
+---
+
 ## [4.0.0] — July 2026
 
 ### Added
