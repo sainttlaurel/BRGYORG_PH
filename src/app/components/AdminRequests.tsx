@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { FileText, Search, CheckCircle, Clock, X, XCircle, Eye, Printer, Download } from "lucide-react";
+import { Search, CheckCircle, Clock, X, XCircle, Eye, Printer, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { updateDocumentStatus } from "@/lib/supabaseWrite";
 import { TableLoading, TableEmpty } from "./ui/table-state";
 
-const statusConfig: Record<string, { color: string; label: string; icon: React.FC<any> }> = {
+const statusConfig: Record<string, { color: string; label: string; icon: React.FC<{ size?: number; className?: string }> }> = {
   pending: { color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300", label: "Pending", icon: Clock },
   approved: { color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-400", label: "Approved", icon: CheckCircle },
   processing: { color: "bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-400", label: "Processing", icon: Clock },
@@ -27,6 +28,7 @@ function csvExport(data: Record<string, string>[], filename: string) {
 
 const AdminRequests: React.FC = () => {
   const { docRequests, loading } = useData();
+  const { user } = useAuth();
   const [statusOverrides, setStatusOverrides] = useState<Record<string, string>>({});
   const requests = React.useMemo(() =>
     docRequests.map(r => {
@@ -48,9 +50,9 @@ const AdminRequests: React.FC = () => {
     setStatusOverrides(o => ({ ...o, [id]: newStatus }));
     if (selected?.id === id) setSelected(s => s ? { ...s, status: newStatus } : null);
     try {
-      await updateDocumentStatus(id, newStatus);
+      await updateDocumentStatus(id, newStatus, user?.name || "System");
       toast.success(`Request ${id} updated to ${newStatus}`);
-    } catch { toast.error("Failed to update status"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update status"); }
   };
 
   const getWorkflowActions = (status: string) => {
@@ -110,7 +112,7 @@ const AdminRequests: React.FC = () => {
                 <tr><td colSpan={6}><TableLoading /></td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={6}><TableEmpty message="No document requests found" /></td></tr>
-              ) : (filtered.map((req, i) => {
+              ) : (filtered.map((req) => {
                 const st = statusConfig[req.status];
                 return (
                   <tr key={req.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Megaphone, Plus, Edit, Trash2, Search, Clock, Eye, EyeOff } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Clock, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { insertAnnouncement, deleteAnnouncement, updateAnnouncement } from "@/lib/supabaseWrite";
 import { TableLoading, TableEmpty } from "./ui/table-state";
 import { announcementSchema } from "@/lib/validations";
@@ -17,6 +18,7 @@ const catColors: Record<string, string> = {
 
 const AdminAnnouncements: React.FC = () => {
   const { announcements: liveAnnouncements, loading } = useData();
+  const { user } = useAuth();
   const [visibilityOverrides, setVisibilityOverrides] = useState<Record<string, boolean>>({});
   const announcements = React.useMemo(() =>
     liveAnnouncements.map(a => ({
@@ -48,11 +50,11 @@ const AdminAnnouncements: React.FC = () => {
         content: form.content,
         date: (new Date().toISOString().split("T")[0] ?? ""),
         priority: form.priority,
-      });
+      }, user?.name || "System");
       setForm({ title: "", category: "Governance", content: "", priority: "normal" });
       setShowForm(false);
       toast.success("Announcement published!");
-    } catch { toast.error("Failed to publish"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to publish"); }
   };
 
   const toggleVisibility = async (id: string) => {
@@ -61,11 +63,11 @@ const AdminAnnouncements: React.FC = () => {
     const nextVisible = !ann.visible;
     setVisibilityOverrides(o => ({ ...o, [id]: nextVisible }));
     try {
-      await updateAnnouncement(id, { visible: nextVisible });
+      await updateAnnouncement(id, { visible: nextVisible }, user?.name || "System");
       toast.success(nextVisible ? "Announcement visible" : "Announcement hidden");
-    } catch {
+    } catch (err) {
       setVisibilityOverrides(o => ({ ...o, [id]: ann.visible }));
-      toast.error("Failed to update visibility");
+      toast.error(err instanceof Error ? err.message : "Failed to update visibility");
     }
   };
 
@@ -87,17 +89,17 @@ const AdminAnnouncements: React.FC = () => {
         category: editForm.category,
         content: editForm.content,
         priority: editForm.priority,
-      });
+      }, user?.name || "System");
       setShowEditId(null);
       toast.success("Announcement updated");
-    } catch { toast.error("Failed to update"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); }
   };
 
   const deleteAnn = async (id: string) => {
     try {
-      await deleteAnnouncement(id);
+      await deleteAnnouncement(id, user?.name || "System");
       toast.success("Announcement deleted");
-    } catch { toast.error("Failed to delete"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to delete"); }
   };
 
   return (

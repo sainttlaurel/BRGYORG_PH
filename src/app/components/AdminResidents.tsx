@@ -1,8 +1,9 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Users, Search, Plus, Download, Upload, Filter, X, Eye, Edit, Trash2 } from "lucide-react";
+import { Search, Plus, Download, Upload, X, Eye, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { TableLoading, TableEmpty } from "./ui/table-state";
 import { deleteResident, insertResident, updateResident } from "@/lib/supabaseWrite";
 
@@ -29,6 +30,7 @@ function csvExport(data: Record<string, string>[], filename: string) {
 
 const AdminResidents: React.FC = () => {
   const { residents, loading } = useData();
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [purokFilter, setPurokFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -45,11 +47,11 @@ const AdminResidents: React.FC = () => {
   const handleAddResident = async () => {
     if (!addForm.fname.trim() || !addForm.lname.trim()) { toast.error("First and last name required"); return; }
     try {
-      await insertResident(addForm);
+      await insertResident(addForm, user?.name || "System");
       setAddForm({ fname: "", lname: "", purok: "Purok 1", contact: "", address: "", gender: "Male", dob: "" });
       setShowAddForm(false);
       toast.success("Resident added");
-    } catch { toast.error("Failed to add resident"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to add resident"); }
   };
 
   const openEdit = (res: typeof residents[0]) => {
@@ -69,10 +71,10 @@ const AdminResidents: React.FC = () => {
         address: editForm.address,
         gender: editForm.gender,
         dob: editForm.dob || null,
-      });
+      }, user?.name || "System");
       setShowEditId(null);
       toast.success("Resident updated");
-    } catch { toast.error("Failed to update"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); }
   };
 
   const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +106,7 @@ const AdminResidents: React.FC = () => {
         count++;
       }
       toast.success(`${count} residents imported`);
-    } catch { toast.error("CSV import failed"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "CSV import failed"); }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -288,7 +290,7 @@ const AdminResidents: React.FC = () => {
                       <button onClick={() => openEdit(res)} aria-label={`Edit ${res.name}`} className="p-1.5 rounded-lg text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors">
                         <Edit size={14} />
                       </button>
-                      <button onClick={async () => { if (confirm(`Delete ${res.name}?`)) { try { await deleteResident(res.id); toast.success("Resident deleted"); } catch { toast.error("Failed to delete"); } } }} aria-label={`Delete ${res.name}`} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                      <button onClick={async () => { if (confirm(`Delete ${res.name}?`)) { try { await deleteResident(res.id, user?.name || "System"); toast.success("Resident deleted"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to delete"); } } }} aria-label={`Delete ${res.name}`} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>

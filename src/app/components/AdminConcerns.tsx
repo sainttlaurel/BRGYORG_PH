@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, Search, X, ChevronDown, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { updateReportStatus } from "@/lib/supabaseWrite";
+import { TableLoading } from "./ui/table-state";
 import type { ReportItem } from "@/lib/useSupabaseData";
 
 const urgencyColor: Record<string, string> = {
@@ -12,8 +14,9 @@ const urgencyColor: Record<string, string> = {
   high: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
 };
 
+const pendingCfg = { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" } as const;
 const statusConfig: Record<string, { label: string; color: string }> = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" },
+  pending: pendingCfg,
   reviewing: { label: "Reviewing", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" },
   resolved: { label: "Resolved", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" },
   dismissed: { label: "Dismissed", color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
@@ -22,7 +25,8 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 const statuses = ["pending", "reviewing", "resolved", "dismissed"];
 
 const AdminConcerns: React.FC = () => {
-  const { reports, refetch } = useData();
+  const { reports, refetch, loading } = useData();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
@@ -46,10 +50,10 @@ const AdminConcerns: React.FC = () => {
     setStatusOverrides(o => ({ ...o, [id]: newStatus }));
     if (selected?.id === id) setSelected(s => s ? { ...s, status: newStatus } : null);
     try {
-      await updateReportStatus(id, newStatus);
+      await updateReportStatus(id, newStatus, user?.name || "System");
       toast.success(`Report ${id} marked as ${newStatus}`);
       refetch();
-    } catch { toast.error("Failed to update status"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update status"); }
   };
 
   const getWorkflowActions = (status: string) => {
@@ -69,6 +73,8 @@ const AdminConcerns: React.FC = () => {
     };
     return next[status] || [];
   };
+
+  if (loading) return <div className="p-6 max-w-7xl mx-auto"><TableLoading /></div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -129,7 +135,7 @@ const AdminConcerns: React.FC = () => {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${urgencyColor[r.urgency] ?? urgencyColor.low}`}>{r.urgency}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sc?.color ?? statusConfig.pending.color}`}>{sc?.label ?? st}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sc?.color ?? pendingCfg.color}`}>{sc?.label ?? st}</span>
                     <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>

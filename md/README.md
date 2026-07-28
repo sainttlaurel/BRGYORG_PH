@@ -1,3 +1,5 @@
+> **NOTE:** This project has been migrated from Vanilla JS to React + TypeScript + Vite. See the `src/` directory for the current codebase.
+
 # Payatas Ledger — Civic Management System
 
 A barangay management system for Barangay Payatas, Quezon City, Philippines. Provides comprehensive civic administration tools including resident management, document request processing, complaint handling, project tracking, and community announcements.

@@ -101,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                u.password === password
         );
         if (found) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { password: _pw, ...authUser } = found;
           setUser(authUser);
           sessionStorage.setItem(SESSION_KEY, JSON.stringify(authUser));

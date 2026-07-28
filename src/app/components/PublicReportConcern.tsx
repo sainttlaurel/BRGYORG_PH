@@ -63,8 +63,8 @@ const PublicReportConcern: React.FC = () => {
       });
       setRefNumber(ref);
       setStep("success");
-    } catch (err: any) {
-      setError(err.message || "Failed to submit report. Please try again.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to submit report. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -72,10 +72,19 @@ const PublicReportConcern: React.FC = () => {
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
+    const q = trackQuery.trim().toUpperCase();
+    if (!q) return;
     setTrackLoading(true);
     try {
-      const result = await getReportByRef(trackQuery.toUpperCase());
-      setTrackResult(result as Record<string, string> || "not_found");
+      const variations = [q];
+      if (!q.startsWith('RPT-')) variations.push(`RPT-${q}`);
+      if (q.startsWith('RPT-')) variations.push(q.replace('RPT-', ''));
+      let result: Record<string, string> | null = null;
+      for (const v of variations) {
+        result = await getReportByRef(v) as Record<string, string> | null;
+        if (result) break;
+      }
+      setTrackResult(result || "not_found");
     } catch {
       setTrackResult("not_found");
     } finally {
@@ -108,7 +117,7 @@ const PublicReportConcern: React.FC = () => {
           ].map(t => (
             <button
               key={t.key}
-              onClick={() => { setView(t.key as any); setTrackResult(null); }}
+              onClick={() => { setView(t.key as "form" | "track"); setTrackResult(null); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 view === t.key ? "bg-white dark:bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
@@ -210,7 +219,7 @@ const PublicReportConcern: React.FC = () => {
                     <Clock size={12} className="text-orange-500 shrink-0" />
                     Expect a response within 3–5 business days. For urgent matters, call {barangayHotline}.
                   </div>
-                  <button onClick={() => { setStep("form"); setFiles([]); setForm({ category: "", description: "", location: "", urgency: "", reporterName: "", reporterContact: "" }); }} className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium transition-all">
+                  <button onClick={() => { setStep("form"); setForm({ category: "", description: "", location: "", urgency: "", reporterName: "", reporterContact: "" }); }} className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium transition-all">
                     Submit Another Report
                   </button>
                 </div>
@@ -255,7 +264,7 @@ const PublicReportConcern: React.FC = () => {
                       <div>Category: <span className="text-foreground font-medium">{trackResult.category}</span></div>
                       <div>Location: <span className="text-foreground font-medium">{trackResult.location}</span></div>
                       <div>Urgency: <span className="text-foreground font-medium capitalize">{trackResult.urgency}</span></div>
-                      <div>Filed: <span className="text-foreground font-medium">{new Date(trackResult.created_at).toLocaleDateString()}</span></div>
+                      <div>Filed: <span className="text-foreground font-medium">{trackResult.created_at ? new Date(trackResult.created_at).toLocaleDateString() : "—"}</span></div>
                     </div>
                   </div>
                 )}

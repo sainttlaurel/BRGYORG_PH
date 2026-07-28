@@ -64,8 +64,8 @@ const PublicVolunteer: React.FC = () => {
         body_conditions: JSON.stringify({ age: form.age, gender: form.gender, address: form.address, occupation: form.occupation, availability: form.availability, programs: selectedNames, skills: form.skills, motivation: form.motivation }),
       });
       setSubmitted(true);
-    } catch (err: any) {
-      const msg = err.message || "Failed to register. Please try again.";
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to register. Please try again.";
       setError(msg);
       toast.error(msg);
     } finally {

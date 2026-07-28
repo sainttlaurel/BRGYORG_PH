@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Settings, Save, Bell, Shield, FileText, DollarSign, Leaf, Upload, Check, X as XIcon } from "lucide-react";
+import { Settings, Save, Bell, Shield, FileText, DollarSign, Leaf, Upload, Check, Eye, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase, dbFetch, dbUpdate } from "@/lib/supabase";
 import { uploadLogo } from "@/lib/supabaseWrite";
+import { Dialog, DialogContent, DialogTitle } from "@/app/components/ui/dialog";
 
 const tabs = [
   { id: "profile", label: "Barangay Profile", icon: Leaf },
@@ -26,6 +27,7 @@ const AdminSettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const [templateEditor, setTemplateEditor] = useState<{ name: string; header: string; footer: string; officer: string } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [profileForm, setProfileForm] = useState({
     name: "", municipality: "", captain: "", hotline: "", email: "",
     address: "", office_hours: "", vision: "", mission: "", seal_url: "",
@@ -60,7 +62,7 @@ const AdminSettings: React.FC = () => {
         const sm: Record<string, string> = {};
         settingsRows.forEach(r => { sm[String(r.key ?? "")] = String(r.value ?? ""); });
         setSettingsMap(sm);
-      } catch { toast.error("Failed to load settings"); }
+      } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to load settings"); }
       setLoading(false);
     })();
   }, []);
@@ -72,7 +74,7 @@ const AdminSettings: React.FC = () => {
       await dbUpdate("barangay_info", 1, profileForm);
       toast.success("Profile saved");
       setModified({});
-    } catch { toast.error("Failed to save profile"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to save profile"); }
   };
 
   const saveFee = async (id: number) => {
@@ -82,7 +84,7 @@ const AdminSettings: React.FC = () => {
       await dbUpdate("service_fees", id, { fee: item.fee });
       toast.success(`${item.service} fee updated`);
       setModified(m => ({ ...m, [`fee-${id}`]: false }));
-    } catch { toast.error("Failed to update fee"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update fee"); }
   };
 
   return (
@@ -171,7 +173,7 @@ const AdminSettings: React.FC = () => {
                             setProfileForm(f => ({ ...f, seal_url: url }));
                             mark("profile");
                             toast.success("Logo uploaded");
-                          } catch { toast.error("Failed to upload logo"); }
+                          } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to upload logo"); }
                         }} />
                       </label>
                       {profileForm.seal_url && (
@@ -241,6 +243,12 @@ const AdminSettings: React.FC = () => {
                     </div>
                     <div className="flex gap-2">
                       <button
+                        onClick={() => setPreviewOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm text-foreground hover:bg-muted transition-all"
+                      >
+                        <Eye size={13} /> Preview
+                      </button>
+                      <button
                         onClick={async () => {
                           try {
                             const key = `template_${templateEditor.name.toLowerCase().replace(/\s+/g, "_")}`;
@@ -251,7 +259,7 @@ const AdminSettings: React.FC = () => {
                             ]);
                             toast.success(`${templateEditor.name} template saved`);
                             setTemplateEditor(null);
-                          } catch { toast.error("Failed to save template"); }
+                          } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to save template"); }
                         }}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all"
                       >
@@ -322,7 +330,7 @@ const AdminSettings: React.FC = () => {
                               await saveSettings(notif.key, String(next));
                               setSettingsMap(m => ({ ...m, [notif.key]: String(next) }));
                               toast.success(`${notif.label} ${next ? "enabled" : "disabled"}`);
-                            } catch { toast.error("Failed to update"); }
+                            } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); }
                           }}
                           className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${enabled ? "bg-emerald-500" : "bg-muted"}`}
                         >
@@ -341,7 +349,7 @@ const AdminSettings: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1.5">Session Timeout</label>
-                    <select value={settingsMap["session_timeout"] ?? "30"} onChange={async e => { try { await saveSettings("session_timeout", e.target.value); setSettingsMap(m => ({ ...m, session_timeout: e.target.value })); toast.success("Session timeout updated"); } catch { toast.error("Failed to update"); } }} className={inputCls}>
+                    <select value={settingsMap["session_timeout"] ?? "30"} onChange={async e => { try { await saveSettings("session_timeout", e.target.value); setSettingsMap(m => ({ ...m, session_timeout: e.target.value })); toast.success("Session timeout updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="30">30 minutes</option>
                       <option value="60">60 minutes</option>
                       <option value="120">120 minutes</option>
@@ -350,7 +358,7 @@ const AdminSettings: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1.5">Password Expiry Policy</label>
-                    <select value={settingsMap["password_expiry"] ?? "90"} onChange={async e => { try { await saveSettings("password_expiry", e.target.value); setSettingsMap(m => ({ ...m, password_expiry: e.target.value })); toast.success("Password expiry updated"); } catch { toast.error("Failed to update"); } }} className={inputCls}>
+                    <select value={settingsMap["password_expiry"] ?? "90"} onChange={async e => { try { await saveSettings("password_expiry", e.target.value); setSettingsMap(m => ({ ...m, password_expiry: e.target.value })); toast.success("Password expiry updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="90">Every 90 days</option>
                       <option value="180">Every 180 days</option>
                       <option value="365">Every year</option>
@@ -376,7 +384,7 @@ const AdminSettings: React.FC = () => {
                               await saveSettings(item.key, String(next));
                               setSettingsMap(m => ({ ...m, [item.key]: String(next)}));
                               toast.success(`${item.label} ${next ? "enabled" : "disabled"}`);
-                            } catch { toast.error("Failed to update"); }
+                            } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); }
                           }}
                           className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${enabled ? "bg-emerald-500" : "bg-muted"}`}
                         >
@@ -395,14 +403,14 @@ const AdminSettings: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1.5">Default Language</label>
-                    <select value={settingsMap["language"] ?? "en"} onChange={async e => { try { await saveSettings("language", e.target.value); setSettingsMap(m => ({ ...m, language: e.target.value })); toast.success("Language updated"); } catch { toast.error("Failed to update"); } }} className={inputCls}>
+                    <select value={settingsMap["language"] ?? "en"} onChange={async e => { try { await saveSettings("language", e.target.value); setSettingsMap(m => ({ ...m, language: e.target.value })); toast.success("Language updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="en">English</option>
                       <option value="fil">Filipino</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1.5">Date Format</label>
-                    <select value={settingsMap["date_format"] ?? "MM/DD/YYYY"} onChange={async e => { try { await saveSettings("date_format", e.target.value); setSettingsMap(m => ({ ...m, date_format: e.target.value })); toast.success("Date format updated"); } catch { toast.error("Failed to update"); } }} className={inputCls}>
+                    <select value={settingsMap["date_format"] ?? "MM/DD/YYYY"} onChange={async e => { try { await saveSettings("date_format", e.target.value); setSettingsMap(m => ({ ...m, date_format: e.target.value })); toast.success("Date format updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                       <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                       <option value="YYYY-MM-DD">YYYY-MM-DD</option>
@@ -425,7 +433,7 @@ const AdminSettings: React.FC = () => {
                             if (!supabase) return;
                             await supabase.from('documents').delete().neq('id', '');
                             toast.success("Document requests cleared");
-                          } catch { toast.error("Failed to clear data"); }
+                          } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to clear data"); }
                         }}
                         className="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors"
                       >
@@ -438,7 +446,7 @@ const AdminSettings: React.FC = () => {
                             if (!supabase) return;
                             await supabase.from('residents').delete().neq('id', '');
                             toast.success("Residents cleared");
-                          } catch { toast.error("Failed to clear data"); }
+                          } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to clear data"); }
                         }}
                         className="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors"
                       >
@@ -452,6 +460,41 @@ const AdminSettings: React.FC = () => {
           </div>
         </div>
       )}
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogTitle className="sr-only">Certificate Preview</DialogTitle>
+          <div className="border-2 border-double border-emerald-700 rounded-xl p-8 text-center bg-white font-serif">
+            <div className="border-b-2 border-emerald-700 pb-3 mb-4">
+              <div className="w-14 h-14 mx-auto mb-2 rounded-full bg-emerald-100 flex items-center justify-center">
+                <FileText size={24} className="text-emerald-600" />
+              </div>
+              {templateEditor && (
+                <>
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{templateEditor.header}</p>
+                  <h3 className="text-lg font-bold text-foreground">{templateEditor.name}</h3>
+                </>
+              )}
+            </div>
+            <div className="space-y-3 mb-6">
+              <p className="text-sm text-muted-foreground italic">This certifies that</p>
+              <p className="text-xl font-bold text-foreground">[Resident Name]</p>
+              <p className="text-xs text-muted-foreground">
+                is a legitimate resident of Barangay Payatas, Quezon City, and is hereby issued this certificate for whatever legal purpose it may serve.
+              </p>
+            </div>
+            <div className="border-t-2 border-emerald-700 pt-4">
+              <div className="w-32 h-0.5 bg-emerald-300 mx-auto mb-3" />
+              {templateEditor && (
+                <>
+                  <p className="text-xs text-muted-foreground">{templateEditor.footer}</p>
+                  <p className="text-sm font-semibold text-foreground mt-4">{templateEditor.officer}</p>
+                </>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Mail, Trash2, ChevronDown, Search, MessageSquare } from "lucide-react";
+import { Mail, Trash2, Search, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 

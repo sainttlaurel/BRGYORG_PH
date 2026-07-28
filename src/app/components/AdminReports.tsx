@@ -8,7 +8,9 @@ import { useData } from "./DataContext";
 
 function exportCSV(rows: Record<string, string | number>[], filename: string) {
   if (!rows.length) return;
-  const headers = Object.keys(rows[0]);
+  const first = rows[0];
+  if (!first) return;
+  const headers = Object.keys(first);
   const csv = [headers.join(","), ...rows.map(r => headers.map(h => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -46,10 +48,11 @@ const AdminReports: React.FC = () => {
   ).map(([type, count], i) => ({ type, count, fill: CHART_COLORS[i % CHART_COLORS.length] }))
     .sort((a, b) => b.count - a.count);
 
+  const residentsWithValidDob = residentsPeriod.filter(r => r.dob && r.dob !== 'N/A' && !isNaN(new Date(r.dob).getTime()));
   const ageGroups = [
-    { name: "Ages 0-17", value: residentsPeriod.filter(r => r.age < 18).length, fill: "#22c55e" },
-    { name: "Ages 18-59", value: residentsPeriod.filter(r => r.age >= 18 && r.age < 60).length, fill: "#059669" },
-    { name: "Ages 60+", value: residentsPeriod.filter(r => r.age >= 60).length, fill: "#0ea5e9" },
+    { name: "Ages 0-17", value: residentsWithValidDob.filter(r => r.age >= 0 && r.age < 18).length, fill: "#22c55e" },
+    { name: "Ages 18-59", value: residentsWithValidDob.filter(r => r.age >= 18 && r.age < 60).length, fill: "#059669" },
+    { name: "Ages 60+", value: residentsWithValidDob.filter(r => r.age >= 60).length, fill: "#0ea5e9" },
   ];
 
   const summaryKPIs = [
@@ -160,7 +163,7 @@ const AdminReports: React.FC = () => {
                       <Pie data={ageGroups} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                         {ageGroups.map((d, i) => <Cell key={i} fill={d.fill} />)}
                       </Pie>
-                      <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12 }} formatter={(v: any) => v.toLocaleString()} />
+                      <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12 }} formatter={(v: number) => v.toLocaleString()} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="space-y-3">

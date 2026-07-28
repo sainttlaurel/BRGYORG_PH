@@ -223,7 +223,6 @@ function mapPoll(p: Record<string, unknown>): Poll {
 // Hook
 // ============================================================
 
-export function useSupabaseData(): AppData {
 const defaultBarangayInfo: BarangayInfo = {
   name: "Barangay Payatas", municipality: "Quezon City", province: "Metro Manila",
   region: "NCR", captain: "Hon. Maria Santos Cruz", established: "1945",
@@ -247,6 +246,7 @@ const defaultServices: Service[] = [
   { id: 8, title: "Certification for Solo Parent", description: "Official recognition as a solo parent for government benefits", icon: "Users", duration: "3-5 days", fee: "Free", requirements: ["Birth Certificate of Child", "Marriage Certificate (if applicable)", "Death Certificate (if widowed)"] },
 ];
 
+export function useSupabaseData(): AppData {
   const [data, setData] = useState<Omit<AppData, "loading" | "offline" | "refetch">>({
     residents:     [],
     docRequests:   [],

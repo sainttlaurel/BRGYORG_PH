@@ -3,16 +3,20 @@ import { motion, AnimatePresence } from "motion/react";
 import { Heart, Search, X, ChevronDown, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { updateVolunteerStatus } from "@/lib/supabaseWrite";
+import { TableLoading } from "./ui/table-state";
 
+const pendingCfg = { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" } as const;
 const statusConfig: Record<string, { label: string; color: string }> = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" },
+  pending: pendingCfg,
   accepted: { label: "Accepted", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" },
   completed: { label: "Completed", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" },
 };
 
 const AdminVolunteers: React.FC = () => {
-  const { volunteers, refetch } = useData();
+  const { volunteers, refetch, loading } = useData();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selected, setSelected] = useState<typeof volunteers[0] | null>(null);
@@ -28,11 +32,11 @@ const AdminVolunteers: React.FC = () => {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await updateVolunteerStatus(id, status);
+      await updateVolunteerStatus(id, status, user?.name || "System");
       toast.success(`Volunteer ${status}`);
       refetch();
       if (selected?.id === id) setSelected({ ...selected, status });
-    } catch { toast.error("Failed to update"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); }
   };
 
   const getWorkflowActions = (status: string) => {
@@ -47,6 +51,8 @@ const AdminVolunteers: React.FC = () => {
     };
     return next[status] || [];
   };
+
+  if (loading) return <div className="p-6 max-w-7xl mx-auto"><TableLoading /></div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -86,7 +92,7 @@ const AdminVolunteers: React.FC = () => {
                   <span className="text-xs text-muted-foreground">{v.email || v.contact}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${(statusConfig[v.status] ?? statusConfig.pending).color}`}>{(statusConfig[v.status] ?? statusConfig.pending).label}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${(statusConfig[v.status] ?? pendingCfg).color}`}>{(statusConfig[v.status] ?? pendingCfg).label}</span>
                   <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -109,7 +115,7 @@ const AdminVolunteers: React.FC = () => {
                 <div className="mb-5">
                   <div className="flex justify-between items-start mb-4">
                     <span className="text-lg font-bold text-foreground">{selected.full_name}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${(statusConfig[selected.status] ?? statusConfig.pending).color}`}>{(statusConfig[selected.status] ?? statusConfig.pending).label}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${(statusConfig[selected.status] ?? pendingCfg).color}`}>{(statusConfig[selected.status] ?? pendingCfg).label}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                     {[

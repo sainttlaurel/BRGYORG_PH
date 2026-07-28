@@ -60,8 +60,9 @@ const AdminDashboard: React.FC = () => {
     type, count, fill: chartColors[i % chartColors.length],
   }));
 
+  const residentsWithValidDob = residents.filter(r => r.dob && r.dob !== 'N/A' && !isNaN(new Date(r.dob).getTime()));
   const ageGroups = { "0-17": 0, "18-59": 0, "60+": 0 };
-  residents.forEach(r => {
+  residentsWithValidDob.forEach(r => {
     if (r.age < 18) ageGroups["0-17"]++;
     else if (r.age < 60) ageGroups["18-59"]++;
     else ageGroups["60+"]++;

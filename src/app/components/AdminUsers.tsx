@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { UserCog, Plus, Edit, Trash2, Search, Shield, Clock } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Shield, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { createUser, updateUser, setUserStatus, deleteUser } from "@/lib/supabase";
+import { TableLoading } from "./ui/table-state";
 
 const roleColors: Record<string, string> = {
   captain: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
@@ -20,7 +22,8 @@ const avatarColors = [
 ];
 
 const AdminUsers: React.FC = () => {
-  const { adminUsers: users, refetch } = useData();
+  const { adminUsers: users, refetch, loading } = useData();
+  useAuth();
   const [query, setQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showEditId, setShowEditId] = useState<number | null>(null);
@@ -41,7 +44,7 @@ const AdminUsers: React.FC = () => {
       setShowForm(false);
       toast.success("User created");
       refetch();
-    } catch { toast.error("Failed to create user"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to create user"); }
   };
 
   const openEdit = (user: typeof users[0]) => {
@@ -58,7 +61,7 @@ const AdminUsers: React.FC = () => {
       resetForm();
       toast.success("User updated");
       refetch();
-    } catch { toast.error("Failed to update user"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update user"); }
   };
 
   const toggleStatus = async (id: number, currentStatus: string) => {
@@ -67,7 +70,7 @@ const AdminUsers: React.FC = () => {
       await setUserStatus(id, nextStatus);
       toast.success(`User ${nextStatus === "active" ? "activated" : "suspended"}`);
       refetch();
-    } catch { toast.error("Failed to update status"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update status"); }
   };
 
   const handleDelete = async (id: number, name: string) => {
@@ -76,8 +79,10 @@ const AdminUsers: React.FC = () => {
       await deleteUser(id);
       toast.success("User deleted");
       refetch();
-    } catch { toast.error("Failed to delete user"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to delete user"); }
   };
+
+  if (loading) return <div className="p-6 max-w-5xl mx-auto"><TableLoading /></div>;
 
   return (
     <div className="p-6 max-w-5xl mx-auto">

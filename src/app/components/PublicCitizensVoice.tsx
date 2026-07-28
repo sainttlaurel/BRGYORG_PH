@@ -41,8 +41,8 @@ const PublicCitizensVoice: React.FC = () => {
       const dept = form.department ? `\n\nAddressed To: ${form.department}` : "";
       await insertSuggestion({ name: form.category, content: form.message + dept });
       setSubmitted(true);
-    } catch (err: any) {
-      setError(err.message || "Failed to submit. Please try again.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to submit. Please try again.");
     } finally {
       setLoading(false);
     }

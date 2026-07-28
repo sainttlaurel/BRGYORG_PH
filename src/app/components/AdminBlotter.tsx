@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Shield, Search, Plus, Eye, X, Calendar, Users } from "lucide-react";
+import { Search, Plus, Eye, X, Calendar, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { updateBlotterStatus, insertBlotterCase } from "@/lib/supabaseWrite";
 import { TableLoading, TableEmpty } from "./ui/table-state";
 
@@ -15,6 +16,7 @@ const statusColors: Record<string, string> = {
 
 const AdminBlotter: React.FC = () => {
   const { blotter, loading } = useData();
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selected, setSelected] = useState<typeof blotter[0] | null>(null);
@@ -43,9 +45,9 @@ const AdminBlotter: React.FC = () => {
     setStatusOverrides(o => ({ ...o, [id]: newStatus }));
     if (selected?.id === id) setSelected(s => s ? { ...s, status: newStatus } : null);
     try {
-      await updateBlotterStatus(id, newStatus);
+      await updateBlotterStatus(id, newStatus, user?.name || "System");
       toast.success(`Case ${id} updated to ${newStatus}`);
-    } catch { toast.error("Failed to update status"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update status"); }
   };
 
   const handleCreateCase = async () => {
@@ -57,11 +59,11 @@ const AdminBlotter: React.FC = () => {
         date: now.toISOString().split("T")[0] ?? "",
         time: now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
         handler: "Barangay",
-      });
+      }, user?.name || "System");
       setCaseForm({ complainant: "", respondent: "", incident: "", location: "", summary: "" });
       setShowForm(false);
       toast.success("Blotter case created");
-    } catch { toast.error("Failed to create case"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to create case"); }
   };
 
   return (

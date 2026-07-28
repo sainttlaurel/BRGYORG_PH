@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { ScrollText, Search, Download, Clock, User } from "lucide-react";
-import { toast } from "sonner";
+import { Search, Download, Clock, User } from "lucide-react";
 import { useData } from "./DataContext";
 import { TableLoading, TableEmpty } from "./ui/table-state";
 

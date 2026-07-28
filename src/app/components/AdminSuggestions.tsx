@@ -3,16 +3,20 @@ import { motion, AnimatePresence } from "motion/react";
 import { MessageSquare, Search, X, ChevronDown, Filter, Send } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { updateSuggestionStatus, updateSuggestionReply } from "@/lib/supabaseWrite";
+import { TableLoading } from "./ui/table-state";
 
+const pendingCfg = { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" } as const;
 const statusConfig: Record<string, { label: string; color: string }> = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" },
+  pending: pendingCfg,
   published: { label: "Published", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" },
   archived: { label: "Archived", color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
 };
 
 const AdminSuggestions: React.FC = () => {
-  const { suggestions, refetch } = useData();
+  const { suggestions, refetch, loading } = useData();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selected, setSelected] = useState<typeof suggestions[0] | null>(null);
@@ -30,21 +34,23 @@ const AdminSuggestions: React.FC = () => {
   const handleReply = async () => {
     if (!selected || !replyText.trim()) return;
     try {
-      await updateSuggestionReply(selected.id, replyText.trim());
+      await updateSuggestionReply(selected.id, replyText.trim(), user?.name || "System");
       toast.success("Reply published");
       setReplyText("");
       refetch();
-    } catch { toast.error("Failed to send reply"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to send reply"); }
   };
 
   const handleArchive = async (id: string) => {
     try {
-      await updateSuggestionStatus(id, "archived");
+      await updateSuggestionStatus(id, "archived", user?.name || "System");
       toast.success("Suggestion archived");
       refetch();
       if (selected?.id === id) setSelected(null);
-    } catch { toast.error("Failed to archive"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to archive"); }
   };
+
+  if (loading) return <div className="p-6 max-w-7xl mx-auto"><TableLoading /></div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -84,7 +90,7 @@ const AdminSuggestions: React.FC = () => {
                   <span className="text-xs text-muted-foreground truncate max-w-[300px]">{s.content}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${(statusConfig[s.status] ?? statusConfig.pending).color}`}>{(statusConfig[s.status] ?? statusConfig.pending).label}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${(statusConfig[s.status] ?? pendingCfg).color}`}>{(statusConfig[s.status] ?? pendingCfg).label}</span>
                   <span className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -110,7 +116,7 @@ const AdminSuggestions: React.FC = () => {
                       <span className="text-xs text-muted-foreground">Category</span>
                       <div className="text-sm font-bold text-foreground capitalize">{selected.name}</div>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${(statusConfig[selected.status] ?? statusConfig.pending).color}`}>{(statusConfig[selected.status] ?? statusConfig.pending).label}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${(statusConfig[selected.status] ?? pendingCfg).color}`}>{(statusConfig[selected.status] ?? pendingCfg).label}</span>
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">Submitted {new Date(selected.created_at).toLocaleString()}</div>
                 </div>

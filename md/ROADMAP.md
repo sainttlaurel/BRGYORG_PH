@@ -22,7 +22,7 @@ Priority levels: Critical / High / Medium / Backlog
 ### Known issues (not yet fixed)
 
 - **Audit logs not wired** — admin write functions don't call `insertAuditLog()`, so the audit table stays empty.
-- **No contact messages admin UI** — `contact_messages` table exists but admin has no way to view/reply.
+- ~~**No contact messages admin UI** — `contact_messages` table exists but admin has no way to view/reply.~~ **Done — July 2026**
 - **No certificate preview** — template editor saves to DB but there's no render/preview.
 - **Report tracking is exact-match only** — no fuzzy search or typo tolerance on reference numbers.
 - **AdminReports age chart** — `age` derived from `dob` in mapper; invalid DOBs produce wrong chart data.
@@ -47,7 +47,7 @@ Priority levels: Critical / High / Medium / Backlog
 
 - **Audit log wiring** (Medium) — every admin mutation should call `insertAuditLog()` so the audit table has real data.
 - **Certificate preview** (Medium) — render a mock certificate with the template values so admin can see before saving.
-- **Contact messages admin UI** (Low) — simple inbox view for submitted contact messages.
+- ~~**Contact messages admin UI** (Low) — simple inbox view for submitted contact messages.~~ **Done — July 2026**
 - **Error detail pass** (Low) — surface Supabase error messages in catch blocks instead of generic text.
 - **Loading state consistency** (Low) — ensure all data tables show a consistent skeleton/spinner pattern.
 
@@ -117,8 +117,8 @@ All items complete. 14 admin pages built:
 4. ~~React + TypeScript + Vite migration~~ **Done**
 5. ~~Build all public forms and admin pages~~ **Done**
 6. ~~RBAC, template editor, CI, CSV export, logo upload~~ **Done**
-7. Wire audit logs to all admin write functions — **Next (Medium)**
-8. Certificate preview render — **Next (Medium)**
-9. Contact messages admin inbox — **Next (Low)**
-10. Testing suite (Jest/RTL) — **Next (Medium)**
+7. ~~Contact messages admin inbox~~ **Done**
+8. Wire audit logs to all admin write functions — **Next (Medium)**
+9. Certificate preview render — **Next (Medium)**
+10. Testing suite (Vitest/RTL) — **Next (Medium)**
 11. Desktop GUI (Electron) — **Backlog**

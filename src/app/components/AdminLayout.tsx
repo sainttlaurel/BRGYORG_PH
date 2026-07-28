@@ -5,13 +5,13 @@ import {
   Leaf, LayoutDashboard, Users, FileText, Shield, Award,
   Megaphone,   BarChart2, TrendingUp, AlertTriangle, MessageSquare, Heart, UserCog, ScrollText,
   Settings, LogOut, ChevronLeft, ChevronRight, Bell, Mail as MailIcon,
-  Sun, Moon, Menu, X, Globe
+  Sun, Moon, Menu, Globe
 } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import { useTheme } from "./ThemeProvider";
 import { useData } from "./DataContext";
 
-const navItems: { path: string; label: string; icon: React.FC<React.SVGProps<SVGSVGElement>>; roles?: string[] }[] = [
+const navItems: { path: string; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; roles?: string[] }[] = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/admin/residents", label: "Residents", icon: Users, roles: ["admin", "captain", "staff"] },
   { path: "/admin/requests", label: "Requests", icon: FileText },

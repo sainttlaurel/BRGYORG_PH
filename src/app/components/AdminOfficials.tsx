@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Award, Plus, Edit, Trash2, Search, Phone, Mail } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
+import { useAuth } from "./AuthContext";
 import { insertOfficial, updateOfficial, deleteOfficial } from "@/lib/supabaseWrite";
+import { TableLoading } from "./ui/table-state";
 
 const positionColors: Record<string, string> = {
   "Barangay Captain": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
@@ -22,7 +24,8 @@ const avatarColors = [
 const positions = ["Barangay Captain", "Barangay Kagawad", "Barangay Secretary", "Barangay Treasurer", "SK Chairperson"];
 
 const AdminOfficials: React.FC = () => {
-  const { officials: officialsList } = useData();
+  const { officials: officialsList, loading } = useData();
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showEditId, setShowEditId] = useState<number | null>(null);
@@ -37,11 +40,11 @@ const AdminOfficials: React.FC = () => {
   const handleAdd = async () => {
     if (!form.name.trim() || !form.position.trim()) { toast.error("Name and position required"); return; }
     try {
-      await insertOfficial(form);
+      await insertOfficial(form, user?.name || "System");
       resetForm();
       setShowForm(false);
       toast.success("Official added");
-    } catch { toast.error("Failed to add"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to add"); }
   };
 
   const openEdit = (official: typeof officialsList[0]) => {
@@ -53,20 +56,22 @@ const AdminOfficials: React.FC = () => {
     if (showEditId === null) return;
     if (!form.name.trim()) { toast.error("Name required"); return; }
     try {
-      await updateOfficial(showEditId, form);
+      await updateOfficial(showEditId, form, user?.name || "System");
       setShowEditId(null);
       resetForm();
       toast.success("Official updated");
-    } catch { toast.error("Failed to update"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); }
   };
 
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`Remove ${name}?`)) return;
     try {
-      await deleteOfficial(id);
+      await deleteOfficial(id, user?.name || "System");
       toast.success("Official removed");
-    } catch { toast.error("Failed to remove"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to remove"); }
   };
+
+  if (loading) return <div className="p-6 max-w-6xl mx-auto"><TableLoading /></div>;
 
   return (
     <div className="p-6 max-w-6xl mx-auto">

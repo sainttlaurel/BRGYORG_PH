@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { BarChart2, Plus, Edit, Trash2, Users, Clock, Trophy } from "lucide-react";
+import { Plus, Edit, Trash2, Users, Clock, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 import type { Poll } from "@/lib/useSupabaseData";
+import { useAuth } from "./AuthContext";
 import { insertPoll, updatePollStatus, updatePoll, deletePoll as deletePollDb } from "@/lib/supabaseWrite";
 import { TableLoading, TableEmpty } from "./ui/table-state";
-import { pollSchema } from "@/lib/validations";
+
 
 const AdminPolls: React.FC = () => {
   const { polls: livePolls, loading } = useData();
+  const { user } = useAuth();
   const [pollOverrides, setPollOverrides] = useState<Record<string, Partial<Poll>>>({});
   const pollsList = React.useMemo(() =>
     livePolls.map(p => {
@@ -33,11 +35,11 @@ const AdminPolls: React.FC = () => {
         question: form.title,
         options: opts,
         expires_at: form.endDate || null,
-      });
+      }, user?.name || "System");
       setForm({ title: "", category: "Governance", description: "", endDate: "", options: ["", ""] });
       setShowForm(false);
       toast.success("Poll created!");
-    } catch { toast.error("Failed to create poll"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to create poll"); }
   };
 
   const openEdit = (poll: typeof pollsList[0]) => {
@@ -54,29 +56,28 @@ const AdminPolls: React.FC = () => {
         question: editForm.title,
         options: opts,
         expires_at: editForm.endDate || null,
-      });
+      }, user?.name || "System");
       setShowEditId(null);
       toast.success("Poll updated");
-    } catch { toast.error("Failed to update poll"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update poll"); }
   };
 
   const closePoll = async (id: string) => {
     setPollOverrides(o => ({ ...o, [id]: { status: "closed" } }));
     try {
-      await updatePollStatus(id, "closed");
+      await updatePollStatus(id, "closed", user?.name || "System");
       toast.success("Poll closed");
-    } catch {
+    } catch (err) {
       setPollOverrides(o => { const n = { ...o }; delete n[id]; return n; });
-      toast.error("Failed to close poll");
+      toast.error(err instanceof Error ? err.message : "Failed to close poll");
     }
   };
 
   const deletePoll = async (id: string) => {
-    const len = livePolls.length;
     try {
-      await deletePollDb(id);
+      await deletePollDb(id, user?.name || "System");
       toast.success("Poll deleted");
-    } catch { toast.error("Failed to delete poll"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to delete poll"); }
   };
 
   return (
