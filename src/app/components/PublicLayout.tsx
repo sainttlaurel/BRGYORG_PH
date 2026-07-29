@@ -59,13 +59,13 @@ const PublicLayout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Top bar */}
-      <div className="bg-emerald-800 dark:bg-emerald-950 text-emerald-100 text-xs py-1.5 px-4 hidden md:block">
+      <div className="bg-emerald-800 dark:bg-emerald-950 text-emerald-100 text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <span className="flex items-center gap-1.5"><Phone size={11} /> {barangayInfo.hotline}</span>
-            <span className="flex items-center gap-1.5"><Mail size={11} /> {barangayInfo.email}</span>
+            <span className="hidden sm:flex items-center gap-1.5"><Mail size={11} /> {barangayInfo.email}</span>
           </div>
-          <span className="flex items-center gap-1.5"><MapPin size={11} /> {barangayInfo.address}</span>
+          <span className="hidden sm:flex items-center gap-1.5 truncate ml-2"><MapPin size={11} /> {barangayInfo.address}</span>
         </div>
       </div>
 
@@ -78,10 +78,10 @@ const PublicLayout: React.FC = () => {
             exit={{ height: 0, opacity: 0 }}
             className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 overflow-hidden"
           >
-            <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-start gap-3 text-xs text-amber-800 dark:text-amber-200">
-              <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-              <div className="flex-1">
-                <strong>Disclaimer:</strong> This website is a project prototype and is <strong>not affiliated</strong> with Barangay Payatas or any government entity. All information, data, and content displayed are for demonstration purposes only and are <strong>not real</strong>. No actual government services are provided through this site.
+            <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-3 text-xs text-amber-800 dark:text-amber-200">
+              <AlertTriangle size={14} className="shrink-0 text-amber-600 dark:text-amber-400" />
+              <div className="text-center">
+                <strong>Disclaimer:</strong> This website is a prototype and is not affiliated with Barangay Payatas or any government agency. All content is for demonstration purposes only.
               </div>
               <button onClick={dismissDisclaimer} className="shrink-0 p-1 rounded hover:bg-amber-200 dark:hover:bg-amber-900 transition-colors"><X size={14} /></button>
             </div>

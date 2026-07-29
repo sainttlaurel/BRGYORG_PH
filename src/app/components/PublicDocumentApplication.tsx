@@ -175,8 +175,10 @@ const PublicDocumentApplication: React.FC = () => {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Service type */}
                   <div>
-                    <label className="block text-sm text-muted-foreground mb-1.5">Document / Service Type <span className="text-red-500">*</span></label>
+                    <label htmlFor="serviceType" className="block text-sm text-muted-foreground mb-1.5">Document / Service Type <span className="text-red-500">*</span></label>
                     <select
+                      id="serviceType"
+                      name="serviceType"
                       value={form.serviceType}
                       onChange={e => set("serviceType", e.target.value)}
                       className={inputCls("serviceType")}
@@ -188,54 +190,54 @@ const PublicDocumentApplication: React.FC = () => {
                   </div>
 
                   {/* Name */}
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">First Name <span className="text-red-500">*</span></label>
-                      <input type="text" placeholder="Juan" value={form.firstName} onChange={e => set("firstName", e.target.value)} className={inputCls("firstName")} />
+                      <label htmlFor="firstName" className="block text-xs text-muted-foreground mb-1.5">First Name <span className="text-red-500">*</span></label>
+                      <input id="firstName" name="firstName" type="text" placeholder="Juan" value={form.firstName} onChange={e => set("firstName", e.target.value)} className={inputCls("firstName")} />
                       {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Middle Name</label>
-                      <input type="text" placeholder="Santos" value={form.middleName} onChange={e => set("middleName", e.target.value)} className={inputCls("middleName")} />
+                      <label htmlFor="middleName" className="block text-xs text-muted-foreground mb-1.5">Middle Name</label>
+                      <input id="middleName" name="middleName" type="text" placeholder="Santos" value={form.middleName} onChange={e => set("middleName", e.target.value)} className={inputCls("middleName")} />
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Last Name <span className="text-red-500">*</span></label>
-                      <input type="text" placeholder="Dela Cruz" value={form.lastName} onChange={e => set("lastName", e.target.value)} className={inputCls("lastName")} />
+                      <label htmlFor="lastName" className="block text-xs text-muted-foreground mb-1.5">Last Name <span className="text-red-500">*</span></label>
+                      <input id="lastName" name="lastName" type="text" placeholder="Dela Cruz" value={form.lastName} onChange={e => set("lastName", e.target.value)} className={inputCls("lastName")} />
                       {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                     </div>
                   </div>
 
                   {/* Address */}
                   <div>
-                    <label className="block text-sm text-muted-foreground mb-1.5">Complete Address <span className="text-red-500">*</span></label>
-                    <input type="text" placeholder="House/Unit No., Street, Purok" value={form.address} onChange={e => set("address", e.target.value)} className={inputCls("address")} />
+                    <label htmlFor="address" className="block text-sm text-muted-foreground mb-1.5">Complete Address <span className="text-red-500">*</span></label>
+                    <input id="address" name="address" type="text" placeholder="House/Unit No., Street, Purok" value={form.address} onChange={e => set("address", e.target.value)} className={inputCls("address")} />
                     {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                   </div>
 
                   {/* Contact */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Contact No. <span className="text-red-500">*</span></label>
-                      <input type="tel" placeholder="09XXXXXXXXX" value={form.contact} onChange={e => set("contact", e.target.value)} className={inputCls("contact")} />
+                      <label htmlFor="contact" className="block text-xs text-muted-foreground mb-1.5">Contact No. <span className="text-red-500">*</span></label>
+                      <input id="contact" name="contact" type="tel" placeholder="09XXXXXXXXX" value={form.contact} onChange={e => set("contact", e.target.value)} className={inputCls("contact")} />
                       {errors.contact && <p className="text-red-500 text-xs mt-1">{errors.contact}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Email Address</label>
-                      <input type="email" placeholder="your@email.com" value={form.email} onChange={e => set("email", e.target.value)} className={inputCls("email")} />
+                      <label htmlFor="email" className="block text-xs text-muted-foreground mb-1.5">Email Address</label>
+                      <input id="email" name="email" type="email" placeholder="your@email.com" value={form.email} onChange={e => set("email", e.target.value)} className={inputCls("email")} />
                     </div>
                   </div>
 
                   {/* Purpose */}
                   <div>
-                    <label className="block text-sm text-muted-foreground mb-1.5">Purpose <span className="text-red-500">*</span></label>
-                    <input type="text" placeholder="e.g., Employment, School Enrollment, Bank Account Opening…" value={form.purpose} onChange={e => set("purpose", e.target.value)} className={inputCls("purpose")} />
+                    <label htmlFor="purpose" className="block text-sm text-muted-foreground mb-1.5">Purpose <span className="text-red-500">*</span></label>
+                    <input id="purpose" name="purpose" type="text" placeholder="e.g., Employment, School Enrollment, Bank Account Opening…" value={form.purpose} onChange={e => set("purpose", e.target.value)} className={inputCls("purpose")} />
                     {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
                   </div>
 
                   {/* Notes */}
                   <div>
-                    <label className="block text-sm text-muted-foreground mb-1.5">Additional Notes</label>
-                    <textarea rows={3} placeholder="Any special instructions or notes…" value={form.notes} onChange={e => set("notes", e.target.value)} className={`${inputCls("notes")} resize-none`} />
+                    <label htmlFor="notes" className="block text-sm text-muted-foreground mb-1.5">Additional Notes</label>
+                    <textarea id="notes" name="notes" rows={3} placeholder="Any special instructions or notes…" value={form.notes} onChange={e => set("notes", e.target.value)} className={`${inputCls("notes")} resize-none`} />
                   </div>
 
                   {/* Valid ID upload */}

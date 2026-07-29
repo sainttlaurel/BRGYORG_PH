@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion } from "motion/react";
 import { Search, Download, Clock, User } from "lucide-react";
 import { useData } from "./DataContext";
 import { TableLoading, TableEmpty } from "./ui/table-state";
+import { useSort } from "@/lib/hooks/useSort";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 const moduleColors: Record<string, string> = {
   Requests: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-400",
@@ -27,21 +30,25 @@ function csvExport(data: Record<string, string>[], filename: string) {
 const AdminAuditLogs: React.FC = () => {
   const { auditLogs, loading } = useData();
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
   const [moduleFilter, setModuleFilter] = useState("All");
 
   const modules = ["All", ...Array.from(new Set(auditLogs.map(l => l.module)))];
 
   const filtered = auditLogs.filter(l =>
     (moduleFilter === "All" || l.module === moduleFilter) &&
-    (query === "" || l.user.toLowerCase().includes(query.toLowerCase()) || l.action.toLowerCase().includes(query.toLowerCase()) || l.detail.toLowerCase().includes(query.toLowerCase()))
+    (debouncedQuery === "" || l.user.toLowerCase().includes(debouncedQuery.toLowerCase()) || l.action.toLowerCase().includes(debouncedQuery.toLowerCase()) || l.detail.toLowerCase().includes(debouncedQuery.toLowerCase()))
   );
+
+  const { sortKey, sortDir, toggleSort, sortedData } = useSort(filtered);
+  const { page, pageSize, setPage, setPageSize, totalPages, total, paginatedData } = usePagination(sortedData);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
           <h1 className="font-bold text-foreground text-[1.3rem]">Audit Logs</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">System activity trail · {auditLogs.length} entries · {filtered.length} showing</p>
+          <p className="text-muted-foreground text-sm mt-0.5">System activity trail · {auditLogs.length} entries · {total} showing</p>
         </div>
         <button onClick={() => csvExport(filtered.map(l => ({ Timestamp: l.date, User: l.user, Action: l.action, Details: l.detail, Module: l.module })), "audit-logs.csv")} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
           <Download size={14} /> Export
@@ -51,7 +58,7 @@ const AdminAuditLogs: React.FC = () => {
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative flex-1 min-w-48">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search logs…" className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
+          <input id="search-logs" name="search" type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search logs…" className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
         </div>
         <div className="flex gap-1.5 flex-wrap">
           {modules.map(m => (
@@ -72,15 +79,15 @@ const AdminAuditLogs: React.FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="bg-muted/50 border-b border-border">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Timestamp</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">User</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Action</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("date")}>Timestamp{sortKey === "date" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("user")}>User{sortKey === "user" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("action")}>Action{sortKey === "action" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">Details</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Module</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("module")}>Module{sortKey === "module" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((log, i) => (
+                {paginatedData.map((log, i) => (
                   <motion.tr key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -106,6 +113,30 @@ const AdminAuditLogs: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={e => setPageSize(Number(e.target.value))}
+            className="px-2 py-1 rounded-lg border border-border bg-white dark:bg-card text-xs"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+          <span>{page} of {totalPages} pages ({total} total)</span>
+        </div>
+        <div className="flex gap-1">
+          <button onClick={() => setPage(1)} disabled={page <= 1} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">First</button>
+          <button onClick={() => setPage(page - 1)} disabled={page <= 1} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Prev</button>
+          <button onClick={() => setPage(page + 1)} disabled={page >= totalPages} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Next</button>
+          <button onClick={() => setPage(totalPages)} disabled={page >= totalPages} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Last</button>
+        </div>
+      </div>
 
       <div className="mt-4 text-xs text-muted-foreground text-center">
         Audit logs are retained for 3 years in compliance with government data retention policies.

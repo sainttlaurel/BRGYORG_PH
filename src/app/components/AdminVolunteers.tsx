@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, Search, X, ChevronDown, Filter } from "lucide-react";
 import { toast } from "sonner";
@@ -18,13 +19,14 @@ const AdminVolunteers: React.FC = () => {
   const { volunteers, refetch, loading } = useData();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [filterStatus, setFilterStatus] = useState("all");
   const [selected, setSelected] = useState<typeof volunteers[0] | null>(null);
 
   const filtered = volunteers.filter(v => {
     if (filterStatus !== "all" && v.status !== filterStatus) return false;
-    if (search) {
-      const q = search.toLowerCase();
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
       return v.full_name.toLowerCase().includes(q) || v.email.toLowerCase().includes(q) || v.contact.includes(q);
     }
     return true;
@@ -66,10 +68,10 @@ const AdminVolunteers: React.FC = () => {
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, or contact…" className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+          <input id="search-volunteers" name="search" type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, or contact…" className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
         </div>
         <div className="relative">
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
+          <select id="filter-volunteer-status" name="filterStatus" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
             <option value="all">All Status</option>
             {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>

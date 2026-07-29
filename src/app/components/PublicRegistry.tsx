@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion } from "motion/react";
 import { Search, Users, FileText, Shield, CheckCircle, XCircle, Eye } from "lucide-react";
 import { useData } from "./DataContext";
@@ -15,13 +16,14 @@ const PublicRegistry: React.FC = () => {
   const { docRequests, loading } = useData();
   const [tab, setTab] = useState<Tab>("documents");
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
   const [searched, setSearched] = useState(false);
   const [residentResults, setResidentResults] = useState<ResidentResult[]>([]);
   const [residentLoading, setResidentLoading] = useState(false);
 
   const docResults = docRequests.filter(r =>
-    r.id.toLowerCase().includes(query.toLowerCase()) ||
-    r.resident.toLowerCase().includes(query.toLowerCase())
+    r.id.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+    r.resident.toLowerCase().includes(debouncedQuery.toLowerCase())
   );
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -89,6 +91,8 @@ const PublicRegistry: React.FC = () => {
           <div className="flex-1 relative">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
+              id="search-query"
+              name="search"
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}

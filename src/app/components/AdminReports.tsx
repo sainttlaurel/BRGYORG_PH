@@ -70,7 +70,7 @@ const AdminReports: React.FC = () => {
           <p className="text-muted-foreground text-sm mt-0.5">Data insights for Barangay Payatas · live from database</p>
         </div>
         <div className="flex gap-2">
-          <select value={period} onChange={e => setPeriod(e.target.value)} className="px-3 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
+          <select id="period-select" name="period" value={period} onChange={e => setPeriod(e.target.value)} className="px-3 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
             <option>2026</option>
             <option>2025</option>
           </select>

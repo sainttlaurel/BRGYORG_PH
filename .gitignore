@@ -4,3 +4,9 @@ dist
 .vercel
 .env*
 supabase/.temp
+
+# Desktop app
+src-tauri/
+scripts/generate-icons.mjs
+*.exe
+*.lnk

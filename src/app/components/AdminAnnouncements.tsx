@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion } from "motion/react";
 import { Plus, Edit, Trash2, Search, Clock, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -6,7 +7,10 @@ import { useData } from "./DataContext";
 import { useAuth } from "./AuthContext";
 import { insertAnnouncement, deleteAnnouncement, updateAnnouncement } from "@/lib/supabaseWrite";
 import { TableLoading, TableEmpty } from "./ui/table-state";
+import { useSort } from "@/lib/hooks/useSort";
+import { usePagination } from "@/lib/hooks/usePagination";
 import { announcementSchema } from "@/lib/validations";
+import { ConfirmDialog } from "./ui/confirm-dialog";
 
 const catColors: Record<string, string> = {
   Health: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
@@ -28,14 +32,19 @@ const AdminAnnouncements: React.FC = () => {
     [liveAnnouncements, visibilityOverrides]
   );
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: "", category: "Governance", content: "", priority: "normal" });
   const [showEditId, setShowEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ title: "", category: "Governance", content: "", priority: "normal" });
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   const filtered = announcements.filter(a =>
-    query === "" || a.title.toLowerCase().includes(query.toLowerCase())
+    debouncedQuery === "" || a.title.toLowerCase().includes(debouncedQuery.toLowerCase())
   );
+
+  const { sortKey, sortDir, toggleSort, sortedData } = useSort(filtered);
+  const { page, pageSize, setPage, setPageSize, totalPages, total, paginatedData } = usePagination(sortedData);
 
   const handleCreate = async () => {
     const parsed = announcementSchema.safeParse(form);
@@ -119,17 +128,17 @@ const AdminAnnouncements: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">Create New Announcement</h2>
           <div className="space-y-3">
-            <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Announcement title…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <input id="announcement-title" name="title" type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Announcement title…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
             <div className="grid grid-cols-2 gap-3">
-              <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} aria-label="Select category" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
+              <select id="announcement-category" name="category" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} aria-label="Select category" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
                 {["Governance", "Health", "Social Services", "Environment", "Livelihood"].map(c => <option key={c}>{c}</option>)}
               </select>
-              <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))} aria-label="Select priority" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
+              <select id="announcement-priority" name="priority" value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))} aria-label="Select priority" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
                 <option value="normal">Normal Priority</option>
                 <option value="high">High Priority</option>
               </select>
             </div>
-            <textarea rows={4} value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="Announcement content…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all resize-none" />
+            <textarea id="announcement-content" name="content" rows={4} value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="Announcement content…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all resize-none" />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
               <button onClick={handleCreate} className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all">Publish</button>
@@ -146,17 +155,17 @@ const AdminAnnouncements: React.FC = () => {
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-amber-200 dark:border-amber-800 rounded-2xl p-5 mb-5 shadow-sm">
             <h2 className="font-semibold text-foreground mb-4 text-sm">Edit Announcement — {ann.title}</h2>
             <div className="space-y-3">
-              <input type="text" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="Announcement title…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+              <input id="edit-announcement-title" name="title" type="text" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="Announcement title…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
               <div className="grid grid-cols-2 gap-3">
-                <select value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} aria-label="Select category" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
+                <select id="edit-announcement-category" name="category" value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} aria-label="Select category" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
                   {["Governance", "Health", "Social Services", "Environment", "Livelihood"].map(c => <option key={c}>{c}</option>)}
                 </select>
-                <select value={editForm.priority} onChange={e => setEditForm(f => ({ ...f, priority: e.target.value }))} aria-label="Select priority" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
+                <select id="edit-announcement-priority" name="priority" value={editForm.priority} onChange={e => setEditForm(f => ({ ...f, priority: e.target.value }))} aria-label="Select priority" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
                   <option value="normal">Normal Priority</option>
                   <option value="high">High Priority</option>
                 </select>
               </div>
-              <textarea rows={4} value={editForm.content} onChange={e => setEditForm(f => ({ ...f, content: e.target.value }))} placeholder="Announcement content…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all resize-none" />
+              <textarea id="edit-announcement-content" name="content" rows={4} value={editForm.content} onChange={e => setEditForm(f => ({ ...f, content: e.target.value }))} placeholder="Announcement content…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all resize-none" />
               <div className="flex gap-2 justify-end">
                 <button onClick={() => setShowEditId(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
                 <button onClick={handleEdit} className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium transition-all">Update</button>
@@ -169,7 +178,17 @@ const AdminAnnouncements: React.FC = () => {
       {/* Search */}
       <div className="relative mb-5">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search announcements…" className="w-full max-w-xs pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
+        <input id="search-announcements-admin" name="search" type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search announcements…" className="w-full sm:max-w-xs pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
+      </div>
+
+      {/* Sort */}
+      <div className="flex gap-2 mb-3">
+        <span className="text-xs text-muted-foreground self-center">Sort by:</span>
+        {["title", "date", "category", "priority"].map(key => (
+          <button key={key} onClick={() => toggleSort(key as keyof typeof announcements[0])} className={`px-2 py-1 rounded-lg text-xs border transition-all ${sortKey === key ? "bg-emerald-600 text-white border-emerald-600" : "border-border text-muted-foreground hover:border-emerald-300"}`}>
+            {key.charAt(0).toUpperCase() + key.slice(1)} {sortKey === key ? (sortDir === "asc" ? "▲" : "▼") : ""}
+          </button>
+        ))}
       </div>
 
       {/* List */}
@@ -178,7 +197,7 @@ const AdminAnnouncements: React.FC = () => {
           <TableLoading />
         ) : filtered.length === 0 ? (
           <TableEmpty message="No announcements found" />
-        ) : (filtered.map((ann, i) => (
+        ) : (paginatedData.map((ann, i) => (
           <motion.div key={ann.id} initial={{ opacity: 0 }} animate={{ opacity: ann.visible ? 1 : 0.5 }} transition={{ delay: i * 0.04 }}>
             <div className="bg-white dark:bg-card border border-border rounded-2xl p-5 hover:shadow-sm transition-all">
               <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -202,7 +221,7 @@ const AdminAnnouncements: React.FC = () => {
                   <button onClick={() => openEdit(ann)} className="p-1.5 rounded-lg text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors">
                     <Edit size={14} />
                   </button>
-                  <button onClick={() => deleteAnn(ann.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                  <button onClick={() => setDeleteTarget(ann)} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -211,6 +230,38 @@ const AdminAnnouncements: React.FC = () => {
           </motion.div>
         )))}
       </div>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={e => setPageSize(Number(e.target.value))}
+            className="px-2 py-1 rounded-lg border border-border bg-white dark:bg-card text-xs"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+          <span>{page} of {totalPages} pages ({total} total)</span>
+        </div>
+        <div className="flex gap-1">
+          <button onClick={() => setPage(1)} disabled={page <= 1} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">First</button>
+          <button onClick={() => setPage(page - 1)} disabled={page <= 1} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Prev</button>
+          <button onClick={() => setPage(page + 1)} disabled={page >= totalPages} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Next</button>
+          <button onClick={() => setPage(totalPages)} disabled={page >= totalPages} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Last</button>
+        </div>
+      </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={() => setDeleteTarget(null)}
+        title="Delete Announcement"
+        description={`Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.`}
+        onConfirm={() => deleteTarget && deleteAnn(deleteTarget.id)}
+      />
     </div>
   );
 };

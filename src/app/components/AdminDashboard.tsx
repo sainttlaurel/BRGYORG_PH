@@ -6,11 +6,50 @@ import {
 } from "recharts";
 import {
   Users, FileText, Shield, Megaphone, TrendingUp, Clock,
-  CheckCircle, Plus, ArrowRight, WifiOff,
+  CheckCircle, Plus, ArrowRight, WifiOff, Download,
 } from "lucide-react";
 import { Link } from "react-router";
 import { useAuth } from "./AuthContext";
 import { useData } from "./DataContext";
+
+function txtExportAll(data: ReturnType<typeof useData>) {
+  const now = new Date().toLocaleString("en-PH");
+  const lines: string[] = [];
+  const sep = "=".repeat(70);
+  lines.push(sep);
+  lines.push(`DATABASE EXPORT — ${now}`);
+  lines.push(sep);
+  lines.push("");
+
+  const sections: [string, unknown[], string[]][] = [
+    ["RESIDENTS", data.residents, ["id", "name", "purok", "status", "contact", "address", "gender", "dob"]],
+    ["DOCUMENT REQUESTS", data.docRequests, ["id", "resident", "type", "status", "date", "purpose", "contact"]],
+    ["BLOTTER CASES", data.blotter, ["id", "complainant", "respondent", "incident", "status", "date", "location"]],
+    ["ANNOUNCEMENTS", data.announcements, ["id", "title", "category", "priority", "date"]],
+    ["POLLS", data.polls, ["id", "title", "category", "status", "startDate", "endDate"]],
+    ["OFFICIALS", data.officials, ["id", "name", "position", "committee", "contact"]],
+    ["ADMIN USERS", data.adminUsers, ["id", "name", "username", "role", "email", "status"]],
+    ["AUDIT LOGS", data.auditLogs, ["id", "user", "action", "detail", "module", "date"]],
+    ["REPORTS", data.reports, ["id", "category", "description", "location", "urgency", "status"]],
+    ["SUGGESTIONS", data.suggestions, ["id", "name", "content", "admin_reply", "status"]],
+    ["VOLUNTEERS", data.volunteers, ["id", "full_name", "email", "contact", "status"]],
+  ];
+
+  for (const [name, items, keys] of sections) {
+    lines.push(`--- ${name} (${items.length} entries) ---`);
+    lines.push("");
+    for (const item of items) {
+      const vals = keys.map(k => String((item as Record<string, unknown>)[k] ?? "")).join(" | ");
+      lines.push(`  [${(item as Record<string, unknown>).created_at || (item as Record<string, unknown>).date || "N/A"}] ${vals}`);
+    }
+    lines.push("");
+  }
+
+  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = `database-export-${new Date().toISOString().slice(0, 10)}.txt`; a.click();
+  URL.revokeObjectURL(url);
+}
 
 const feedIcon = (action: string) => {
   if (/approve|releas/i.test(action)) return CheckCircle;
@@ -41,7 +80,8 @@ const statusBadge = (status: string) => {
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { residents, docRequests, blotter, announcements, barangayInfo, auditLogs, loading, offline } = useData();
+  const data = useData();
+  const { residents, docRequests, blotter, announcements, barangayInfo, auditLogs, loading, offline } = data;
   const activityFeed = auditLogs.length > 0
     ? auditLogs.slice(0, 5).map(log => {
         const Icon = feedIcon(log.action);
@@ -107,6 +147,7 @@ const AdminDashboard: React.FC = () => {
         <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-sm">
           <WifiOff size={14} className="shrink-0" />
           Showing cached data — Supabase unreachable.
+          <button onClick={() => data.refetch()} className="px-3 py-1 rounded-lg bg-amber-200 dark:bg-amber-800 hover:bg-amber-300 dark:hover:bg-amber-700 text-xs font-medium transition-colors ml-auto">Retry</button>
         </div>
       )}
 
@@ -120,6 +161,12 @@ const AdminDashboard: React.FC = () => {
             {barangayInfo.name} · {new Date().toLocaleDateString("en-PH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
+        <button
+          onClick={() => txtExportAll(data)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors"
+        >
+          <Download size={14} /> Export TXT
+        </button>
         <Link
           to="/admin/requests"
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all shadow-sm"

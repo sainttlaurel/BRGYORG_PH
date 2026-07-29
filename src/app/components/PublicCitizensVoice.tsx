@@ -101,8 +101,10 @@ const PublicCitizensVoice: React.FC = () => {
 
                   {/* Department */}
                   <div>
-                    <label className="block text-sm text-muted-foreground mb-1.5">Addressed To (Optional)</label>
+                    <label htmlFor="department" className="block text-sm text-muted-foreground mb-1.5">Addressed To (Optional)</label>
                     <select
+                      id="department"
+                      name="department"
                       value={form.department}
                       onChange={e => set("department", e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all"
@@ -120,8 +122,10 @@ const PublicCitizensVoice: React.FC = () => {
 
                   {/* Message */}
                   <div>
-                    <label className="block text-sm text-muted-foreground mb-1.5">Your Message <span className="text-red-500">*</span></label>
+                    <label htmlFor="message" className="block text-sm text-muted-foreground mb-1.5">Your Message <span className="text-red-500">*</span></label>
                     <textarea
+                      id="message"
+                      name="message"
                       rows={6}
                       value={form.message}
                       onChange={e => set("message", e.target.value)}

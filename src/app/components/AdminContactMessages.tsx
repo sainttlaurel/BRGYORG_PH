@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { Mail, Trash2, Search, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { supabase, getSessionToken } from "@/lib/supabase";
+import { ConfirmDialog } from "./ui/confirm-dialog";
 
 interface ContactMessage {
   id: string; name: string; email: string; subject: string;
@@ -13,6 +15,8 @@ const AdminContactMessages: React.FC = () => {
   const [selected, setSelected] = useState<ContactMessage | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [deleteTarget, setDeleteTarget] = useState<ContactMessage | null>(null);
 
   const fetch = async () => {
     if (!supabase) return;
@@ -26,10 +30,18 @@ const AdminContactMessages: React.FC = () => {
 
   useEffect(() => { fetch(); }, []);
 
+  const handleDeleteMessage = async (id: string) => {
+    const token = getSessionToken();
+    if (!token || !supabase) return;
+    const { error } = await supabase.rpc('admin_delete_contact_message', { p_token: token, p_id: id, p_logged_in_user: "Admin" });
+    if (error) toast.error("Failed to delete");
+    else { toast.success("Message deleted"); setMessages(m => m.filter(x => x.id !== id)); setSelected(s => s?.id === id ? null : s); }
+  };
+
   const filtered = messages.filter(m =>
-    !search || m.name.toLowerCase().includes(search.toLowerCase()) ||
-    m.email.toLowerCase().includes(search.toLowerCase()) ||
-    m.subject.toLowerCase().includes(search.toLowerCase())
+    !debouncedSearch || m.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    m.email.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    m.subject.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   return (
@@ -41,9 +53,9 @@ const AdminContactMessages: React.FC = () => {
         </div>
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+          <input id="search-messages" name="search" type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search messages…"
-            className="pl-9 pr-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 w-56" />
+            className="w-full sm:w-56 pl-9 pr-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
         </div>
       </div>
 
@@ -77,13 +89,7 @@ const AdminContactMessages: React.FC = () => {
                     <h2 className="font-semibold text-foreground text-sm">{selected.subject}</h2>
                   </div>
                   <button
-                    onClick={async () => {
-                      const token = getSessionToken();
-                      if (!token || !supabase) return;
-                      const { error } = await supabase.rpc('admin_delete_contact_message', { p_token: token, p_id: selected.id, p_logged_in_user: "Admin" });
-                      if (error) toast.error("Failed to delete");
-                      else { toast.success("Message deleted"); setMessages(m => m.filter(x => x.id !== selected.id)); setSelected(null); }
-                    }}
+                    onClick={() => setDeleteTarget(selected)}
                     className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
                   >
                     <Trash2 size={14} />
@@ -107,6 +113,14 @@ const AdminContactMessages: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={() => setDeleteTarget(null)}
+        title="Delete Message"
+        description={`Are you sure you want to delete the message from "${deleteTarget?.name}"? This action cannot be undone.`}
+        onConfirm={() => deleteTarget && handleDeleteMessage(deleteTarget.id)}
+      />
     </div>
   );
 };

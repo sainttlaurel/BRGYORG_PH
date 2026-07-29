@@ -40,6 +40,7 @@ const AdminVolunteers = lazy(() => import("./components/AdminVolunteers"));
 const AdminUsers = lazy(() => import("./components/AdminUsers"));
 const AdminContactMessages = lazy(() => import("./components/AdminContactMessages"));
 const AdminAuditLogs = lazy(() => import("./components/AdminAuditLogs"));
+
 const AdminSettings = lazy(() => import("./components/AdminSettings"));
 import { getVisiblePaths } from "./components/AdminLayout";
 
@@ -125,6 +126,7 @@ const AppRoutes: React.FC = () => {
           <Route path="contact-messages" element={<RoleRoute path="/admin/contact-messages"><Suspense fallback={<AdminFallback />}><AdminContactMessages /></Suspense></RoleRoute>} />
           <Route path="users" element={<RoleRoute path="/admin/users"><Suspense fallback={<AdminFallback />}><AdminUsers /></Suspense></RoleRoute>} />
           <Route path="audit-logs" element={<RoleRoute path="/admin/audit-logs"><Suspense fallback={<AdminFallback />}><AdminAuditLogs /></Suspense></RoleRoute>} />
+
           <Route path="settings" element={<RoleRoute path="/admin/settings"><Suspense fallback={<AdminFallback />}><AdminSettings /></Suspense></RoleRoute>} />
           <Route path="*" element={
             <Suspense fallback={<AdminFallback />}>

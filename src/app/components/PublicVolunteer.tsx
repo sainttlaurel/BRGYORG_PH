@@ -120,25 +120,25 @@ const PublicVolunteer: React.FC = () => {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">First Name <span className="text-red-500">*</span></label>
-                      <input type="text" value={form.firstName} onChange={e => set("firstName", e.target.value)} className={inputCls("firstName")} placeholder="Juan" />
+                      <label htmlFor="firstName" className="block text-xs text-muted-foreground mb-1.5">First Name <span className="text-red-500">*</span></label>
+                      <input id="firstName" name="firstName" type="text" value={form.firstName} onChange={e => set("firstName", e.target.value)} className={inputCls("firstName")} placeholder="Juan" />
                       {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Last Name <span className="text-red-500">*</span></label>
-                      <input type="text" value={form.lastName} onChange={e => set("lastName", e.target.value)} className={inputCls("lastName")} placeholder="Dela Cruz" />
+                      <label htmlFor="lastName" className="block text-xs text-muted-foreground mb-1.5">Last Name <span className="text-red-500">*</span></label>
+                      <input id="lastName" name="lastName" type="text" value={form.lastName} onChange={e => set("lastName", e.target.value)} className={inputCls("lastName")} placeholder="Dela Cruz" />
                       {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Age</label>
-                      <input type="number" value={form.age} onChange={e => set("age", e.target.value)} className={inputCls("age")} placeholder="25" min="15" max="80" />
+                      <label htmlFor="age" className="block text-xs text-muted-foreground mb-1.5">Age</label>
+                      <input id="age" name="age" type="number" value={form.age} onChange={e => set("age", e.target.value)} className={inputCls("age")} placeholder="25" min="15" max="80" />
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Gender</label>
-                      <select value={form.gender} onChange={e => set("gender", e.target.value)} className={inputCls("gender")}>
+                      <label htmlFor="gender" className="block text-xs text-muted-foreground mb-1.5">Gender</label>
+                      <select id="gender" name="gender" value={form.gender} onChange={e => set("gender", e.target.value)} className={inputCls("gender")}>
                         <option value="">Select</option>
                         <option>Male</option>
                         <option>Female</option>
@@ -147,8 +147,8 @@ const PublicVolunteer: React.FC = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Availability</label>
-                      <select value={form.availability} onChange={e => set("availability", e.target.value)} className={inputCls("availability")}>
+                      <label htmlFor="availability" className="block text-xs text-muted-foreground mb-1.5">Availability</label>
+                      <select id="availability" name="availability" value={form.availability} onChange={e => set("availability", e.target.value)} className={inputCls("availability")}>
                         <option value="">Select</option>
                         <option>Weekdays</option>
                         <option>Weekends</option>
@@ -160,19 +160,19 @@ const PublicVolunteer: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Contact No. <span className="text-red-500">*</span></label>
-                      <input type="tel" value={form.contact} onChange={e => set("contact", e.target.value)} className={inputCls("contact")} placeholder="09XXXXXXXXX" />
+                      <label htmlFor="contact" className="block text-xs text-muted-foreground mb-1.5">Contact No. <span className="text-red-500">*</span></label>
+                      <input id="contact" name="contact" type="tel" value={form.contact} onChange={e => set("contact", e.target.value)} className={inputCls("contact")} placeholder="09XXXXXXXXX" />
                       {errors.contact && <p className="text-red-500 text-xs mt-1">{errors.contact}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Email</label>
-                      <input type="email" value={form.email} onChange={e => set("email", e.target.value)} className={inputCls("email")} placeholder="juan@email.com" />
+                      <label htmlFor="email" className="block text-xs text-muted-foreground mb-1.5">Email</label>
+                      <input id="email" name="email" type="email" value={form.email} onChange={e => set("email", e.target.value)} className={inputCls("email")} placeholder="juan@email.com" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Address <span className="text-red-500">*</span></label>
-                    <input type="text" value={form.address} onChange={e => set("address", e.target.value)} className={inputCls("address")} placeholder="House No., Street, Purok" />
+                    <label htmlFor="address" className="block text-xs text-muted-foreground mb-1.5">Address <span className="text-red-500">*</span></label>
+                    <input id="address" name="address" type="text" value={form.address} onChange={e => set("address", e.target.value)} className={inputCls("address")} placeholder="House No., Street, Purok" />
                     {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                   </div>
 
@@ -199,13 +199,13 @@ const PublicVolunteer: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Skills / Expertise</label>
-                    <input type="text" value={form.skills} onChange={e => set("skills", e.target.value)} className={inputCls("skills")} placeholder="e.g., First Aid, Teaching, Carpentry…" />
+                    <label htmlFor="skills" className="block text-xs text-muted-foreground mb-1.5">Skills / Expertise</label>
+                    <input id="skills" name="skills" type="text" value={form.skills} onChange={e => set("skills", e.target.value)} className={inputCls("skills")} placeholder="e.g., First Aid, Teaching, Carpentry…" />
                   </div>
 
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Why do you want to volunteer?</label>
-                    <textarea rows={4} value={form.motivation} onChange={e => set("motivation", e.target.value)} className={`${inputCls("motivation")} resize-none`} placeholder="Share your motivation for volunteering…" />
+                    <label htmlFor="motivation" className="block text-xs text-muted-foreground mb-1.5">Why do you want to volunteer?</label>
+                    <textarea id="motivation" name="motivation" rows={4} value={form.motivation} onChange={e => set("motivation", e.target.value)} className={`${inputCls("motivation")} resize-none`} placeholder="Share your motivation for volunteering…" />
                   </div>
 
                   {error && <p className="text-red-500 text-xs text-center">{error}</p>}

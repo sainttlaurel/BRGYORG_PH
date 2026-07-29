@@ -140,8 +140,8 @@ const PublicReportConcern: React.FC = () => {
                   <form onSubmit={handleSubmit} className="space-y-5">
                     {/* Category */}
                     <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">Concern Type <span className="text-red-500">*</span></label>
-                      <select value={form.category} onChange={e => set("category", e.target.value)} className={inputCls("category")}>
+                      <label htmlFor="category" className="block text-sm text-muted-foreground mb-1.5">Concern Type <span className="text-red-500">*</span></label>
+                      <select id="category" name="category" value={form.category} onChange={e => set("category", e.target.value)} className={inputCls("category")}>
                         <option value="">Select concern type…</option>
                         {categories.map(c => <option key={c}>{c}</option>)}
                       </select>
@@ -151,7 +151,7 @@ const PublicReportConcern: React.FC = () => {
                     {/* Urgency */}
                     <div>
                       <label className="block text-sm text-muted-foreground mb-2">Urgency Level <span className="text-red-500">*</span></label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {urgencyLevels.map(u => (
                           <button
                             key={u.id}
@@ -171,15 +171,17 @@ const PublicReportConcern: React.FC = () => {
 
                     {/* Location */}
                     <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">Location / Address <span className="text-red-500">*</span></label>
-                      <input type="text" value={form.location} onChange={e => set("location", e.target.value)} className={inputCls("location")} placeholder="Exact address or landmark" />
+                      <label htmlFor="location" className="block text-sm text-muted-foreground mb-1.5">Location / Address <span className="text-red-500">*</span></label>
+                      <input id="location" name="location" type="text" value={form.location} onChange={e => set("location", e.target.value)} className={inputCls("location")} placeholder="Exact address or landmark" />
                       {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
                     </div>
 
                     {/* Description */}
                     <div>
-                      <label className="block text-sm text-muted-foreground mb-1.5">Description <span className="text-red-500">*</span></label>
+                      <label htmlFor="description" className="block text-sm text-muted-foreground mb-1.5">Description <span className="text-red-500">*</span></label>
                       <textarea
+                        id="description"
+                        name="description"
                         rows={5}
                         value={form.description}
                         onChange={e => set("description", e.target.value)}
@@ -193,8 +195,8 @@ const PublicReportConcern: React.FC = () => {
                     <div className="bg-muted/50 rounded-xl p-4">
                       <p className="text-xs text-muted-foreground mb-3 font-medium">Contact Information (Optional – for follow-up only)</p>
                       <div className="grid grid-cols-2 gap-3">
-                        <input type="text" value={form.reporterName} onChange={e => set("reporterName", e.target.value)} className={inputCls("reporterName")} placeholder="Your name" />
-                        <input type="tel" value={form.reporterContact} onChange={e => set("reporterContact", e.target.value)} className={inputCls("reporterContact")} placeholder="Your contact no." />
+                        <input id="reporterName" name="reporterName" type="text" value={form.reporterName} onChange={e => set("reporterName", e.target.value)} className={inputCls("reporterName")} placeholder="Your name" />
+                        <input id="reporterContact" name="reporterContact" type="tel" value={form.reporterContact} onChange={e => set("reporterContact", e.target.value)} className={inputCls("reporterContact")} placeholder="Your contact no." />
                       </div>
                     </div>
 
@@ -237,6 +239,8 @@ const PublicReportConcern: React.FC = () => {
               <h2 className="font-bold text-foreground mb-4">Track Your Report</h2>
               <form onSubmit={handleTrack} className="flex gap-2">
                 <input
+                  id="trackQuery"
+                  name="trackQuery"
                   type="text"
                   value={trackQuery}
                   onChange={e => setTrackQuery(e.target.value)}

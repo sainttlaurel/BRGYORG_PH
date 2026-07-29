@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, CheckCircle, Clock, X, XCircle, Eye, Printer, Download } from "lucide-react";
 import { toast } from "sonner";
@@ -6,6 +7,8 @@ import { useData } from "./DataContext";
 import { useAuth } from "./AuthContext";
 import { updateDocumentStatus } from "@/lib/supabaseWrite";
 import { dbFetch } from "@/lib/supabase";
+import { useSort } from "@/lib/hooks/useSort";
+import { usePagination } from "@/lib/hooks/usePagination";
 import { TableLoading, TableEmpty } from "./ui/table-state";
 
 const statusConfig: Record<string, { color: string; label: string; icon: React.FC<{ size?: number; className?: string }> }> = {
@@ -38,14 +41,19 @@ const AdminRequests: React.FC = () => {
     }),
     [docRequests, statusOverrides]
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
   const [statusFilter, setStatusFilter] = useState("All");
   const [selected, setSelected] = useState<typeof docRequests[0] | null>(null);
 
   const filtered = requests.filter(r =>
     (statusFilter === "All" || r.status === statusFilter) &&
-    (query === "" || r.id.toLowerCase().includes(query.toLowerCase()) || r.resident.toLowerCase().includes(query.toLowerCase()) || r.type.toLowerCase().includes(query.toLowerCase()))
+    (debouncedQuery === "" || r.id.toLowerCase().includes(debouncedQuery.toLowerCase()) || r.resident.toLowerCase().includes(debouncedQuery.toLowerCase()) || r.type.toLowerCase().includes(debouncedQuery.toLowerCase()))
   );
+
+  const { sortKey, sortDir, toggleSort, sortedData } = useSort(filtered);
+  const { page, pageSize, setPage, setPageSize, totalPages, total, paginatedData } = usePagination(sortedData);
 
   const updateStatus = async (id: string, newStatus: string) => {
     setStatusOverrides(o => ({ ...o, [id]: newStatus }));
@@ -139,7 +147,7 @@ const AdminRequests: React.FC = () => {
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
           <h1 className="font-bold text-foreground text-[1.3rem]">Document Requests</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">{requests.length} total · {filtered.length} showing</p>
+          <p className="text-muted-foreground text-sm mt-0.5">{requests.length} total · {total} showing</p>
         </div>
         <button onClick={() => csvExport(requests.map(r => ({ ID: r.id, Resident: r.resident, Type: r.type, Purpose: r.purpose, Status: r.status, Date: r.date, Contact: r.contact || "", Fee: r.fee })), "document-requests.csv")} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
           <Download size={14} /> Export
@@ -150,7 +158,7 @@ const AdminRequests: React.FC = () => {
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative flex-1 min-w-48">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by ID, name, or type…" className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
+          <input id="search-requests" name="search" type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by ID, name, or type…" className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
         </div>
         <div className="flex gap-1.5 flex-wrap">
           {["All", "pending", "approved", "processing", "ready", "released", "rejected"].map(s => (
@@ -161,29 +169,49 @@ const AdminRequests: React.FC = () => {
         </div>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800">
+          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">{selectedIds.size} selected</span>
+          <button onClick={async () => { for (const id of selectedIds) { try { await updateStatus(id, "approved"); } catch {} } toast.success(`${selectedIds.size} requests approved`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-medium transition-colors">
+            Approve Selected
+          </button>
+          <button onClick={async () => { for (const id of selectedIds) { try { await updateStatus(id, "rejected"); } catch {} } toast.success(`${selectedIds.size} requests rejected`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors">
+            Reject Selected
+          </button>
+          <button onClick={() => csvExport(filtered.filter(r => selectedIds.has(r.id)).map(r => ({ ID: r.id, Resident: r.resident, Type: r.type, Purpose: r.purpose, Status: r.status, Date: r.date, Contact: r.contact || "", Fee: r.fee })), `selected-requests.csv`)} className="px-3 py-1 rounded-lg bg-white dark:bg-card border border-border text-xs text-muted-foreground hover:bg-muted transition-colors">
+            Export Selected
+          </button>
+          <button onClick={() => setSelectedIds(new Set())} className="px-3 py-1 rounded-lg bg-white dark:bg-card border border-border text-xs text-muted-foreground hover:bg-muted transition-colors ml-auto">
+            Clear
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-white dark:bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-muted/50 border-b border-border">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Request</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Resident</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">Type</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">Date</th>
+                <th className="px-2 py-3 w-10"><input type="checkbox" checked={filtered.length > 0 && selectedIds.size === filtered.length} onChange={e => setSelectedIds(e.target.checked ? new Set(filtered.map(r => r.id)) : new Set())} className="rounded" /></th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("id")}>Request{sortKey === "id" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("resident")}>Resident{sortKey === "resident" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell cursor-pointer select-none" onClick={() => toggleSort("type")}>Type{sortKey === "type" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("status")}>Status{sortKey === "status" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell cursor-pointer select-none" onClick={() => toggleSort("date")}>Date{sortKey === "date" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6}><TableLoading /></td></tr>
+                <tr><td colSpan={7}><TableLoading /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={6}><TableEmpty message="No document requests found" /></td></tr>
-              ) : (filtered.map((req) => {
+                <tr><td colSpan={7}><TableEmpty message="No document requests found" /></td></tr>
+              ) : (paginatedData.map((req) => {
                 const st = statusConfig[req.status];
                 return (
                   <tr key={req.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="px-2 py-3"><input type="checkbox" checked={selectedIds.has(req.id)} onChange={e => { const next = new Set(selectedIds); if (e.target.checked) next.add(req.id); else next.delete(req.id); setSelectedIds(next); }} className="rounded" /></td>
                     <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{req.id}</td>
                     <td className="px-4 py-3 text-sm font-medium text-foreground">{req.resident}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">{req.type}</td>
@@ -208,6 +236,30 @@ const AdminRequests: React.FC = () => {
               }))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={e => setPageSize(Number(e.target.value))}
+            className="px-2 py-1 rounded-lg border border-border bg-white dark:bg-card text-xs"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+          <span>{page} of {totalPages} pages ({total} total)</span>
+        </div>
+        <div className="flex gap-1">
+          <button onClick={() => setPage(1)} disabled={page <= 1} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">First</button>
+          <button onClick={() => setPage(page - 1)} disabled={page <= 1} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Prev</button>
+          <button onClick={() => setPage(page + 1)} disabled={page >= totalPages} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Next</button>
+          <button onClick={() => setPage(totalPages)} disabled={page >= totalPages} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Last</button>
         </div>
       </div>
 

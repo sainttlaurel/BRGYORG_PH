@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, Search, X, ChevronDown, Filter } from "lucide-react";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ const AdminConcerns: React.FC = () => {
   const { reports, refetch, loading } = useData();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
   const [selected, setSelected] = useState<ReportItem | null>(null);
@@ -39,8 +41,8 @@ const AdminConcerns: React.FC = () => {
     const st = getStatus(r);
     if (filterStatus !== "all" && st !== filterStatus) return false;
     if (filterUrgency !== "all" && r.urgency !== filterUrgency) return false;
-    if (search) {
-      const q = search.toLowerCase();
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
       return r.id.toLowerCase().includes(q) || r.category.toLowerCase().includes(q) || r.location.toLowerCase().includes(q) || r.description.toLowerCase().includes(q);
     }
     return true;
@@ -88,11 +90,11 @@ const AdminConcerns: React.FC = () => {
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports…" className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+          <input id="search-reports" name="search" type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports…" className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
         </div>
 
         <div className="relative">
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
+          <select id="filter-status" name="filterStatus" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
             <option value="all">All Status</option>
             {statuses.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
           </select>
@@ -100,7 +102,7 @@ const AdminConcerns: React.FC = () => {
         </div>
 
         <div className="relative">
-          <select value={filterUrgency} onChange={e => setFilterUrgency(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
+          <select id="filter-urgency" name="filterUrgency" value={filterUrgency} onChange={e => setFilterUrgency(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
             <option value="all">All Urgency</option>
             <option value="low">Low</option>
             <option value="medium">Medium</option>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion, AnimatePresence } from "motion/react";
 import { MessageSquare, Search, X, ChevronDown, Filter, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -18,14 +19,15 @@ const AdminSuggestions: React.FC = () => {
   const { suggestions, refetch, loading } = useData();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [filterStatus, setFilterStatus] = useState("all");
   const [selected, setSelected] = useState<typeof suggestions[0] | null>(null);
   const [replyText, setReplyText] = useState("");
 
   const filtered = suggestions.filter(s => {
     if (filterStatus !== "all" && s.status !== filterStatus) return false;
-    if (search) {
-      const q = search.toLowerCase();
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
       return s.content.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
     }
     return true;
@@ -64,10 +66,10 @@ const AdminSuggestions: React.FC = () => {
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search feedback…" className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+          <input id="search-feedback" name="search" type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search feedback…" className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
         </div>
         <div className="relative">
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
+          <select id="filter-feedback-status" name="filterStatus" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none">
             <option value="all">All Status</option>
             {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
@@ -135,7 +137,7 @@ const AdminSuggestions: React.FC = () => {
 
                 {selected.status !== "archived" && (
                   <div className="border-t border-border pt-4 space-y-3">
-                    <textarea value={replyText} onChange={e => setReplyText(e.target.value)} rows={3} placeholder="Write a public reply…" className="w-full px-3 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                    <textarea id="reply-text" name="replyText" value={replyText} onChange={e => setReplyText(e.target.value)} rows={3} placeholder="Write a public reply…" className="w-full px-3 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300" />
                     <div className="flex gap-2">
                       <button onClick={handleReply} disabled={!replyText.trim()} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all disabled:opacity-50"><Send size={14} /> Publish Reply</button>
                       <button onClick={() => handleArchive(selected.id)} className="px-4 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-all">Archive</button>

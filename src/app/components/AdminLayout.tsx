@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -26,6 +26,7 @@ const navItems: { path: string; label: string; icon: React.ComponentType<{ size?
   { path: "/admin/volunteers", label: "Volunteers", icon: Heart, roles: ["admin", "captain", "secretary"] },
   { path: "/admin/users", label: "Users", icon: UserCog, roles: ["admin"] },
   { path: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["admin", "captain"] },
+
   { path: "/admin/settings", label: "Settings", icon: Settings, roles: ["admin"] },
 ];
 
@@ -48,6 +49,18 @@ const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector<HTMLInputElement>('input[type="text"][id^="search-"]');
+        searchInput?.focus();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -167,19 +180,19 @@ const AdminLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top header */}
         <header className="h-14 bg-white dark:bg-card border-b border-border flex items-center justify-between px-4 shrink-0">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setMobileOpen(true)}
-              className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:bg-muted"
+              className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:bg-muted shrink-0"
             >
               <Menu size={18} />
             </button>
-            <div>
+            <div className="min-w-0">
               <span className="text-sm font-medium text-foreground">Admin Portal</span>
-              <span className="text-muted-foreground text-sm"> — {barangayInfo.name}</span>
+              <span className="text-muted-foreground text-sm hidden sm:inline"> — {barangayInfo.name}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
               className="p-2 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
@@ -192,7 +205,7 @@ const AdminLayout: React.FC = () => {
             </button>
             <Link
               to="/"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 font-medium transition-colors"
             >
               <Globe size={13} /> Public Site
             </Link>

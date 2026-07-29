@@ -153,32 +153,32 @@ const PublicContact: React.FC = () => {
                   <motion.form key="form" onSubmit={handleSubmit} className="space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1.5">Full Name <span className="text-red-500">*</span></label>
-                        <input type="text" value={form.name} onChange={e => set("name", e.target.value)} className={inputCls("name")} placeholder="Juan Dela Cruz" />
+                        <label htmlFor="name" className="block text-xs text-muted-foreground mb-1.5">Full Name <span className="text-red-500">*</span></label>
+                        <input id="name" name="name" type="text" value={form.name} onChange={e => set("name", e.target.value)} className={inputCls("name")} placeholder="Juan Dela Cruz" />
                         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1.5">Email Address <span className="text-red-500">*</span></label>
-                        <input type="email" value={form.email} onChange={e => set("email", e.target.value)} className={inputCls("email")} placeholder="juan@email.com" />
+                        <label htmlFor="email" className="block text-xs text-muted-foreground mb-1.5">Email Address <span className="text-red-500">*</span></label>
+                        <input id="email" name="email" type="email" value={form.email} onChange={e => set("email", e.target.value)} className={inputCls("email")} placeholder="juan@email.com" />
                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1.5">Contact Number</label>
-                        <input type="tel" value={form.contact} onChange={e => set("contact", e.target.value)} className={inputCls("contact")} placeholder="09XXXXXXXXX" />
+                        <label htmlFor="contact" className="block text-xs text-muted-foreground mb-1.5">Contact Number</label>
+                        <input id="contact" name="contact" type="tel" value={form.contact} onChange={e => set("contact", e.target.value)} className={inputCls("contact")} placeholder="09XXXXXXXXX" />
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1.5">Department / Office</label>
-                        <select value={form.department} onChange={e => set("department", e.target.value)} className={inputCls("department")}>
+                        <label htmlFor="department" className="block text-xs text-muted-foreground mb-1.5">Department / Office</label>
+                        <select id="department" name="department" value={form.department} onChange={e => set("department", e.target.value)} className={inputCls("department")}>
                           <option value="">General Inquiry</option>
                           {departments.map(d => <option key={d}>{d}</option>)}
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Message <span className="text-red-500">*</span></label>
-                      <textarea rows={5} value={form.message} onChange={e => set("message", e.target.value)} className={`${inputCls("message")} resize-none`} placeholder="Write your message, question, or concern here…" />
+                      <label htmlFor="message" className="block text-xs text-muted-foreground mb-1.5">Message <span className="text-red-500">*</span></label>
+                      <textarea id="message" name="message" rows={5} value={form.message} onChange={e => set("message", e.target.value)} className={`${inputCls("message")} resize-none`} placeholder="Write your message, question, or concern here…" />
                       {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
                     </div>
                     <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-semibold shadow-md transition-all">

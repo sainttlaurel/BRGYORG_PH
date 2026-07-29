@@ -1,11 +1,16 @@
 import React, { useState, useRef } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Plus, Download, Upload, X, Eye, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 import { useAuth } from "./AuthContext";
 import { TableLoading, TableEmpty } from "./ui/table-state";
+import { ConfirmDialog } from "./ui/confirm-dialog";
 import { deleteResident, insertResident, updateResident } from "@/lib/supabaseWrite";
+import { useSort } from "@/lib/hooks/useSort";
+import { usePagination } from "@/lib/hooks/usePagination";
+import { residentSchema } from "@/lib/validations";
 
 const statusColors: Record<string, string> = {
   "Registered Voter": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
@@ -31,7 +36,9 @@ function csvExport(data: Record<string, string>[], filename: string) {
 const AdminResidents: React.FC = () => {
   const { residents, loading } = useData();
   const { user } = useAuth();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
   const [purokFilter, setPurokFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selected, setSelected] = useState<typeof residents[0] | null>(null);
@@ -39,13 +46,15 @@ const AdminResidents: React.FC = () => {
   const [addForm, setAddForm] = useState({ fname: "", lname: "", purok: "Purok 1", contact: "", address: "", gender: "Male", dob: "" });
   const [showEditId, setShowEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ fname: "", lname: "", purok: "Purok 1", contact: "", address: "", gender: "Male", dob: "" });
+  const [deleteTarget, setDeleteTarget] = useState<typeof residents[0] | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const puroks = ["All", ...Array.from(new Set(residents.map(r => r.purok)))];
   const statuses = ["All", "Registered Voter", "Senior Citizen", "Minor"];
 
   const handleAddResident = async () => {
-    if (!addForm.fname.trim() || !addForm.lname.trim()) { toast.error("First and last name required"); return; }
+    const parsed = residentSchema.safeParse(addForm);
+    if (!parsed.success) { parsed.error.issues.forEach(i => toast.error(i.message)); return; }
     try {
       await insertResident(addForm, user?.name || "System");
       setAddForm({ fname: "", lname: "", purok: "Purok 1", contact: "", address: "", gender: "Male", dob: "" });
@@ -62,7 +71,8 @@ const AdminResidents: React.FC = () => {
 
   const handleEditResident = async () => {
     if (!showEditId) return;
-    if (!editForm.fname.trim() || !editForm.lname.trim()) { toast.error("First and last name required"); return; }
+    const parsed = residentSchema.safeParse(editForm);
+    if (!parsed.success) { parsed.error.issues.forEach(i => toast.error(i.message)); return; }
     try {
       await updateResident(showEditId, {
         name: `${editForm.fname} ${editForm.lname}`.trim(),
@@ -115,11 +125,14 @@ const AdminResidents: React.FC = () => {
   const filtered = residents.filter(r =>
     (purokFilter === "All" || r.purok === purokFilter) &&
     (statusFilter === "All" || r.status === statusFilter) &&
-    (query === "" || 
-      r.name.toLowerCase().includes(query.toLowerCase()) || 
-      r.id.toLowerCase().includes(query.toLowerCase()) ||
-      r.address.toLowerCase().includes(query.toLowerCase()))
+    (debouncedQuery === "" || 
+      r.name.toLowerCase().includes(debouncedQuery.toLowerCase()) || 
+      r.id.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+      r.address.toLowerCase().includes(debouncedQuery.toLowerCase()))
   );
+
+  const { sortKey, sortDir, toggleSort, sortedData } = useSort(filtered);
+  const { page, pageSize, setPage, setPageSize, totalPages, total, paginatedData } = usePagination(sortedData);
 
   const printIdCard = (res: typeof residents[0]) => {
     const w = window.open("", "_blank");
@@ -142,7 +155,7 @@ const AdminResidents: React.FC = () => {
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
           <h1 className="font-bold text-foreground text-[1.3rem]">Residents Registry</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">{residents.length.toLocaleString()} total residents · {filtered.length} showing</p>
+          <p className="text-muted-foreground text-sm mt-0.5">{residents.length.toLocaleString()} total residents · {total} showing</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => csvExport(filtered.map(r => ({ ID: r.id, Name: r.name, Age: String(r.age), Gender: r.gender, Status: r.status, Address: r.address, Purok: r.purok, Contact: r.contact })), "residents.csv")} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
@@ -162,21 +175,21 @@ const AdminResidents: React.FC = () => {
       {showAddForm && (
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">New Resident</h2>
-          <div className="grid grid-cols-3 gap-3 mb-3">
-            <input type="text" value={addForm.fname} onChange={e => setAddForm(f => ({ ...f, fname: e.target.value }))} placeholder="First name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
-            <input type="text" value={addForm.lname} onChange={e => setAddForm(f => ({ ...f, lname: e.target.value }))} placeholder="Last name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
-            <select value={addForm.purok} onChange={e => setAddForm(f => ({ ...f, purok: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            <input id="add-fname" name="fname" type="text" value={addForm.fname} onChange={e => setAddForm(f => ({ ...f, fname: e.target.value }))} placeholder="First name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <input id="add-lname" name="lname" type="text" value={addForm.lname} onChange={e => setAddForm(f => ({ ...f, lname: e.target.value }))} placeholder="Last name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <select id="add-purok" name="purok" value={addForm.purok} onChange={e => setAddForm(f => ({ ...f, purok: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
               {["Purok 1","Purok 2","Purok 3","Purok 4","Purok 5"].map(p => <option key={p}>{p}</option>)}
             </select>
           </div>
-          <div className="grid grid-cols-3 gap-3 mb-3">
-            <input type="text" value={addForm.contact} onChange={e => setAddForm(f => ({ ...f, contact: e.target.value }))} placeholder="Contact" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
-            <input type="text" value={addForm.address} onChange={e => setAddForm(f => ({ ...f, address: e.target.value }))} placeholder="Address" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            <input id="add-contact" name="contact" type="text" value={addForm.contact} onChange={e => setAddForm(f => ({ ...f, contact: e.target.value }))} placeholder="Contact" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <input id="add-address" name="address" type="text" value={addForm.address} onChange={e => setAddForm(f => ({ ...f, address: e.target.value }))} placeholder="Address" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
             <div className="grid grid-cols-2 gap-3">
-              <select value={addForm.gender} onChange={e => setAddForm(f => ({ ...f, gender: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
+              <select id="add-gender" name="gender" value={addForm.gender} onChange={e => setAddForm(f => ({ ...f, gender: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
                 <option>Male</option><option>Female</option>
               </select>
-              <input type="date" value={addForm.dob} onChange={e => setAddForm(f => ({ ...f, dob: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+              <input id="add-dob" name="dob" type="date" value={addForm.dob} onChange={e => setAddForm(f => ({ ...f, dob: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
             </div>
           </div>
           <div className="flex gap-2 justify-end">
@@ -193,21 +206,21 @@ const AdminResidents: React.FC = () => {
         return (
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-amber-200 dark:border-amber-800 rounded-2xl p-5 mb-5 shadow-sm">
             <h2 className="font-semibold text-foreground mb-4 text-sm">Edit Resident — {res.name}</h2>
-            <div className="grid grid-cols-3 gap-3 mb-3">
-              <input type="text" value={editForm.fname} onChange={e => setEditForm(f => ({ ...f, fname: e.target.value }))} placeholder="First name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
-              <input type="text" value={editForm.lname} onChange={e => setEditForm(f => ({ ...f, lname: e.target.value }))} placeholder="Last name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
-              <select value={editForm.purok} onChange={e => setEditForm(f => ({ ...f, purok: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              <input id="edit-fname" name="fname" type="text" value={editForm.fname} onChange={e => setEditForm(f => ({ ...f, fname: e.target.value }))} placeholder="First name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+              <input id="edit-lname" name="lname" type="text" value={editForm.lname} onChange={e => setEditForm(f => ({ ...f, lname: e.target.value }))} placeholder="Last name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+              <select id="edit-purok" name="purok" value={editForm.purok} onChange={e => setEditForm(f => ({ ...f, purok: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
                 {["Purok 1","Purok 2","Purok 3","Purok 4","Purok 5"].map(p => <option key={p}>{p}</option>)}
               </select>
             </div>
-            <div className="grid grid-cols-3 gap-3 mb-3">
-              <input type="text" value={editForm.contact} onChange={e => setEditForm(f => ({ ...f, contact: e.target.value }))} placeholder="Contact" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
-              <input type="text" value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} placeholder="Address" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              <input id="edit-contact" name="contact" type="text" value={editForm.contact} onChange={e => setEditForm(f => ({ ...f, contact: e.target.value }))} placeholder="Contact" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+              <input id="edit-address" name="address" type="text" value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} placeholder="Address" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
               <div className="grid grid-cols-2 gap-3">
-                <select value={editForm.gender} onChange={e => setEditForm(f => ({ ...f, gender: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
+                <select id="edit-gender" name="gender" value={editForm.gender} onChange={e => setEditForm(f => ({ ...f, gender: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
                   <option>Male</option><option>Female</option>
                 </select>
-                <input type="date" value={editForm.dob} onChange={e => setEditForm(f => ({ ...f, dob: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+                <input id="edit-dob" name="dob" type="date" value={editForm.dob} onChange={e => setEditForm(f => ({ ...f, dob: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
               </div>
             </div>
             <div className="flex gap-2 justify-end">
@@ -223,6 +236,8 @@ const AdminResidents: React.FC = () => {
         <div className="relative flex-1 min-w-48">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
+            id="search-residents"
+            name="search"
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -230,13 +245,28 @@ const AdminResidents: React.FC = () => {
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all"
           />
         </div>
-        <select value={purokFilter} onChange={e => setPurokFilter(e.target.value)} aria-label="Filter by purok" className="px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
+        <select id="filter-purok" name="purokFilter" value={purokFilter} onChange={e => setPurokFilter(e.target.value)} aria-label="Filter by purok" className="px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
           {puroks.map(p => <option key={p}>{p}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status" className="px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
+        <select id="filter-status" name="statusFilter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status" className="px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
           {statuses.map(s => <option key={s}>{s}</option>)}
         </select>
       </div>
+
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800">
+          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">{selectedIds.size} selected</span>
+          <button onClick={async () => { if (!confirm(`Delete ${selectedIds.size} residents?`)) return; for (const id of selectedIds) { try { await deleteResident(id, user?.name || "System"); } catch {} } toast.success(`${selectedIds.size} residents deleted`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors">
+            Delete Selected
+          </button>
+          <button onClick={() => csvExport(filtered.filter(r => selectedIds.has(r.id)).map(r => ({ ID: r.id, Name: r.name, Age: String(r.age), Gender: r.gender, Status: r.status, Address: r.address, Purok: r.purok, Contact: r.contact })), `selected-residents.csv`)} className="px-3 py-1 rounded-lg bg-white dark:bg-card border border-border text-xs text-muted-foreground hover:bg-muted transition-colors">
+            Export Selected
+          </button>
+          <button onClick={() => setSelectedIds(new Set())} className="px-3 py-1 rounded-lg bg-white dark:bg-card border border-border text-xs text-muted-foreground hover:bg-muted transition-colors ml-auto">
+            Clear
+          </button>
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-white dark:bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
@@ -244,25 +274,27 @@ const AdminResidents: React.FC = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-muted/50 border-b border-border">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Resident</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">ID</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">Address</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">Purok</th>
+                <th className="px-2 py-3 w-10"><input type="checkbox" checked={filtered.length > 0 && selectedIds.size === filtered.length} onChange={e => setSelectedIds(e.target.checked ? new Set(filtered.map(r => r.id)) : new Set())} className="rounded" /></th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("name")}>Resident{sortKey === "name" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("id")}>ID{sortKey === "id" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell cursor-pointer select-none" onClick={() => toggleSort("address")}>Address{sortKey === "address" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("status")}>Status{sortKey === "status" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell cursor-pointer select-none" onClick={() => toggleSort("purok")}>Purok{sortKey === "purok" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={6}><TableEmpty message="No matching residents" /></td></tr>
-              ) : (filtered.map((res, i) => (
-                <motion.tr
+                  <tr><td colSpan={7}><TableEmpty message="No matching residents" /></td></tr>
+              ) : (paginatedData.map((res, i) => (
+                  <motion.tr
                   key={res.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
                   className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                 >
+                  <td className="px-2 py-3"><input type="checkbox" checked={selectedIds.has(res.id)} onChange={e => { const next = new Set(selectedIds); if (e.target.checked) next.add(res.id); else next.delete(res.id); setSelectedIds(next); }} className="rounded" /></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
@@ -290,7 +322,7 @@ const AdminResidents: React.FC = () => {
                       <button onClick={() => openEdit(res)} aria-label={`Edit ${res.name}`} className="p-1.5 rounded-lg text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors">
                         <Edit size={14} />
                       </button>
-                      <button onClick={async () => { if (confirm(`Delete ${res.name}?`)) { try { await deleteResident(res.id, user?.name || "System"); toast.success("Resident deleted"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to delete"); } } }} aria-label={`Delete ${res.name}`} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                      <button onClick={() => setDeleteTarget(res)} aria-label={`Delete ${res.name}`} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -299,6 +331,30 @@ const AdminResidents: React.FC = () => {
               )))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={e => setPageSize(Number(e.target.value))}
+            className="px-2 py-1 rounded-lg border border-border bg-white dark:bg-card text-xs"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+          <span>{page} of {totalPages} pages ({total} total)</span>
+        </div>
+        <div className="flex gap-1">
+          <button onClick={() => setPage(1)} disabled={page <= 1} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">First</button>
+          <button onClick={() => setPage(page - 1)} disabled={page <= 1} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Prev</button>
+          <button onClick={() => setPage(page + 1)} disabled={page >= totalPages} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Next</button>
+          <button onClick={() => setPage(totalPages)} disabled={page >= totalPages} className="px-2 py-1 rounded-lg border border-border text-xs disabled:opacity-30 hover:bg-muted transition-colors">Last</button>
         </div>
       </div>
 
@@ -356,6 +412,24 @@ const AdminResidents: React.FC = () => {
           </>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={v => { if (!v) setDeleteTarget(null); }}
+        title="Delete Resident"
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          try {
+            await deleteResident(deleteTarget.id, user?.name || "System");
+            toast.success("Resident deleted");
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to delete");
+          }
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 };

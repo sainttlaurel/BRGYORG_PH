@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion } from "motion/react";
 import { Plus, Edit, Trash2, Search, Shield, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -6,6 +7,8 @@ import { useData } from "./DataContext";
 import { useAuth } from "./AuthContext";
 import { createUser, updateUser, setUserStatus, deleteUser } from "@/lib/supabase";
 import { TableLoading } from "./ui/table-state";
+import { ConfirmDialog } from "./ui/confirm-dialog";
+import { userSchema } from "@/lib/validations";
 
 const roleColors: Record<string, string> = {
   captain: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
@@ -25,18 +28,21 @@ const AdminUsers: React.FC = () => {
   const { adminUsers: users, refetch, loading } = useData();
   useAuth();
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
   const [showForm, setShowForm] = useState(false);
   const [showEditId, setShowEditId] = useState<number | null>(null);
   const [form, setForm] = useState({ name: "", username: "", email: "", password: "", role: "staff", initials: "" });
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
 
   const filtered = users.filter(u =>
-    query === "" || u.name.toLowerCase().includes(query.toLowerCase()) || u.email.toLowerCase().includes(query.toLowerCase())
+    debouncedQuery === "" || u.name.toLowerCase().includes(debouncedQuery.toLowerCase()) || u.email.toLowerCase().includes(debouncedQuery.toLowerCase())
   );
 
   const resetForm = () => setForm({ name: "", username: "", email: "", password: "", role: "staff", initials: "" });
 
   const handleAdd = async () => {
-    if (!form.name.trim() || !form.username.trim() || !form.password.trim()) { toast.error("Name, username, and password required"); return; }
+    const parsed = userSchema.safeParse({ ...form, loginId: form.username });
+    if (!parsed.success) { parsed.error.issues.forEach(i => toast.error(i.message)); return; }
     const nextId = Math.max(...users.map(u => u.id), 0) + 1;
     try {
       await createUser({ id: nextId, name: form.name, username: form.username, email: form.email, password: form.password, role: form.role, initials: form.initials || form.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) });
@@ -54,7 +60,8 @@ const AdminUsers: React.FC = () => {
 
   const handleEdit = async () => {
     if (showEditId === null) return;
-    if (!form.name.trim()) { toast.error("Name required"); return; }
+    const parsed = userSchema.safeParse({ ...form, loginId: form.username });
+    if (!parsed.success) { parsed.error.issues.forEach(i => toast.error(i.message)); return; }
     try {
       await updateUser({ id: showEditId, name: form.name, username: form.username || form.name.toLowerCase().replace(/\s/g, "."), email: form.email, role: form.role, initials: form.initials || form.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) });
       setShowEditId(null);
@@ -73,11 +80,12 @@ const AdminUsers: React.FC = () => {
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update status"); }
   };
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`Delete user ${name}?`)) return;
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await deleteUser(id);
+      await deleteUser(deleteTarget.id);
       toast.success("User deleted");
+      setDeleteTarget(null);
       refetch();
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to delete user"); }
   };
@@ -101,18 +109,18 @@ const AdminUsers: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">{showEditId !== null ? "Edit User" : "New User"}</h2>
           <div className="grid grid-cols-2 gap-3 mb-3">
-            <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
-            <input type="text" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} placeholder="Username *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
-            <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="Email" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
-            <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder={showEditId !== null ? "Leave blank to keep current" : "Password *"} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
-            <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
+            <input id="user-name" name="name" type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <input id="user-username" name="username" type="text" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} placeholder="Username *" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <input id="user-email" name="email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="Email" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <input id="user-password" name="password" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder={showEditId !== null ? "Leave blank to keep current" : "Password *"} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <select id="user-role" name="role" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
               <option value="captain">Captain</option>
               <option value="secretary">Secretary</option>
               <option value="treasurer">Treasurer</option>
               <option value="staff">Staff</option>
               <option value="admin">Admin</option>
             </select>
-            <input type="text" value={form.initials} onChange={e => setForm(f => ({ ...f, initials: e.target.value }))} placeholder="Initials (auto)" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <input id="user-initials" name="initials" type="text" value={form.initials} onChange={e => setForm(f => ({ ...f, initials: e.target.value }))} placeholder="Initials (auto)" className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
           </div>
           <div className="flex gap-2 justify-end">
             <button onClick={() => { setShowForm(false); setShowEditId(null); resetForm(); }} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
@@ -125,7 +133,7 @@ const AdminUsers: React.FC = () => {
 
       <div className="relative mb-5">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search users…" className="w-full max-w-xs pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+        <input id="search-users" name="search" type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search users…" className="w-full max-w-xs pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
       </div>
 
       <div className="bg-white dark:bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
@@ -179,7 +187,7 @@ const AdminUsers: React.FC = () => {
                       <button onClick={() => openEdit(user)} className="p-1.5 rounded-lg text-muted-foreground hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                         <Edit size={14} />
                       </button>
-                      <button onClick={() => handleDelete(user.id, user.name)} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                      <button onClick={() => setDeleteTarget({ id: user.id, name: user.name })} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -202,6 +210,14 @@ const AdminUsers: React.FC = () => {
           ))}
         </div>
       </div>
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
+        title="Delete User"
+        description={`Are you sure you want to delete ${deleteTarget?.name}?`}
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

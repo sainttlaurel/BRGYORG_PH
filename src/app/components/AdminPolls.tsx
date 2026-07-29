@@ -7,6 +7,7 @@ import type { Poll } from "@/lib/useSupabaseData";
 import { useAuth } from "./AuthContext";
 import { insertPoll, updatePollStatus, updatePoll, deletePoll as deletePollDb } from "@/lib/supabaseWrite";
 import { TableLoading, TableEmpty } from "./ui/table-state";
+import { ConfirmDialog } from "./ui/confirm-dialog";
 
 
 const AdminPolls: React.FC = () => {
@@ -24,6 +25,7 @@ const AdminPolls: React.FC = () => {
   const [form, setForm] = useState({ title: "", category: "Governance", description: "", endDate: "", options: ["", ""] });
   const [showEditId, setShowEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ title: "", category: "Governance", description: "", endDate: "", options: ["", ""] });
+  const [deleteTarget, setDeleteTarget] = useState<Poll | null>(null);
 
   const getPercent = (v: number, t: number) => t === 0 ? 0 : Math.round((v / t) * 100);
 
@@ -97,20 +99,20 @@ const AdminPolls: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">New Poll</h2>
           <div className="space-y-3">
-            <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Poll question…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <input id="poll-title" name="title" type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Poll question…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
             <div className="grid grid-cols-2 gap-3">
-              <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
+              <select id="poll-category" name="category" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
                 {["Governance", "Infrastructure", "Budget", "Ordinance", "Services"].map(c => <option key={c}>{c}</option>)}
               </select>
-              <input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+              <input id="poll-endDate" name="endDate" type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
             </div>
-            <textarea rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Description (optional)…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+            <textarea id="poll-description" name="description" rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Description (optional)…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
             <div>
-              <label className="block text-xs text-muted-foreground mb-1.5">Options <span className="text-red-500">*</span> (at least 2)</label>
+              <label htmlFor="poll-option-0" className="block text-xs text-muted-foreground mb-1.5">Options <span className="text-red-500">*</span> (at least 2)</label>
               <div className="space-y-1.5">
                 {form.options.map((opt, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <input type="text" value={opt} onChange={e => setForm(f => { const o = [...f.options]; o[i] = e.target.value; return { ...f, options: o }; })} placeholder={`Option ${i + 1}`} className="flex-1 px-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
+                    <input id={`poll-option-${i}`} name={`option-${i}`} type="text" value={opt} onChange={e => setForm(f => { const o = [...f.options]; o[i] = e.target.value; return { ...f, options: o }; })} placeholder={`Option ${i + 1}`} className="flex-1 px-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all" />
                     {form.options.length > 2 && (
                       <button onClick={() => setForm(f => ({ ...f, options: f.options.filter((_, idx) => idx !== i) }))} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors text-xs">Remove</button>
                     )}
@@ -135,20 +137,20 @@ const AdminPolls: React.FC = () => {
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-amber-200 dark:border-amber-800 rounded-2xl p-5 mb-5 shadow-sm">
             <h2 className="font-semibold text-foreground mb-4 text-sm">Edit Poll — {poll.title}</h2>
             <div className="space-y-3">
-              <input type="text" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="Poll question…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+              <input id="edit-poll-title" name="title" type="text" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="Poll question…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
               <div className="grid grid-cols-2 gap-3">
-                <select value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
+                <select id="edit-poll-category" name="category" value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all">
                   {["Governance", "Infrastructure", "Budget", "Ordinance", "Services"].map(c => <option key={c}>{c}</option>)}
                 </select>
-                <input type="date" value={editForm.endDate} onChange={e => setEditForm(f => ({ ...f, endDate: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+                <input id="edit-poll-endDate" name="endDate" type="date" value={editForm.endDate} onChange={e => setEditForm(f => ({ ...f, endDate: e.target.value }))} className="px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
               </div>
-              <textarea rows={2} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} placeholder="Description…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+              <textarea id="edit-poll-description" name="description" rows={2} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} placeholder="Description…" className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5">Options</label>
+                <label htmlFor="edit-poll-option-0" className="block text-xs text-muted-foreground mb-1.5">Options</label>
                 <div className="space-y-1.5">
                   {editForm.options.map((opt, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <input type="text" value={opt} onChange={e => setEditForm(f => { const o = [...f.options]; o[i] = e.target.value; return { ...f, options: o }; })} placeholder={`Option ${i + 1}`} className="flex-1 px-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
+                      <input id={`edit-poll-option-${i}`} name={`option-${i}`} type="text" value={opt} onChange={e => setEditForm(f => { const o = [...f.options]; o[i] = e.target.value; return { ...f, options: o }; })} placeholder={`Option ${i + 1}`} className="flex-1 px-3 py-2 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all" />
                       {editForm.options.length > 2 && (
                         <button onClick={() => setEditForm(f => ({ ...f, options: f.options.filter((_, idx) => idx !== i) }))} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors text-xs">Remove</button>
                       )}
@@ -197,7 +199,7 @@ const AdminPolls: React.FC = () => {
                   <button onClick={() => openEdit(poll)} className="p-1.5 rounded-lg text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors">
                     <Edit size={13} />
                   </button>
-                  <button onClick={() => deletePoll(poll.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                  <button onClick={() => setDeleteTarget(poll)} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -233,6 +235,14 @@ const AdminPolls: React.FC = () => {
           </motion.div>
         )))}
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={() => setDeleteTarget(null)}
+        title="Delete Poll"
+        description={`Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.`}
+        onConfirm={() => deleteTarget && deletePoll(deleteTarget.id)}
+      />
     </div>
   );
 };

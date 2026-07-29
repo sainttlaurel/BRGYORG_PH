@@ -119,8 +119,10 @@ const AdminLogin: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm text-muted-foreground mb-1.5">Username or Email</label>
+              <label htmlFor="loginId" className="block text-sm text-muted-foreground mb-1.5">Username or Email</label>
               <input
+                id="loginId"
+                name="loginId"
                 type="text"
                 value={loginId}
                 onChange={e => setLoginId(e.target.value)}
@@ -131,9 +133,11 @@ const AdminLogin: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm text-muted-foreground mb-1.5">Password</label>
+              <label htmlFor="password" className="block text-sm text-muted-foreground mb-1.5">Password</label>
               <div className="relative">
                 <input
+                  id="password"
+                  name="password"
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={e => setPassword(e.target.value)}

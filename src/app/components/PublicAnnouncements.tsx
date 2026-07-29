@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion } from "motion/react";
 import { Megaphone, Clock, Search, Tag } from "lucide-react";
 import { useData } from "./DataContext";
@@ -10,10 +11,11 @@ const PublicAnnouncements: React.FC = () => {
   const { announcements } = useData();
   const [cat, setCat] = useState("All");
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
 
   const filtered = announcements.filter(a =>
     (cat === "All" || a.category === cat) &&
-    (query === "" || a.title.toLowerCase().includes(query.toLowerCase()) || a.content.toLowerCase().includes(query.toLowerCase()))
+    (debouncedQuery === "" || a.title.toLowerCase().includes(debouncedQuery.toLowerCase()) || a.content.toLowerCase().includes(debouncedQuery.toLowerCase()))
   );
 
   const catColor: Record<string, string> = {
@@ -43,6 +45,8 @@ const PublicAnnouncements: React.FC = () => {
           <div className="flex-1 relative">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
+              id="search-announcements"
+              name="search"
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}

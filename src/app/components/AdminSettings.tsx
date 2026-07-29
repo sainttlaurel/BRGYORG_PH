@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase, dbFetch, getSessionToken } from "@/lib/supabase";
 import { uploadLogo } from "@/lib/supabaseWrite";
 import { Dialog, DialogContent, DialogTitle } from "@/app/components/ui/dialog";
+import { ConfirmDialog } from "./ui/confirm-dialog";
 
 const tabs = [
   { id: "profile", label: "Barangay Profile", icon: Leaf },
@@ -37,6 +38,7 @@ const AdminSettings: React.FC = () => {
   const [fees, setFees] = useState<{ id: number; service: string; fee: number }[]>([]);
   const [settingsMap, setSettingsMap] = useState<Record<string, string>>({});
   const [modified, setModified] = useState<Record<string, boolean>>({});
+  const [dangerAction, setDangerAction] = useState<"clear-documents" | "clear-residents" | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -123,43 +125,43 @@ const AdminSettings: React.FC = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Barangay Name</label>
-                      <input type="text" value={profileForm.name} onChange={e => { setProfileForm(f => ({ ...f, name: e.target.value })); mark("profile"); }} className={inputCls} />
+                      <label htmlFor="barangay-name" className="block text-xs text-muted-foreground mb-1.5">Barangay Name</label>
+                      <input id="barangay-name" name="name" type="text" value={profileForm.name} onChange={e => { setProfileForm(f => ({ ...f, name: e.target.value })); mark("profile"); }} className={inputCls} />
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Municipality / City</label>
-                      <input type="text" value={profileForm.municipality} onChange={e => { setProfileForm(f => ({ ...f, municipality: e.target.value })); mark("profile"); }} className={inputCls} />
+                      <label htmlFor="municipality" className="block text-xs text-muted-foreground mb-1.5">Municipality / City</label>
+                      <input id="municipality" name="municipality" type="text" value={profileForm.municipality} onChange={e => { setProfileForm(f => ({ ...f, municipality: e.target.value })); mark("profile"); }} className={inputCls} />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Barangay Captain</label>
-                    <input type="text" value={profileForm.captain} onChange={e => { setProfileForm(f => ({ ...f, captain: e.target.value })); mark("profile"); }} className={inputCls} />
+                    <label htmlFor="captain" className="block text-xs text-muted-foreground mb-1.5">Barangay Captain</label>
+                    <input id="captain" name="captain" type="text" value={profileForm.captain} onChange={e => { setProfileForm(f => ({ ...f, captain: e.target.value })); mark("profile"); }} className={inputCls} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Hotline</label>
-                      <input type="text" value={profileForm.hotline} onChange={e => { setProfileForm(f => ({ ...f, hotline: e.target.value })); mark("profile"); }} className={inputCls} />
+                      <label htmlFor="hotline" className="block text-xs text-muted-foreground mb-1.5">Hotline</label>
+                      <input id="hotline" name="hotline" type="text" value={profileForm.hotline} onChange={e => { setProfileForm(f => ({ ...f, hotline: e.target.value })); mark("profile"); }} className={inputCls} />
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Email</label>
-                      <input type="email" value={profileForm.email} onChange={e => { setProfileForm(f => ({ ...f, email: e.target.value })); mark("profile"); }} className={inputCls} />
+                      <label htmlFor="profile-email" className="block text-xs text-muted-foreground mb-1.5">Email</label>
+                      <input id="profile-email" name="email" type="email" value={profileForm.email} onChange={e => { setProfileForm(f => ({ ...f, email: e.target.value })); mark("profile"); }} className={inputCls} />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Address</label>
-                    <input type="text" value={profileForm.address} onChange={e => { setProfileForm(f => ({ ...f, address: e.target.value })); mark("profile"); }} className={inputCls} />
+                    <label htmlFor="profile-address" className="block text-xs text-muted-foreground mb-1.5">Address</label>
+                    <input id="profile-address" name="address" type="text" value={profileForm.address} onChange={e => { setProfileForm(f => ({ ...f, address: e.target.value })); mark("profile"); }} className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Office Hours</label>
-                    <input type="text" value={profileForm.office_hours} onChange={e => { setProfileForm(f => ({ ...f, office_hours: e.target.value })); mark("profile"); }} className={inputCls} />
+                    <label htmlFor="office-hours" className="block text-xs text-muted-foreground mb-1.5">Office Hours</label>
+                    <input id="office-hours" name="office_hours" type="text" value={profileForm.office_hours} onChange={e => { setProfileForm(f => ({ ...f, office_hours: e.target.value })); mark("profile"); }} className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Vision</label>
-                    <textarea rows={3} value={profileForm.vision} onChange={e => { setProfileForm(f => ({ ...f, vision: e.target.value })); mark("profile"); }} className={`${inputCls} resize-none`} />
+                    <label htmlFor="vision" className="block text-xs text-muted-foreground mb-1.5">Vision</label>
+                    <textarea id="vision" name="vision" rows={3} value={profileForm.vision} onChange={e => { setProfileForm(f => ({ ...f, vision: e.target.value })); mark("profile"); }} className={`${inputCls} resize-none`} />
                   </div>
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Mission</label>
-                    <textarea rows={3} value={profileForm.mission} onChange={e => { setProfileForm(f => ({ ...f, mission: e.target.value })); mark("profile"); }} className={`${inputCls} resize-none`} />
+                    <label htmlFor="mission" className="block text-xs text-muted-foreground mb-1.5">Mission</label>
+                    <textarea id="mission" name="mission" rows={3} value={profileForm.mission} onChange={e => { setProfileForm(f => ({ ...f, mission: e.target.value })); mark("profile"); }} className={`${inputCls} resize-none`} />
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1.5">Barangay Seal / Logo</label>
@@ -204,10 +206,12 @@ const AdminSettings: React.FC = () => {
                 <div className="space-y-3 mb-5">
                   {fees.map(item => (
                     <div key={item.id} className="flex items-center justify-between gap-3 py-1">
-                      <label className="text-sm text-foreground flex-1">{item.service}</label>
+                      <label htmlFor={`fee-${item.id}`} className="text-sm text-foreground flex-1">{item.service}</label>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-sm text-muted-foreground">₱</span>
                         <input
+                          id={`fee-${item.id}`}
+                          name={`fee-${item.id}`}
                           type="number"
                           value={item.fee}
                           onChange={e => { setFees(fs => fs.map(f => f.id === item.id ? { ...f, fee: parseInt(e.target.value) || 0 } : f)); mark(`fee-${item.id}`); }}
@@ -238,16 +242,16 @@ const AdminSettings: React.FC = () => {
                       </button>
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Header Text</label>
-                      <input type="text" value={templateEditor.header} onChange={e => setTemplateEditor(t => ({ ...t!, header: e.target.value }))} className={inputCls} placeholder="Republic of the Philippines" />
+                      <label htmlFor="template-header" className="block text-xs text-muted-foreground mb-1.5">Header Text</label>
+                      <input id="template-header" name="header" type="text" value={templateEditor.header} onChange={e => setTemplateEditor(t => ({ ...t!, header: e.target.value }))} className={inputCls} placeholder="Republic of the Philippines" />
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Footer Text</label>
-                      <input type="text" value={templateEditor.footer} onChange={e => setTemplateEditor(t => ({ ...t!, footer: e.target.value }))} className={inputCls} placeholder="Not valid without seal" />
+                      <label htmlFor="template-footer" className="block text-xs text-muted-foreground mb-1.5">Footer Text</label>
+                      <input id="template-footer" name="footer" type="text" value={templateEditor.footer} onChange={e => setTemplateEditor(t => ({ ...t!, footer: e.target.value }))} className={inputCls} placeholder="Not valid without seal" />
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1.5">Signing Officer Title</label>
-                      <input type="text" value={templateEditor.officer} onChange={e => setTemplateEditor(t => ({ ...t!, officer: e.target.value }))} className={inputCls} placeholder="Barangay Captain" />
+                      <label htmlFor="template-officer" className="block text-xs text-muted-foreground mb-1.5">Signing Officer Title</label>
+                      <input id="template-officer" name="officer" type="text" value={templateEditor.officer} onChange={e => setTemplateEditor(t => ({ ...t!, officer: e.target.value }))} className={inputCls} placeholder="Barangay Captain" />
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -356,8 +360,8 @@ const AdminSettings: React.FC = () => {
                 <h2 className="font-semibold text-foreground mb-5 text-sm">Security Settings</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Session Timeout</label>
-                    <select value={settingsMap["session_timeout"] ?? "30"} onChange={async e => { try { await saveSettings("session_timeout", e.target.value); setSettingsMap(m => ({ ...m, session_timeout: e.target.value })); toast.success("Session timeout updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
+                    <label htmlFor="session-timeout" className="block text-xs text-muted-foreground mb-1.5">Session Timeout</label>
+                    <select id="session-timeout" name="session_timeout" value={settingsMap["session_timeout"] ?? "30"} onChange={async e => { try { await saveSettings("session_timeout", e.target.value); setSettingsMap(m => ({ ...m, session_timeout: e.target.value })); toast.success("Session timeout updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="30">30 minutes</option>
                       <option value="60">60 minutes</option>
                       <option value="120">120 minutes</option>
@@ -365,8 +369,8 @@ const AdminSettings: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Password Expiry Policy</label>
-                    <select value={settingsMap["password_expiry"] ?? "90"} onChange={async e => { try { await saveSettings("password_expiry", e.target.value); setSettingsMap(m => ({ ...m, password_expiry: e.target.value })); toast.success("Password expiry updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
+                    <label htmlFor="password-expiry" className="block text-xs text-muted-foreground mb-1.5">Password Expiry Policy</label>
+                    <select id="password-expiry" name="password_expiry" value={settingsMap["password_expiry"] ?? "90"} onChange={async e => { try { await saveSettings("password_expiry", e.target.value); setSettingsMap(m => ({ ...m, password_expiry: e.target.value })); toast.success("Password expiry updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="90">Every 90 days</option>
                       <option value="180">Every 180 days</option>
                       <option value="365">Every year</option>
@@ -410,23 +414,23 @@ const AdminSettings: React.FC = () => {
                 <h2 className="font-semibold text-foreground mb-5 text-sm">System Preferences</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Default Language</label>
-                    <select value={settingsMap["language"] ?? "en"} onChange={async e => { try { await saveSettings("language", e.target.value); setSettingsMap(m => ({ ...m, language: e.target.value })); toast.success("Language updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
+                    <label htmlFor="language" className="block text-xs text-muted-foreground mb-1.5">Default Language</label>
+                    <select id="language" name="language" value={settingsMap["language"] ?? "en"} onChange={async e => { try { await saveSettings("language", e.target.value); setSettingsMap(m => ({ ...m, language: e.target.value })); toast.success("Language updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="en">English</option>
                       <option value="fil">Filipino</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Date Format</label>
-                    <select value={settingsMap["date_format"] ?? "MM/DD/YYYY"} onChange={async e => { try { await saveSettings("date_format", e.target.value); setSettingsMap(m => ({ ...m, date_format: e.target.value })); toast.success("Date format updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
+                    <label htmlFor="date-format" className="block text-xs text-muted-foreground mb-1.5">Date Format</label>
+                    <select id="date-format" name="date_format" value={settingsMap["date_format"] ?? "MM/DD/YYYY"} onChange={async e => { try { await saveSettings("date_format", e.target.value); setSettingsMap(m => ({ ...m, date_format: e.target.value })); toast.success("Date format updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                       <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                       <option value="YYYY-MM-DD">YYYY-MM-DD</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1.5">Time Zone</label>
-                    <select className={inputCls} disabled>
+                    <label htmlFor="timezone" className="block text-xs text-muted-foreground mb-1.5">Time Zone</label>
+                    <select id="timezone" name="timezone" className={inputCls} disabled>
                       <option>Asia/Manila (UTC+8)</option>
                     </select>
                   </div>
@@ -435,31 +439,13 @@ const AdminSettings: React.FC = () => {
                     <p className="text-amber-600/80 dark:text-amber-400/80 text-xs mb-3">Irreversible actions. Proceed with extreme caution.</p>
                     <div className="flex gap-2">
                       <button
-                        onClick={async () => {
-                          if (!confirm("Clear ALL document requests? This cannot be undone.")) return;
-                          try {
-                            const token = getSessionToken();
-                            if (!token || !supabase) return;
-                            const { error } = await supabase.rpc('admin_clear_documents', { p_token: token });
-                            if (error) throw new Error(error.message);
-                            toast.success("Document requests cleared");
-                          } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to clear data"); }
-                        }}
+                        onClick={() => setDangerAction("clear-documents")}
                         className="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors"
                       >
                         Clear Document Requests
                       </button>
                       <button
-                        onClick={async () => {
-                          if (!confirm("Delete all resident records? This cannot be undone.")) return;
-                          try {
-                            const token = getSessionToken();
-                            if (!token || !supabase) return;
-                            const { error } = await supabase.rpc('admin_clear_residents', { p_token: token });
-                            if (error) throw new Error(error.message);
-                            toast.success("Residents cleared");
-                          } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to clear data"); }
-                        }}
+                        onClick={() => setDangerAction("clear-residents")}
                         className="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors"
                       >
                         Clear Residents
@@ -507,6 +493,30 @@ const AdminSettings: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={dangerAction !== null}
+        onOpenChange={(v) => { if (!v) setDangerAction(null); }}
+        title={dangerAction === "clear-documents" ? "Clear Document Requests" : "Delete All Residents"}
+        description={dangerAction === "clear-documents" ? "Clear ALL document requests? This cannot be undone." : "Delete all resident records? This cannot be undone."}
+        confirmLabel={dangerAction === "clear-documents" ? "Clear" : "Delete All"}
+        onConfirm={async () => {
+          if (!dangerAction) return;
+          try {
+            const token = getSessionToken();
+            if (!token || !supabase) return;
+            if (dangerAction === "clear-documents") {
+              const { error } = await supabase.rpc("admin_clear_documents", { p_token: token });
+              if (error) throw new Error(error.message);
+              toast.success("Document requests cleared");
+            } else {
+              const { error } = await supabase.rpc("admin_clear_residents", { p_token: token });
+              if (error) throw new Error(error.message);
+              toast.success("Residents cleared");
+            }
+            setDangerAction(null);
+          } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to clear data"); }
+        }}
+      />
     </div>
   );
 };
