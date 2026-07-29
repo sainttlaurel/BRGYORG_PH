@@ -1,7 +1,7 @@
 # ROADMAP — Payatas Ledger
 
-Last Updated: July 28, 2026
-Status: **Feature-complete web app.** All public forms persist to Supabase. All 14 admin pages exist with live data. RBAC, certificate editor, CSV export, CI pipeline done.
+Last Updated: July 29, 2026
+Status: **Feature-complete web app with test suite.** All public forms persist to Supabase. All 14 admin pages exist with live data. RBAC, certificate editor, CSV export, CI pipeline, testing suite done.
 
 Priority levels: Critical / High / Medium / Backlog
 
@@ -21,13 +21,13 @@ Priority levels: Critical / High / Medium / Backlog
 
 ### Known issues (not yet fixed)
 
-- **Audit logs not wired** — admin write functions don't call `insertAuditLog()`, so the audit table stays empty.
-- **No contact messages admin UI** — `contact_messages` table exists but admin has no way to view/reply.
-- **No certificate preview** — template editor saves to DB but there's no render/preview.
-- **Report tracking is exact-match only** — no fuzzy search or typo tolerance on reference numbers.
-- **AdminReports age chart** — `age` derived from `dob` in mapper; invalid DOBs produce wrong chart data.
-- **Zero error detail** — most `catch` blocks just `toast.error("Failed to ...")` with no specific error message.
-- **Inconsistent loading states** — some admin tables show spinners, others flash empty before data arrives.
+- ~~**Audit logs not wired** — admin RPCs now INSERT into audit_logs server-side on every mutation.~~ **Fixed**
+- ~~**No contact messages admin UI** — full inbox view exists with list/detail layout, search, and delete.~~ **Done**
+- ~~**No certificate preview** — preview dialog renders styled certificate with template values.~~ **Done**
+- ~~**Zero error detail** — all catch blocks surface actual Supabase error messages.~~ **Fixed**
+- ~~**Inconsistent loading states** — TableLoading early returns added to all data tables.~~ **Fixed**
+- ~~**Report tracking is exact-match only** — added multi-strategy search: exact match, ILIKE wildcards, stripped non-alphanumeric, numeric extraction (with/without zero-padding), last-4-digit lookup.~~ **Fixed — July 2026**
+- ~~**AdminReports age chart** — invalid DOBs filtered out; `No demographic data available` fallback shown when no valid data. Consistent handling in AdminDashboard.~~ **Fixed — July 2026**
 
 ---
 
@@ -45,11 +45,11 @@ Priority levels: Critical / High / Medium / Backlog
 
 ### Still to improve
 
-- **Audit log wiring** (Medium) — every admin mutation should call `insertAuditLog()` so the audit table has real data.
-- **Certificate preview** (Medium) — render a mock certificate with the template values so admin can see before saving.
-- **Contact messages admin UI** (Low) — simple inbox view for submitted contact messages.
-- **Error detail pass** (Low) — surface Supabase error messages in catch blocks instead of generic text.
-- **Loading state consistency** (Low) — ensure all data tables show a consistent skeleton/spinner pattern.
+- ~~**Audit log wiring** (Medium) — all admin RPCs now INSERT into audit_logs server-side.~~ **Done — July 2026**
+- ~~**Certificate preview** (Medium) — preview dialog shows styled certificate with template values.~~ **Done — July 2026**
+- ~~**Contact messages admin UI** (Low) — inbox view with list/detail layout, search, and delete.~~ **Done — July 2026**
+- ~~**Error detail pass** (Low) — all catch blocks surface actual error messages.~~ **Done — July 2026**
+- ~~**Loading state consistency** (Low) — TableLoading added to all data tables.~~ **Done — July 2026**
 
 ---
 
@@ -117,8 +117,8 @@ All items complete. 14 admin pages built:
 4. ~~React + TypeScript + Vite migration~~ **Done**
 5. ~~Build all public forms and admin pages~~ **Done**
 6. ~~RBAC, template editor, CI, CSV export, logo upload~~ **Done**
-7. Wire audit logs to all admin write functions — **Next (Medium)**
-8. Certificate preview render — **Next (Medium)**
-9. Contact messages admin inbox — **Next (Low)**
-10. Testing suite (Jest/RTL) — **Next (Medium)**
+7. ~~Wire audit logs to all admin write functions~~ **Done — July 2026**
+8. ~~Certificate preview render~~ **Done — July 2026**
+9. ~~Contact messages admin inbox~~ **Done — July 2026**
+10. ~~Testing suite (Vitest + RTL)~~ **Done — July 2026** — 15 tests across 4 test files (utility, auth, dashboard, not-found)
 11. Desktop GUI (Electron) — **Backlog**

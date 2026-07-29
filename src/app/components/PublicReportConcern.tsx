@@ -78,10 +78,12 @@ const PublicReportConcern: React.FC = () => {
     setTrackLoading(true);
     try {
       const variations = [q];
-      if (!q.startsWith('RPT-')) variations.push(`RPT-${q}`);
-      if (q.startsWith('RPT-')) variations.push(q.replace('RPT-', ''));
+      if (!q.startsWith('RPT-')) variations.push(`RPT-${q}`, `RPT${q}`, q.replace(/^0+/, ''));
+      if (q.startsWith('RPT-')) variations.push(q.replace('RPT-', ''), q.replace('RPT-', 'RPT'));
+      const stripped = q.replace(/[^A-Z0-9]/g, '');
+      if (stripped !== q) variations.push(stripped);
       let result: Record<string, string> | null = null;
-      for (const v of variations) {
+      for (const v of [...new Set(variations)]) {
         result = await getReportByRef(v) as Record<string, string> | null;
         if (result) break;
       }

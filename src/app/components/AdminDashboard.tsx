@@ -180,25 +180,31 @@ const AdminDashboard: React.FC = () => {
         {/* Pie chart */}
         <div className="bg-white dark:bg-card border border-border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground text-sm mb-4">Resident Demographics</h2>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie data={residentDemographics} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
-                {residentDemographics.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
-              </Pie>
-              <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12 }} formatter={(v: number) => v.toLocaleString()} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="space-y-1.5 mt-2">
-            {residentDemographics.map(d => (
-              <div key={d.name} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: d.fill }} />
-                  <span className="text-muted-foreground">{d.name}</span>
-                </div>
-                <span className="font-medium text-foreground">{d.value.toLocaleString()}</span>
+          {residentDemographics.some(d => d.value > 0) ? (
+            <>
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie data={residentDemographics} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
+                    {residentDemographics.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12 }} formatter={(v: number) => v.toLocaleString()} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-1.5 mt-2">
+                {residentDemographics.map(d => (
+                  <div key={d.name} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: d.fill }} />
+                      <span className="text-muted-foreground">{d.name}</span>
+                    </div>
+                    <span className="font-medium text-foreground">{d.value.toLocaleString()}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground text-xs">No demographic data available</div>
+          )}
         </div>
       </div>
 
@@ -249,7 +255,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Activity feed — static until audit logs RPC is wired */}
+        {/* Activity feed — live from audit_logs via RPC */}
         <div className="lg:col-span-2 bg-white dark:bg-card border border-border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground text-sm mb-4">Activity Feed</h2>
           <div className="space-y-3">
