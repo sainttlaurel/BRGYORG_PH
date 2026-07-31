@@ -1,30 +1,27 @@
 import React, { useState } from "react";
-import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion } from "motion/react";
 import { Search, Users, FileText, Shield, CheckCircle, XCircle, Eye } from "lucide-react";
-import { useData } from "./DataContext";
-import { searchResidents } from "@/lib/supabase";
+import { searchResidents, getDocumentStatus } from "@/lib/supabase";
 import SeoHead from "./SeoHead";
 
 interface ResidentResult {
   id: string; full_name: string; purok: string; status: string; registered: string;
 }
 
+interface DocResult {
+  id: string; resident: string; type: string; purpose: string; status: string; date: string;
+}
+
 type Tab = "documents" | "residents";
 
 const PublicRegistry: React.FC = () => {
-  const { docRequests, loading } = useData();
   const [tab, setTab] = useState<Tab>("documents");
   const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query, 300);
   const [searched, setSearched] = useState(false);
   const [residentResults, setResidentResults] = useState<ResidentResult[]>([]);
+  const [docResults, setDocResults] = useState<DocResult[]>([]);
+  const [docLoading, setDocLoading] = useState(false);
   const [residentLoading, setResidentLoading] = useState(false);
-
-  const docResults = docRequests.filter(r =>
-    r.id.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-    r.resident.toLowerCase().includes(debouncedQuery.toLowerCase())
-  );
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +36,15 @@ const PublicRegistry: React.FC = () => {
         setResidentResults([]);
       }
       setResidentLoading(false);
+    } else {
+      setDocLoading(true);
+      try {
+        const results = await getDocumentStatus(query);
+        setDocResults(results);
+      } catch {
+        setDocResults([]);
+      }
+      setDocLoading(false);
     }
   };
 
@@ -106,7 +112,7 @@ const PublicRegistry: React.FC = () => {
         </form>
 
         {/* Loading state */}
-        {((loading && tab === "documents") || (residentLoading && tab === "residents")) && searched && (
+        {((docLoading && tab === "documents") || (residentLoading && tab === "residents")) && searched && (
           <div className="flex items-center justify-center py-12 text-muted-foreground">
             <svg className="animate-spin w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -117,7 +123,7 @@ const PublicRegistry: React.FC = () => {
         )}
 
         {/* Results */}
-        {!loading && searched && query && (
+        {!docLoading && !residentLoading && searched && query && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             {tab === "documents" ? (
               docResults.length > 0 ? (
@@ -146,7 +152,6 @@ const PublicRegistry: React.FC = () => {
                           ) : (
                             <div className="flex items-center gap-1 text-amber-600 text-sm font-medium"><Shield size={14} /> In Progress</div>
                           )}
-                          {doc.processor && <div className="text-xs text-muted-foreground mt-1">Processed by: {doc.processor}</div>}
                         </div>
                       </div>
                     </div>

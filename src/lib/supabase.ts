@@ -153,6 +153,44 @@ export async function adminGetComplaintsCount(token: string): Promise<number> {
   return ((data as { count?: number })?.count ?? 0) as number;
 }
 
+/** Admin paginated clearance requests fetch (session-gated). */
+export async function adminGetClearanceRequests(
+  token: string,
+  limit = 200,
+  offset = 0,
+): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_get_clearance_requests', {
+    p_token: token, p_limit: limit, p_offset: offset,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Record<string, unknown>[];
+}
+
+/** Admin paginated business registry fetch (session-gated). */
+export async function adminGetBusinessRegistry(
+  token: string,
+  limit = 200,
+  offset = 0,
+): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_get_business_registry', {
+    p_token: token, p_limit: limit, p_offset: offset,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Record<string, unknown>[];
+}
+
+/** Public document status lookup (minimal fields, max 20 matches). */
+export async function getDocumentStatus(
+  query: string,
+): Promise<{ id: string; resident: string; type: string; purpose: string; status: string; date: string }[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('get_document_status', { p_query: query });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as { id: string; resident: string; type: string; purpose: string; status: string; date: string }[];
+}
+
 /** End the current session. */
 export async function logoutSession(): Promise<void> {
   const token = getSessionToken();

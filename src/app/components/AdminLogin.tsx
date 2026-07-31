@@ -3,9 +3,11 @@ import { useNavigate, Link } from "react-router";
 import { motion } from "motion/react";
 import { Leaf, Eye, EyeOff, Shield, AlertCircle, ArrowLeft } from "lucide-react";
 import { useAuth } from "./AuthContext";
+import { useData } from "./DataContext";
 
 const AdminLogin: React.FC = () => {
   const { login } = useAuth();
+  const { refetch } = useData();
   const navigate = useNavigate();
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +22,7 @@ const AdminLogin: React.FC = () => {
     const errMsg = await login(loginId, password);
     setLoading(false);
     if (!errMsg) {
+      refetch();
       navigate("/admin/dashboard");
     } else {
       setError(errMsg);

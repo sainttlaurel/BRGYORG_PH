@@ -5,7 +5,11 @@
  * Supabase is unreachable. No mock data — only real records.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase, dbFetch, getUsers } from "./supabase";
+import {
+  supabase, dbFetch, getUsers, getSessionToken,
+  adminGetResidents, adminGetDocuments, adminGetComplaints,
+  adminGetClearanceRequests, adminGetBusinessRegistry,
+} from "./supabase";
 
 // ============================================================
 // Types
@@ -301,14 +305,32 @@ export function useSupabaseData(): AppData {
 
     setLoading(true);
     try {
+      const token = getSessionToken();
+
+      const residentsSrc = token
+        ? adminGetResidents(token, 500)
+        : dbFetch<Record<string, unknown>>("residents", {}, 500);
+      const docsSrc = token
+        ? adminGetDocuments(token, 500)
+        : dbFetch<Record<string, unknown>>("documents", {}, 500);
+      const cmpsSrc = token
+        ? adminGetComplaints(token, 500)
+        : dbFetch<Record<string, unknown>>("complaints", {}, 500);
+      const clearSrc = token
+        ? adminGetClearanceRequests(token, 500)
+        : dbFetch<Record<string, unknown>>("clearance_requests", {}, 500);
+      const bizSrc = token
+        ? adminGetBusinessRegistry(token, 500)
+        : dbFetch<Record<string, unknown>>("business_registry", {}, 500);
+
       const [
         resRows, docRows, cmpRows, annRows, pollRows, userRows,
         offRows, audRows, infoRows, svcRows, rptRows, sugRows, volRows,
         bizRows, projRows, clearRows,
       ] = await Promise.allSettled([
-        dbFetch<Record<string, unknown>>("residents", {}, 500),
-        dbFetch<Record<string, unknown>>("documents", {}, 500),
-        dbFetch<Record<string, unknown>>("complaints", {}, 500),
+        residentsSrc,
+        docsSrc,
+        cmpsSrc,
         dbFetch<Record<string, unknown>>("announcements"),
         dbFetch<Record<string, unknown>>("polls"),
         getUsers(),
@@ -319,9 +341,9 @@ export function useSupabaseData(): AppData {
         dbFetch<Record<string, unknown>>("reports"),
         dbFetch<Record<string, unknown>>("suggestions"),
         dbFetch<Record<string, unknown>>("volunteer_signups"),
-        dbFetch<Record<string, unknown>>("business_registry", {}, 500),
+        bizSrc,
         dbFetch<Record<string, unknown>>("projects"),
-        dbFetch<Record<string, unknown>>("clearance_requests", {}, 500),
+        clearSrc,
       ]);
 
       function mapOfficial(o: Record<string, unknown>): Official {

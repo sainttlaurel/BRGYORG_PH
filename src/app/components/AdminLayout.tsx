@@ -48,7 +48,7 @@ const roleColors: Record<string, string> = {
 const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
-  const { barangayInfo } = useData();
+  const { barangayInfo, refetch } = useData();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -67,6 +67,7 @@ const AdminLayout: React.FC = () => {
 
   const handleLogout = () => {
     logout();
+    refetch();
     navigate("/admin/login");
   };
 

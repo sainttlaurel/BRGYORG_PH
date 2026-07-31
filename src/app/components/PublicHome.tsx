@@ -24,9 +24,9 @@ const fade = {
 };
 
 const PublicHome: React.FC = () => {
-  const { barangayInfo, announcements, services, residents } = useData();
+  const { barangayInfo, announcements, services } = useData();
   const stats = [
-    { label: "Registered Residents", value: residents.length.toLocaleString(), icon: Users, color: "text-emerald-600 bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-400" },
+    { label: "Registered Residents", value: barangayInfo.population.toLocaleString(), icon: Users, color: "text-emerald-600 bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-400" },
     { label: "Households", value: barangayInfo.households.toLocaleString(), icon: Home, color: "text-sky-600 bg-sky-100 dark:bg-sky-900 dark:text-sky-400" },
     { label: "Barangay Area", value: barangayInfo.area, icon: MapPin, color: "text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-400" },
     { label: "Serving Since", value: barangayInfo.established, icon: Star, color: "text-amber-600 bg-amber-100 dark:bg-amber-900 dark:text-amber-400" },
