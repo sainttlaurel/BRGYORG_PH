@@ -94,6 +94,27 @@ export interface VolunteerItem {
   body_conditions: string; status: string; created_at: string;
 }
 
+export interface BusinessRegistry {
+  id: string; name: string; owner: string; category: string;
+  contact: string; address: string; description: string;
+  status: string; created_at: string;
+}
+
+export interface Project {
+  id: string; title: string; category: string; status: string;
+  budget: number; progress: number; description: string;
+  target_date: string; reactions: { likes: number; hearts: number };
+  created_at: string;
+}
+
+export interface ClearanceRequest {
+  id: string; resident_id: string; full_name: string; address: string;
+  purpose: string; doc_type: string; contact: string;
+  control_number: string; verification_code: string; status: string;
+  notes: string; remarks: string; created_at: string;
+  approved_at: string; rejected_at: string;
+}
+
 export interface ReportItem {
   id: string; category: string; description: string; location: string;
   urgency: string; status: string; reporter_name: string;
@@ -114,6 +135,9 @@ export interface AppData {
   reports:       ReportItem[];
   suggestions:   SuggestionItem[];
   volunteers:    VolunteerItem[];
+  businessRegistry: BusinessRegistry[];
+  projects:      Project[];
+  clearanceRequests: ClearanceRequest[];
   loading:       boolean;
   offline:       boolean;
   refetch:       () => void;
@@ -261,6 +285,9 @@ export function useSupabaseData(): AppData {
     reports:       [],
     suggestions:   [],
     volunteers:    [],
+    businessRegistry: [],
+    projects:      [],
+    clearanceRequests: [],
   });
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
@@ -277,6 +304,7 @@ export function useSupabaseData(): AppData {
       const [
         resRows, docRows, cmpRows, annRows, pollRows, userRows,
         offRows, audRows, infoRows, svcRows, rptRows, sugRows, volRows,
+        bizRows, projRows, clearRows,
       ] = await Promise.allSettled([
         dbFetch<Record<string, unknown>>("residents", {}, 500),
         dbFetch<Record<string, unknown>>("documents", {}, 500),
@@ -291,6 +319,9 @@ export function useSupabaseData(): AppData {
         dbFetch<Record<string, unknown>>("reports"),
         dbFetch<Record<string, unknown>>("suggestions"),
         dbFetch<Record<string, unknown>>("volunteer_signups"),
+        dbFetch<Record<string, unknown>>("business_registry", {}, 500),
+        dbFetch<Record<string, unknown>>("projects"),
+        dbFetch<Record<string, unknown>>("clearance_requests", {}, 500),
       ]);
 
       function mapOfficial(o: Record<string, unknown>): Official {
@@ -375,6 +406,51 @@ export function useSupabaseData(): AppData {
         };
       }
 
+      function mapBusinessRegistry(b: Record<string, unknown>): BusinessRegistry {
+        return {
+          id: String(b.id ?? ""), name: String(b.name ?? ""),
+          owner: String(b.owner ?? ""), category: String(b.category ?? ""),
+          contact: String(b.contact ?? ""), address: String(b.address ?? ""),
+          description: String(b.description ?? ""),
+          status: String(b.status ?? "pending"),
+          created_at: String(b.created_at ?? ""),
+        };
+      }
+
+      function mapProject(p: Record<string, unknown>): Project {
+        let reactions = { likes: 0, hearts: 0 };
+        if (typeof p.reactions === "object" && p.reactions !== null) {
+          const r = p.reactions as Record<string, number>;
+          reactions = { likes: r.likes ?? 0, hearts: r.hearts ?? 0 };
+        }
+        return {
+          id: String(p.id ?? ""), title: String(p.title ?? ""),
+          category: String(p.category ?? ""),
+          status: String(p.status ?? "Planned"),
+          budget: Number(p.budget ?? 0), progress: Number(p.progress ?? 0),
+          description: String(p.description ?? ""),
+          target_date: String(p.target_date ?? ""),
+          reactions,
+          created_at: String(p.created_at ?? ""),
+        };
+      }
+
+      function mapClearanceRequest(c: Record<string, unknown>): ClearanceRequest {
+        return {
+          id: String(c.id ?? ""), resident_id: String(c.resident_id ?? ""),
+          full_name: String(c.full_name ?? ""), address: String(c.address ?? ""),
+          purpose: String(c.purpose ?? ""), doc_type: String(c.doc_type ?? "Barangay Clearance"),
+          contact: String(c.contact ?? ""),
+          control_number: String(c.control_number ?? ""),
+          verification_code: String(c.verification_code ?? ""),
+          status: String(c.status ?? "pending"),
+          notes: String(c.notes ?? ""), remarks: String(c.remarks ?? ""),
+          created_at: String(c.created_at ?? ""),
+          approved_at: String(c.approved_at ?? ""),
+          rejected_at: String(c.rejected_at ?? ""),
+        };
+      }
+
       function mapSuggestion(s: Record<string, unknown>): SuggestionItem {
         return {
           id:         String(s.id ?? ""),
@@ -412,6 +488,9 @@ export function useSupabaseData(): AppData {
         reports:       rptRows.status  === "fulfilled" ? (rptRows.value as Record<string, unknown>[]).map(mapReport)         : [],
         suggestions:   sugRows.status  === "fulfilled" ? (sugRows.value as Record<string, unknown>[]).map(mapSuggestion)     : [],
         volunteers:    volRows.status  === "fulfilled" ? (volRows.value as Record<string, unknown>[]).map(mapVolunteer)     : [],
+        businessRegistry: bizRows.status === "fulfilled" ? (bizRows.value as Record<string, unknown>[]).map(mapBusinessRegistry) : [],
+        projects:      projRows.status === "fulfilled" ? (projRows.value as Record<string, unknown>[]).map(mapProject)      : [],
+        clearanceRequests: clearRows.status === "fulfilled" ? (clearRows.value as Record<string, unknown>[]).map(mapClearanceRequest) : [],
       }));
 
       setOffline(false);

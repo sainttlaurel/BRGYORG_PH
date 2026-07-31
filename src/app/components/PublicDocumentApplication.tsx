@@ -7,6 +7,7 @@ import { useData } from "./DataContext";
 import { insertDocument } from "@/lib/supabaseWrite";
 import { documentRequestSchema } from "@/lib/validations";
 import SeoHead from "./SeoHead";
+import FilePreview from "@/app/components/ui/file-preview";
 
 type Step = "form" | "success";
 
@@ -137,6 +138,12 @@ const PublicDocumentApplication: React.FC = () => {
   const handleIdUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const MAX = 1.5 * 1024 * 1024;
+    if (file.size > MAX) {
+      toast.error("File too large — maximum 1.5 MB. Please use a smaller photo.");
+      e.target.value = "";
+      return;
+    }
     setIdUploadName(file.name);
     const reader = new FileReader();
     reader.onload = () => setIdUpload(reader.result as string);
@@ -252,6 +259,12 @@ const PublicDocumentApplication: React.FC = () => {
                       {idUploadName && <button type="button" onClick={() => { setIdUpload(""); setIdUploadName(""); }} className="text-xs text-red-500 hover:underline">Remove</button>}
                     </div>
                     {errors.idUpload && <p className="text-red-500 text-xs mt-1">{errors.idUpload}</p>}
+                    {idUpload && (
+                      <div className="mt-3">
+                        <p className="block text-xs text-muted-foreground mb-1.5">Preview</p>
+                        <FilePreview src={idUpload} name={idUploadName} maxHeight="h-48" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Fee notice */}

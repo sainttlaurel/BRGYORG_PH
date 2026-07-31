@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Payatas Ledger** is a barangay civic management platform built as a single-page application (SPA). It has two faces — a **public portal** for residents and an **admin portal** for barangay staff. Both run in the browser; there is no traditional server-side rendering.
+**Payatas Ledger** is a barangay civic management platform. It has two faces — a **public portal** for residents and an **admin portal** for barangay staff. Both run in the browser (SPA).
 
 - **Frontend:** React 18 + TypeScript + Vite 6
 - **Backend:** Supabase (PostgreSQL 15) accessed directly from the client
@@ -49,16 +49,23 @@ BRGY/
 │   │   │   ├── Admin*.tsx          # 14 admin page components
 │   │   │   ├── HeroLandscape.tsx
 │   │   │   ├── figma/              # Design assets
-│   │   │   └── ui/                 # 49 shadcn-style primitives
+│   │   │   └── ui/                 # shadcn-style primitives + custom components
+│   │   │       ├── confirm-dialog.tsx   # Styled modal dialog (danger variant)
+│   │   │       ├── table-state.tsx      # TableLoading (skeleton rows) + TableEmpty
+│   │   │       └── ...                 # 49 other UI primitives
 │   │   │
 │   ├── lib/
+│   │   ├── hooks/
+│   │   │   ├── useDebounce.ts       # 300ms debounce hook
+│   │   │   ├── useSort.ts           # Column sorting (asc/desc toggle)
+│   │   │   └── usePagination.ts     # Pagination with page size selector
 │   │   ├── supabase.ts             # Supabase client + RPC wrappers + CRUD
 │   │   ├── supabaseWrite.ts        # All write operations (inserts, updates)
 │   │   ├── useSupabaseData.ts      # Central data hook — fetches all tables
 │   │   ├── queryClient.ts          # TanStack Query client config
 │   │   ├── errorHandler.ts         # Categorised error handling → Sentry
 │   │   ├── designTokens.ts         # Design system tokens
-│   │   └── validations.ts          # Zod schemas
+│   │   └── validations.ts          # Zod schemas (announcement, poll, document, resident, official, blotter, user, contact)
 │   │
 │   ├── styles/
 │   │   ├── index.css               # @import "tailwindcss"
@@ -82,6 +89,9 @@ BRGY/
 │   └── migrate-storage.sql
 │
 ├── supabase/.temp/                 # Supabase local dev artifacts
+│
+├── scripts/
+│
 ├── md/
 │   ├── README.md
 │   ├── CHANGELOG.md
@@ -423,7 +433,7 @@ These are stored in the `settings` table with keys like `template_{name_slug}_he
 ## Tech Stack Summary
 
 | Layer | Technology |
-|---|---|
+|---|---|---|
 | Language | TypeScript 5.8 |
 | UI framework | React 18.3 |
 | Bundler | Vite 6 |
@@ -444,3 +454,4 @@ These are stored in the `settings` table with keys like `template_{name_slug}_he
 | Theme | next-themes clone (custom) |
 | Testing | Vitest + Testing Library |
 | CI/CD | GitHub Actions → Vercel |
+| Image processing | sharp (icon generation) |

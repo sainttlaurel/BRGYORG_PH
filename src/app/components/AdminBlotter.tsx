@@ -10,6 +10,8 @@ import { TableLoading, TableEmpty } from "./ui/table-state";
 import { useSort } from "@/lib/hooks/useSort";
 import { usePagination } from "@/lib/hooks/usePagination";
 import { blotterSchema } from "@/lib/validations";
+import ColumnToggle from "@/app/components/ui/column-toggle";
+import { useColumnVisibility } from "@/lib/hooks/useColumnVisibility";
 
 const statusColors: Record<string, string> = {
   ongoing: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
@@ -59,6 +61,18 @@ const AdminBlotter: React.FC = () => {
 
   const { sortKey, sortDir, toggleSort, sortedData } = useSort(filtered);
   const { page, pageSize, setPage, setPageSize, totalPages, total, paginatedData } = usePagination(sortedData);
+
+  const vis = useColumnVisibility([
+    { key: "id", label: "Case ID" },
+    { key: "status", label: "Status" },
+    { key: "incident", label: "Incident" },
+    { key: "complainant", label: "Complainant" },
+    { key: "respondent", label: "Respondent" },
+    { key: "date", label: "Date & Time" },
+    { key: "handler", label: "Handler" },
+    { key: "summary", label: "Summary" },
+    { key: "actions", label: "Actions" },
+  ]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     setStatusOverrides(o => ({ ...o, [id]: newStatus }));
@@ -134,6 +148,7 @@ const AdminBlotter: React.FC = () => {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input id="search-cases" name="search" type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search cases…" className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
         </div>
+        <ColumnToggle columns={vis.columns} hidden={vis.hidden} onToggle={vis.toggle} onReset={vis.showAll} />
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
             <input type="checkbox" checked={filtered.length > 0 && selectedIds.size === filtered.length} onChange={e => setSelectedIds(e.target.checked ? new Set(filtered.map(c => c.id)) : new Set())} className="rounded" />
@@ -187,36 +202,36 @@ const AdminBlotter: React.FC = () => {
                 <div className="pt-1"><input type="checkbox" checked={selectedIds.has(c.id)} onChange={e => { const next = new Set(selectedIds); if (e.target.checked) next.add(c.id); else next.delete(c.id); setSelectedIds(next); }} className="rounded" /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-bold text-foreground text-sm font-mono">{c.id}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${statusColors[c.status]}`}>{c.status}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{c.incident}</span>
+                    <span className={`font-bold text-foreground text-sm font-mono ${vis.isHidden("id") ? "hidden" : ""}`}>{c.id}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${statusColors[c.status]} ${vis.isHidden("status") ? "hidden" : ""}`}>{c.status}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground ${vis.isHidden("incident") ? "hidden" : ""}`}>{c.incident}</span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                    <div>
+                    <div className={`${vis.isHidden("complainant") ? "hidden" : ""}`}>
                       <div className="text-xs text-muted-foreground">Complainant</div>
                       <div className="text-xs font-medium text-foreground">{c.complainant}</div>
                     </div>
-                    <div>
+                    <div className={`${vis.isHidden("respondent") ? "hidden" : ""}`}>
                       <div className="text-xs text-muted-foreground">Respondent</div>
                       <div className="text-xs font-medium text-foreground">{c.respondent}</div>
                     </div>
-                    <div>
+                    <div className={`${vis.isHidden("date") ? "hidden" : ""}`}>
                       <div className="text-xs text-muted-foreground flex items-center gap-1"><Calendar size={10} /> Date</div>
                       <div className="text-xs font-medium text-foreground">{c.date} · {c.time}</div>
                     </div>
-                    <div>
+                    <div className={`${vis.isHidden("handler") ? "hidden" : ""}`}>
                       <div className="text-xs text-muted-foreground flex items-center gap-1"><Users size={10} /> Handler</div>
                       <div className="text-xs font-medium text-foreground">{c.handler}</div>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed line-clamp-2">{c.summary}</p>
+                  <p className={`text-xs text-muted-foreground mt-2 leading-relaxed line-clamp-2 ${vis.isHidden("summary") ? "hidden" : ""}`}>{c.summary}</p>
                   {c.hearingDate && (
                     <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
                       <Calendar size={11} /> Next Hearing: {c.hearingDate}
                     </div>
                   )}
                 </div>
-                <button onClick={() => setSelected(c)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 text-xs transition-colors shrink-0">
+                <button onClick={() => setSelected(c)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 text-xs transition-colors shrink-0 ${vis.isHidden("actions") ? "hidden" : ""}`}>
                   <Eye size={13} /> View
                 </button>
               </div>

@@ -10,6 +10,9 @@ import { dbFetch } from "@/lib/supabase";
 import { useSort } from "@/lib/hooks/useSort";
 import { usePagination } from "@/lib/hooks/usePagination";
 import { TableLoading, TableEmpty } from "./ui/table-state";
+import FilePreview from "@/app/components/ui/file-preview";
+import ColumnToggle from "@/app/components/ui/column-toggle";
+import { useColumnVisibility } from "@/lib/hooks/useColumnVisibility";
 
 const statusConfig: Record<string, { color: string; label: string; icon: React.FC<{ size?: number; className?: string }> }> = {
   pending: { color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300", label: "Pending", icon: Clock },
@@ -54,6 +57,14 @@ const AdminRequests: React.FC = () => {
 
   const { sortKey, sortDir, toggleSort, sortedData } = useSort(filtered);
   const { page, pageSize, setPage, setPageSize, totalPages, total, paginatedData } = usePagination(sortedData);
+  const vis = useColumnVisibility([
+    { key: "id", label: "Request" },
+    { key: "resident", label: "Resident" },
+    { key: "type", label: "Type" },
+    { key: "status", label: "Status" },
+    { key: "date", label: "Date" },
+    { key: "actions", label: "Actions" },
+  ]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     setStatusOverrides(o => ({ ...o, [id]: newStatus }));
@@ -160,6 +171,7 @@ const AdminRequests: React.FC = () => {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input id="search-requests" name="search" type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by ID, name, or type…" className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
         </div>
+        <ColumnToggle columns={vis.columns} hidden={vis.hidden} onToggle={vis.toggle} onReset={vis.showAll} />
         <div className="flex gap-1.5 flex-wrap">
           {["All", "pending", "approved", "processing", "ready", "released", "rejected"].map(s => (
             <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-xl border text-xs font-medium transition-all ${statusFilter === s ? "bg-emerald-600 text-white border-emerald-600" : "border-border text-muted-foreground hover:border-emerald-300"}`}>
@@ -194,12 +206,12 @@ const AdminRequests: React.FC = () => {
             <thead>
               <tr className="bg-muted/50 border-b border-border">
                 <th className="px-2 py-3 w-10"><input type="checkbox" checked={filtered.length > 0 && selectedIds.size === filtered.length} onChange={e => setSelectedIds(e.target.checked ? new Set(filtered.map(r => r.id)) : new Set())} className="rounded" /></th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("id")}>Request{sortKey === "id" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("resident")}>Resident{sortKey === "resident" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell cursor-pointer select-none" onClick={() => toggleSort("type")}>Type{sortKey === "type" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("status")}>Status{sortKey === "status" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell cursor-pointer select-none" onClick={() => toggleSort("date")}>Date{sortKey === "date" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none ${vis.isHidden("id") ? "hidden" : ""}`} onClick={() => toggleSort("id")}>Request{sortKey === "id" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none ${vis.isHidden("resident") ? "hidden" : ""}`} onClick={() => toggleSort("resident")}>Resident{sortKey === "resident" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell cursor-pointer select-none ${vis.isHidden("type") ? "hidden" : ""}`} onClick={() => toggleSort("type")}>Type{sortKey === "type" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none ${vis.isHidden("status") ? "hidden" : ""}`} onClick={() => toggleSort("status")}>Status{sortKey === "status" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell cursor-pointer select-none ${vis.isHidden("date") ? "hidden" : ""}`} onClick={() => toggleSort("date")}>Date{sortKey === "date" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-right px-4 py-3 text-xs font-semibold text-muted-foreground ${vis.isHidden("actions") ? "hidden" : ""}`}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -212,16 +224,16 @@ const AdminRequests: React.FC = () => {
                 return (
                   <tr key={req.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-2 py-3"><input type="checkbox" checked={selectedIds.has(req.id)} onChange={e => { const next = new Set(selectedIds); if (e.target.checked) next.add(req.id); else next.delete(req.id); setSelectedIds(next); }} className="rounded" /></td>
-                    <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{req.id}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-foreground">{req.resident}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">{req.type}</td>
-                    <td className="px-4 py-3">
+                    <td className={`px-4 py-3 text-xs font-mono text-muted-foreground ${vis.isHidden("id") ? "hidden" : ""}`}>{req.id}</td>
+                    <td className={`px-4 py-3 text-sm font-medium text-foreground ${vis.isHidden("resident") ? "hidden" : ""}`}>{req.resident}</td>
+                    <td className={`px-4 py-3 text-xs text-muted-foreground hidden md:table-cell ${vis.isHidden("type") ? "hidden" : ""}`}>{req.type}</td>
+                    <td className={`px-4 py-3 ${vis.isHidden("status") ? "hidden" : ""}`}>
                       {st && (
                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${st.color}`}>{st.label}</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">{req.date}</td>
-                    <td className="px-4 py-3">
+                    <td className={`px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell ${vis.isHidden("date") ? "hidden" : ""}`}>{req.date}</td>
+                    <td className={`px-4 py-3 ${vis.isHidden("actions") ? "hidden" : ""}`}>
                       <div className="flex justify-end gap-1">
                         <button onClick={() => setSelected(req)} className="p-1.5 rounded-lg text-muted-foreground hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                           <Eye size={14} />
@@ -314,12 +326,14 @@ const AdminRequests: React.FC = () => {
                 </div>
 
                 {/* Uploaded ID */}
-                {selected.id_upload && (
-                  <div className="mb-5">
-                    <h3 className="text-xs font-semibold text-muted-foreground mb-2">Uploaded Valid ID</h3>
-                    <img src={selected.id_upload} alt="Valid ID" className="w-full rounded-xl border border-border object-contain max-h-48" />
-                  </div>
-                )}
+                <div className="mb-5">
+                  <h3 className="text-xs font-semibold text-muted-foreground mb-2">Uploaded Valid ID</h3>
+                  {selected.id_upload ? (
+                    <FilePreview src={selected.id_upload} name="ID Upload" maxHeight="h-56" />
+                  ) : (
+                    <div className="text-xs text-muted-foreground">No upload</div>
+                  )}
+                </div>
 
                 {/* Workflow actions */}
                 <div className="space-y-2">

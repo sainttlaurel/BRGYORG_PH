@@ -5,6 +5,7 @@ export function genId(prefix: string, len = 4): string {
   if (prefix === 'REQ') return `REQ-${new Date().getFullYear()}-${n}`;
   if (prefix === 'BLT') return `BLT-${new Date().getFullYear()}-${n.slice(-3)}`;
   if (prefix === 'RPT') return `RPT-${new Date().getFullYear()}-${n}`;
+  if (prefix === 'PRJ') return `PRJ-${new Date().getFullYear()}-${n}`;
   return `${prefix}-${n}`;
 }
 
@@ -113,11 +114,24 @@ export async function updatePoll(id: string, data: { question?: string; options?
 export async function insertDocument(data: {
   id: string; resident: string; type: string; purpose: string; date: string;
   contact?: string; status?: string; id_upload?: string;
-}, _loggedInUser?: string) {
+}, loggedInUser?: string) {
   if (!supabase) throw new Error('offline');
-  const { error } = await supabase.from('documents').insert({
-    ...data,
-    status: data.status ?? 'Pending',
+  if (loggedInUser) {
+    const { error } = await supabase.rpc('admin_insert_document', {
+      p_token: token(), p_id: data.id, p_resident: data.resident,
+      p_type: data.type, p_purpose: data.purpose, p_date: data.date,
+      p_contact: data.contact ?? '', p_status: data.status ?? 'Pending',
+      p_id_upload: data.id_upload ?? '', p_logged_in_user: loggedInUser,
+    });
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
+  const hash = Array.from(new TextEncoder().encode(identifier))
+    .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+  const { error } = await supabase.rpc('rate_limited_insert', {
+    p_identifier: hash, p_form_type: 'document', p_table: 'documents',
+    p_data: { ...data, status: data.status ?? 'Pending' },
   });
   if (error) throw new Error(error.message);
 }
@@ -126,23 +140,24 @@ export async function insertResident(data: {
   fname: string; lname: string; purok: string; contact?: string;
   address?: string; gender?: string; dob?: string; household?: string;
   occupation?: string; civil_status?: string;
-}, _loggedInUser?: string) {
+}, loggedInUser: string = "System") {
   if (!supabase) return;
-  const { error } = await supabase.from('residents').insert({
-    id: genId('RES', 6),
-    ...data,
-    contact: data.contact ?? 'N/A',
-    address: data.address ?? 'Barangay Payatas',
-    gender: data.gender ?? 'N/A',
-    dob: data.dob ?? 'N/A',
+  const { error } = await supabase.rpc('admin_insert_resident', {
+    p_token: token(), p_id: genId('RES', 6),
+    p_fname: data.fname, p_lname: data.lname, p_purok: data.purok,
+    p_contact: data.contact ?? 'N/A', p_address: data.address ?? 'Barangay Payatas',
+    p_gender: data.gender ?? 'N/A', p_dob: data.dob ?? 'N/A',
+    p_household: data.household ?? '', p_occupation: data.occupation ?? '',
+    p_civil_status: data.civil_status ?? 'Single',
+    p_logged_in_user: loggedInUser,
   });
   if (error) throw new Error(error.message);
 }
 
-export async function updateResident(id: string, data: Record<string, unknown>, _loggedInUser?: string) {
+export async function updateResident(id: string, data: Record<string, unknown>, loggedInUser: string = "System") {
   if (!supabase) return;
   const { error } = await supabase.rpc('admin_update_resident', {
-    p_token: token(), p_id: id, p_data: data,
+    p_token: token(), p_id: id, p_data: data, p_logged_in_user: loggedInUser,
   });
   if (error) throw new Error(error.message);
 }
@@ -188,6 +203,16 @@ export async function insertAuditLog(data: {
 }) {
   if (!supabase) return;
   const { error } = await supabase.from('audit_logs').insert(data);
+  if (error) throw new Error(error.message);
+}
+
+// Client-side audit helper (session-gated, so not callable by anonymous users)
+export async function logAdminAction(action: string, module: string = "", details: string = "", loggedInUser: string = "System") {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('admin_log_action', {
+    p_token: token(), p_user_name: loggedInUser,
+    p_action: action, p_module: module, p_details: details,
+  });
   if (error) throw new Error(error.message);
 }
 
@@ -359,6 +384,117 @@ export async function submitVote(pollId: string, optionIndex: string) {
   });
   if (error) throw new Error(error.message);
 }
+
+// ============================================================
+// business_registry CRUD
+// ============================================================
+
+export async function insertBusiness(data: {
+  name: string; owner: string; category: string;
+  contact?: string; address?: string; description?: string;
+}, loggedInUser?: string) {
+  if (!supabase) throw new Error('offline');
+  if (loggedInUser) {
+    const { error } = await supabase.rpc('admin_insert_business', {
+      p_token: token(), p_name: data.name, p_owner: data.owner,
+      p_category: data.category, p_contact: data.contact ?? '',
+      p_address: data.address ?? '', p_description: data.description ?? '',
+      p_logged_in_user: loggedInUser,
+    });
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
+  const hash = Array.from(new TextEncoder().encode(identifier))
+    .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+  const { error } = await supabase.rpc('rate_limited_insert', {
+    p_identifier: hash, p_form_type: 'business', p_table: 'business_registry',
+    p_data: { ...data, status: 'pending' },
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function updateBusiness(id: string, data: Record<string, unknown>, loggedInUser: string = "System") {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('admin_update_business', {
+    p_token: token(), p_id: id, p_data: data, p_logged_in_user: loggedInUser,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteBusiness(id: string, loggedInUser: string = "System") {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('admin_delete_business', {
+    p_token: token(), p_id: id, p_logged_in_user: loggedInUser,
+  });
+  if (error) throw new Error(error.message);
+}
+
+// ============================================================
+// projects CRUD
+// ============================================================
+
+export async function insertProject(data: {
+  id: string; title: string; category: string;
+  budget?: number; progress?: number; description?: string;
+  target_date?: string; status?: string;
+}, loggedInUser: string = "System") {
+  if (!supabase) throw new Error('offline');
+  const { error } = await supabase.rpc('admin_insert_project', {
+    p_token: token(), p_id: data.id, p_title: data.title,
+    p_category: data.category, p_budget: data.budget ?? 0,
+    p_progress: data.progress ?? 0, p_description: data.description ?? '',
+    p_target_date: data.target_date ?? '', p_status: data.status ?? 'Planned',
+    p_logged_in_user: loggedInUser,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function updateProject(id: string, data: Record<string, unknown>, loggedInUser: string = "System") {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('admin_update_project', {
+    p_token: token(), p_id: id, p_data: data, p_logged_in_user: loggedInUser,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteProject(id: string, loggedInUser: string = "System") {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('admin_delete_project', {
+    p_token: token(), p_id: id, p_logged_in_user: loggedInUser,
+  });
+  if (error) throw new Error(error.message);
+}
+
+// ============================================================
+// clearance_requests CRUD
+// ============================================================
+
+export async function insertClearanceRequest(data: {
+  resident_id?: string; full_name: string; address: string;
+  purpose: string; doc_type?: string; contact?: string;
+  control_number: string; verification_code: string;
+}) {
+  if (!supabase) throw new Error('offline');
+  const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
+  const hash = Array.from(new TextEncoder().encode(identifier))
+    .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+  const { error } = await supabase.rpc('rate_limited_insert', {
+    p_identifier: hash, p_form_type: 'clearance', p_table: 'clearance_requests',
+    p_data: data,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function updateClearanceRequest(id: string, data: Record<string, unknown>, loggedInUser: string = "System") {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('admin_update_clearance_request', {
+    p_token: token(), p_id: id, p_data: data, p_logged_in_user: loggedInUser,
+  });
+  if (error) throw new Error(error.message);
+}
+
+// ============================================================
 
 export async function uploadLogo(file: File): Promise<string> {
   if (!supabase) throw new Error('offline');

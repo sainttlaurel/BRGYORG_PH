@@ -11,6 +11,8 @@ import { deleteResident, insertResident, updateResident } from "@/lib/supabaseWr
 import { useSort } from "@/lib/hooks/useSort";
 import { usePagination } from "@/lib/hooks/usePagination";
 import { residentSchema } from "@/lib/validations";
+import ColumnToggle from "@/app/components/ui/column-toggle";
+import { useColumnVisibility } from "@/lib/hooks/useColumnVisibility";
 
 const statusColors: Record<string, string> = {
   "Registered Voter": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
@@ -120,8 +122,6 @@ const AdminResidents: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  if (loading) return <TableLoading />;
-
   const filtered = residents.filter(r =>
     (purokFilter === "All" || r.purok === purokFilter) &&
     (statusFilter === "All" || r.status === statusFilter) &&
@@ -133,6 +133,17 @@ const AdminResidents: React.FC = () => {
 
   const { sortKey, sortDir, toggleSort, sortedData } = useSort(filtered);
   const { page, pageSize, setPage, setPageSize, totalPages, total, paginatedData } = usePagination(sortedData);
+
+  const vis = useColumnVisibility([
+    { key: "name", label: "Resident" },
+    { key: "id", label: "ID" },
+    { key: "address", label: "Address" },
+    { key: "status", label: "Status" },
+    { key: "purok", label: "Purok" },
+    { key: "actions", label: "Actions" },
+  ]);
+
+  if (loading) return <TableLoading />;
 
   const printIdCard = (res: typeof residents[0]) => {
     const w = window.open("", "_blank");
@@ -245,6 +256,7 @@ const AdminResidents: React.FC = () => {
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all"
           />
         </div>
+        <ColumnToggle columns={vis.columns} hidden={vis.hidden} onToggle={vis.toggle} onReset={vis.showAll} />
         <select id="filter-purok" name="purokFilter" value={purokFilter} onChange={e => setPurokFilter(e.target.value)} aria-label="Filter by purok" className="px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-all">
           {puroks.map(p => <option key={p}>{p}</option>)}
         </select>
@@ -275,12 +287,12 @@ const AdminResidents: React.FC = () => {
             <thead>
               <tr className="bg-muted/50 border-b border-border">
                 <th className="px-2 py-3 w-10"><input type="checkbox" checked={filtered.length > 0 && selectedIds.size === filtered.length} onChange={e => setSelectedIds(e.target.checked ? new Set(filtered.map(r => r.id)) : new Set())} className="rounded" /></th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("name")}>Resident{sortKey === "name" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("id")}>ID{sortKey === "id" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell cursor-pointer select-none" onClick={() => toggleSort("address")}>Address{sortKey === "address" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none" onClick={() => toggleSort("status")}>Status{sortKey === "status" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell cursor-pointer select-none" onClick={() => toggleSort("purok")}>Purok{sortKey === "purok" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none ${vis.isHidden("name") ? "hidden" : ""}`} onClick={() => toggleSort("name")}>Resident{sortKey === "name" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none ${vis.isHidden("id") ? "hidden" : ""}`} onClick={() => toggleSort("id")}>ID{sortKey === "id" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell cursor-pointer select-none ${vis.isHidden("address") ? "hidden" : ""}`} onClick={() => toggleSort("address")}>Address{sortKey === "address" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground cursor-pointer select-none ${vis.isHidden("status") ? "hidden" : ""}`} onClick={() => toggleSort("status")}>Status{sortKey === "status" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell cursor-pointer select-none ${vis.isHidden("purok") ? "hidden" : ""}`} onClick={() => toggleSort("purok")}>Purok{sortKey === "purok" ? (sortDir === "asc" ? " ▲" : " ▼") : ""}</th>
+                <th className={`text-right px-4 py-3 text-xs font-semibold text-muted-foreground ${vis.isHidden("actions") ? "hidden" : ""}`}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -295,7 +307,7 @@ const AdminResidents: React.FC = () => {
                   className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                 >
                   <td className="px-2 py-3"><input type="checkbox" checked={selectedIds.has(res.id)} onChange={e => { const next = new Set(selectedIds); if (e.target.checked) next.add(res.id); else next.delete(res.id); setSelectedIds(next); }} className="rounded" /></td>
-                  <td className="px-4 py-3">
+                  <td className={`px-4 py-3 ${vis.isHidden("name") ? "hidden" : ""}`}>
                     <div className="flex items-center gap-2.5">
                       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
                         {res.name.charAt(0)}
@@ -306,15 +318,15 @@ const AdminResidents: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground font-mono">{res.id}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">{res.address}</td>
-                  <td className="px-4 py-3">
+                  <td className={`px-4 py-3 text-xs text-muted-foreground font-mono ${vis.isHidden("id") ? "hidden" : ""}`}>{res.id}</td>
+                  <td className={`px-4 py-3 text-xs text-muted-foreground hidden md:table-cell ${vis.isHidden("address") ? "hidden" : ""}`}>{res.address}</td>
+                  <td className={`px-4 py-3 ${vis.isHidden("status") ? "hidden" : ""}`}>
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[res.status] || "bg-muted text-muted-foreground"}`}>
                       {res.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">{res.purok}</td>
-                  <td className="px-4 py-3">
+                  <td className={`px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell ${vis.isHidden("purok") ? "hidden" : ""}`}>{res.purok}</td>
+                  <td className={`px-4 py-3 ${vis.isHidden("actions") ? "hidden" : ""}`}>
                     <div className="flex justify-end gap-1">
                       <button onClick={() => setSelected(res)} aria-label={`View ${res.name}`} className="p-1.5 rounded-lg text-muted-foreground hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                         <Eye size={14} />

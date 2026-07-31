@@ -4,6 +4,48 @@ All notable changes to this project are documented here.
 
 ---
 
+## [6.0.0] — July 31, 2026
+
+### Added
+
+- **Admin GUIs for 3 new modules** — Business Registry (`/admin/business-registry`, approve/reject workflow + CSV), Projects (`/admin/projects`, budget/progress + status workflow + CSV), Clearance Requests (`/admin/clearance-requests`, control # / verification code, approve/reject with timestamps, print-ready clearance certificate + CSV)
+- **Public pages** — Business Registry registration form, Projects card grid, Clearance Request (apply + status checker via `check_clearance_status`); all three added to vite prerendering
+- **Data layer** — `BusinessRegistry`, `Project`, `ClearanceRequest` types/mappers/fetches in `useSupabaseData.ts`; CRUD in `supabaseWrite.ts` (new `PRJ` id prefix)
+- **File previews** — `FilePreview` component renders uploaded images/PDFs; wired into PublicDocumentApplication (upload preview) and AdminRequests (detail modal)
+- **Column visibility toggles** — `useColumnVisibility` hook + `ColumnToggle` dropdown on Residents, Requests, Blotter, Business Registry, Projects, Clearances
+- **Audit-logging gap closure** — migration `20260731_0004_audit_gaps.sql`: new `admin_log_action` helper; audit logging added to `admin_update_resident`, `admin_insert_resident`, `admin_upsert_setting`, `admin_update_barangay_info`, `admin_update_service_fee`, `admin_clear_documents`, `admin_clear_residents`; new SECURITY DEFINER RPCs for business/projects/clearance CRUD; public document + clearance submissions now audited as `Public` via `rate_limited_insert`
+- **Rate limiting for public forms** — `insertDocument` and `insertBusiness` now route through `rate_limited_insert` (3 submits / 10 verified)
+
+### Changed
+
+- Resident insert/update now session-gated RPCs (previously direct table inserts)
+- AdminSettings passes the logged-in user into every RPC for audit attribution
+
+---
+
+## [5.0.0] — July 29, 2026
+
+### Added
+
+- **Mobile responsiveness** — all form grids changed to `grid-cols-1 sm:grid-cols-3`; search inputs made full-width with responsive max-width; PublicLayout top bar shows hotline on mobile; AdminLayout header cleaner on small screens
+- **Accessibility** — all form fields now have `id` and `name` attributes; labels use `htmlFor` (20+ files)
+- **ConfirmDialog component** — styled modal dialog using Radix, replaces native `confirm()` across Residents, Officials, Users, Settings, Announcements, Polls, ContactMessages
+- **Skeleton loading** — `TableLoading` now renders animated skeleton rows with configurable count and staggered delays
+- **useDebounce hook** — 300ms debounce applied to all 13 search inputs across admin and public pages
+- **Retry button** — offline banner on AdminDashboard now has a Retry button calling `refetch()`
+- **useSort hook** — column sorting with click-to-sort on table headers / sort button rows (asc/desc toggle)
+- **usePagination hook** — page controls with configurable page sizes (10/25/50/100) and First/Prev/Next/Last navigation
+- **Bulk operations** — checkbox selection + batch actions (delete, approve, reject, export) on AdminResidents, AdminRequests, AdminBlotter
+- **Zod validation** — `residentSchema`, `officialSchema`, `blotterSchema`, `userSchema`, `contactMessageSchema` added to validations; applied to Residents, Officials, Blotter, Users forms
+- **CSV export** — added to AdminBlotter and AdminOfficials
+- **Keyboard shortcuts** — `Ctrl+K` / `Cmd+K` focuses search input on admin pages
+
+### Changed
+
+- Disclaimer text revised to final version
+
+---
+
 ## [4.1.0] — July 28, 2026
 
 ### Added

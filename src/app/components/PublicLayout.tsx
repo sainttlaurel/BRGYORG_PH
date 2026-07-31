@@ -5,7 +5,7 @@ import {
   Leaf, Sun, Moon, Menu, X, Phone, Mail, MapPin,
   ChevronDown, Facebook, Twitter, Youtube,
   Shield, FileText, Users, Megaphone, MessageSquare, Vote,
-  Heart, AlertTriangle, Home, Info, Award
+  Heart, AlertTriangle, Home, Info, Award, Store, Building2, FileCheck
 } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useData } from "./DataContext";
@@ -25,6 +25,9 @@ const moreLinks = [
   { path: "/community-vote", label: "Community Vote", icon: Vote },
   { path: "/volunteer", label: "Volunteer", icon: Heart },
   { path: "/report-concern", label: "Report a Concern", icon: AlertTriangle },
+  { path: "/business-registry", label: "Business Reg", icon: Store },
+  { path: "/projects", label: "Projects", icon: Building2 },
+  { path: "/clearance-request", label: "Get Clearance", icon: FileCheck },
   { path: "/contact", label: "Contact Us", icon: Phone },
 ];
 

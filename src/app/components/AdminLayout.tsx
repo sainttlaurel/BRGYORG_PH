@@ -5,7 +5,7 @@ import {
   Leaf, LayoutDashboard, Users, FileText, Shield, Award,
   Megaphone,   BarChart2, TrendingUp, AlertTriangle, MessageSquare, Heart, UserCog, ScrollText,
   Settings, LogOut, ChevronLeft, ChevronRight, Bell, Mail as MailIcon,
-  Sun, Moon, Menu, Globe
+  Sun, Moon, Menu, Globe, Store, Building2, FileCheck
 } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import { useTheme } from "./ThemeProvider";
@@ -26,6 +26,9 @@ const navItems: { path: string; label: string; icon: React.ComponentType<{ size?
   { path: "/admin/volunteers", label: "Volunteers", icon: Heart, roles: ["admin", "captain", "secretary"] },
   { path: "/admin/users", label: "Users", icon: UserCog, roles: ["admin"] },
   { path: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["admin", "captain"] },
+  { path: "/admin/business-registry", label: "Business Reg", icon: Store, roles: ["admin", "captain", "secretary"] },
+  { path: "/admin/projects", label: "Projects", icon: Building2, roles: ["admin", "captain", "secretary"] },
+  { path: "/admin/clearance-requests", label: "Clearances", icon: FileCheck, roles: ["admin", "captain", "secretary", "staff"] },
 
   { path: "/admin/settings", label: "Settings", icon: Settings, roles: ["admin"] },
 ];

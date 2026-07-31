@@ -3,6 +3,7 @@ import { Settings, Save, Bell, Shield, FileText, DollarSign, Leaf, Upload, Check
 import { toast } from "sonner";
 import { supabase, dbFetch, getSessionToken } from "@/lib/supabase";
 import { uploadLogo } from "@/lib/supabaseWrite";
+import { useAuth } from "./AuthContext";
 import { Dialog, DialogContent, DialogTitle } from "@/app/components/ui/dialog";
 import { ConfirmDialog } from "./ui/confirm-dialog";
 
@@ -17,15 +18,16 @@ const tabs = [
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-xl border border-border bg-input-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all";
 
-async function saveSettings(key: string, value: string) {
+async function saveSettings(key: string, value: string, loggedInUser: string = "System") {
   if (!supabase) return;
   const token = getSessionToken();
   if (!token) throw new Error('No active session');
-  const { error } = await supabase.rpc('admin_upsert_setting', { p_token: token, p_key: key, p_value: value });
+  const { error } = await supabase.rpc('admin_upsert_setting', { p_token: token, p_key: key, p_value: value, p_logged_in_user: loggedInUser });
   if (error) throw new Error(error.message);
 }
 
 const AdminSettings: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(true);
 
@@ -77,7 +79,7 @@ const AdminSettings: React.FC = () => {
     try {
       const token = getSessionToken();
       if (!token || !supabase) throw new Error('No active session');
-      const { error } = await supabase.rpc('admin_update_barangay_info', { p_token: token, p_data: profileForm });
+      const { error } = await supabase.rpc('admin_update_barangay_info', { p_token: token, p_data: profileForm, p_logged_in_user: user?.name || "System" });
       if (error) throw new Error(error.message);
       toast.success("Profile saved");
       setModified({});
@@ -90,7 +92,7 @@ const AdminSettings: React.FC = () => {
     try {
       const token = getSessionToken();
       if (!token || !supabase) throw new Error('No active session');
-      const { error } = await supabase.rpc('admin_update_service_fee', { p_token: token, p_id: id, p_fee: item.fee });
+      const { error } = await supabase.rpc('admin_update_service_fee', { p_token: token, p_id: id, p_fee: item.fee, p_logged_in_user: user?.name || "System" });
       if (error) throw new Error(error.message);
       toast.success(`${item.service} fee updated`);
       setModified(m => ({ ...m, [`fee-${id}`]: false }));
@@ -265,9 +267,9 @@ const AdminSettings: React.FC = () => {
                           try {
                             const key = `template_${templateEditor.name.toLowerCase().replace(/\s+/g, "_")}`;
                             await Promise.all([
-                              saveSettings(`${key}_header`, templateEditor.header),
-                              saveSettings(`${key}_footer`, templateEditor.footer),
-                              saveSettings(`${key}_officer`, templateEditor.officer),
+                              saveSettings(`${key}_header`, templateEditor.header, user?.name || "System"),
+                              saveSettings(`${key}_footer`, templateEditor.footer, user?.name || "System"),
+                              saveSettings(`${key}_officer`, templateEditor.officer, user?.name || "System"),
                             ]);
                             toast.success(`${templateEditor.name} template saved`);
                             setTemplateEditor(null);
@@ -339,7 +341,7 @@ const AdminSettings: React.FC = () => {
                           onClick={async () => {
                             const next = !enabled;
                             try {
-                              await saveSettings(notif.key, String(next));
+                              await saveSettings(notif.key, String(next), user?.name || "System");
                               setSettingsMap(m => ({ ...m, [notif.key]: String(next) }));
                               toast.success(`${notif.label} ${next ? "enabled" : "disabled"}`);
                             } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); }
@@ -361,7 +363,7 @@ const AdminSettings: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="session-timeout" className="block text-xs text-muted-foreground mb-1.5">Session Timeout</label>
-                    <select id="session-timeout" name="session_timeout" value={settingsMap["session_timeout"] ?? "30"} onChange={async e => { try { await saveSettings("session_timeout", e.target.value); setSettingsMap(m => ({ ...m, session_timeout: e.target.value })); toast.success("Session timeout updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
+                    <select id="session-timeout" name="session_timeout" value={settingsMap["session_timeout"] ?? "30"} onChange={async e => { try { await saveSettings("session_timeout", e.target.value, user?.name || "System"); setSettingsMap(m => ({ ...m, session_timeout: e.target.value })); toast.success("Session timeout updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="30">30 minutes</option>
                       <option value="60">60 minutes</option>
                       <option value="120">120 minutes</option>
@@ -370,7 +372,7 @@ const AdminSettings: React.FC = () => {
                   </div>
                   <div>
                     <label htmlFor="password-expiry" className="block text-xs text-muted-foreground mb-1.5">Password Expiry Policy</label>
-                    <select id="password-expiry" name="password_expiry" value={settingsMap["password_expiry"] ?? "90"} onChange={async e => { try { await saveSettings("password_expiry", e.target.value); setSettingsMap(m => ({ ...m, password_expiry: e.target.value })); toast.success("Password expiry updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
+                    <select id="password-expiry" name="password_expiry" value={settingsMap["password_expiry"] ?? "90"} onChange={async e => { try { await saveSettings("password_expiry", e.target.value, user?.name || "System"); setSettingsMap(m => ({ ...m, password_expiry: e.target.value })); toast.success("Password expiry updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="90">Every 90 days</option>
                       <option value="180">Every 180 days</option>
                       <option value="365">Every year</option>
@@ -393,7 +395,7 @@ const AdminSettings: React.FC = () => {
                           onClick={async () => {
                             const next = !enabled;
                             try {
-                              await saveSettings(item.key, String(next));
+                              await saveSettings(item.key, String(next), user?.name || "System");
                               setSettingsMap(m => ({ ...m, [item.key]: String(next)}));
                               toast.success(`${item.label} ${next ? "enabled" : "disabled"}`);
                             } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); }
@@ -415,14 +417,14 @@ const AdminSettings: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="language" className="block text-xs text-muted-foreground mb-1.5">Default Language</label>
-                    <select id="language" name="language" value={settingsMap["language"] ?? "en"} onChange={async e => { try { await saveSettings("language", e.target.value); setSettingsMap(m => ({ ...m, language: e.target.value })); toast.success("Language updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
+                    <select id="language" name="language" value={settingsMap["language"] ?? "en"} onChange={async e => { try { await saveSettings("language", e.target.value, user?.name || "System"); setSettingsMap(m => ({ ...m, language: e.target.value })); toast.success("Language updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="en">English</option>
                       <option value="fil">Filipino</option>
                     </select>
                   </div>
                   <div>
                     <label htmlFor="date-format" className="block text-xs text-muted-foreground mb-1.5">Date Format</label>
-                    <select id="date-format" name="date_format" value={settingsMap["date_format"] ?? "MM/DD/YYYY"} onChange={async e => { try { await saveSettings("date_format", e.target.value); setSettingsMap(m => ({ ...m, date_format: e.target.value })); toast.success("Date format updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
+                    <select id="date-format" name="date_format" value={settingsMap["date_format"] ?? "MM/DD/YYYY"} onChange={async e => { try { await saveSettings("date_format", e.target.value, user?.name || "System"); setSettingsMap(m => ({ ...m, date_format: e.target.value })); toast.success("Date format updated"); } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to update"); } }} className={inputCls}>
                       <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                       <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                       <option value="YYYY-MM-DD">YYYY-MM-DD</option>
@@ -505,11 +507,11 @@ const AdminSettings: React.FC = () => {
             const token = getSessionToken();
             if (!token || !supabase) return;
             if (dangerAction === "clear-documents") {
-              const { error } = await supabase.rpc("admin_clear_documents", { p_token: token });
+              const { error } = await supabase.rpc("admin_clear_documents", { p_token: token, p_logged_in_user: user?.name || "System" });
               if (error) throw new Error(error.message);
               toast.success("Document requests cleared");
             } else {
-              const { error } = await supabase.rpc("admin_clear_residents", { p_token: token });
+              const { error } = await supabase.rpc("admin_clear_residents", { p_token: token, p_logged_in_user: user?.name || "System" });
               if (error) throw new Error(error.message);
               toast.success("Residents cleared");
             }

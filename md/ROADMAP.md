@@ -1,7 +1,7 @@
 # ROADMAP — Payatas Ledger
 
-Last Updated: July 29, 2026
-Status: **Feature-complete web app with test suite.** All public forms persist to Supabase. All 14 admin pages exist with live data. RBAC, certificate editor, CSV export, CI pipeline, testing suite done.
+Last Updated: July 31, 2026
+Status: **Feature-complete web app with test suite.** All public forms persist to Supabase. All 17 admin pages exist with live data. RBAC, certificate editor, CSV export, CI pipeline, testing suite done. File upload previews, column visibility toggles, and full audit coverage added.
 
 Priority levels: Critical / High / Medium / Backlog
 
@@ -63,8 +63,11 @@ All items complete. 12 public pages fully wired:
 |---|---|
 | Home, About, Officials, Services | Wired to Supabase |
 | Announcements | Wired to Supabase |
-| Document Application | Wired to Supabase |
+| Document Application | Wired to Supabase (upload preview added) |
 | Public Registry | Wired to Supabase |
+| Business Registry | Persists to `business_registry` (rate-limited) |
+| Projects | Read-only card grid of barangay projects |
+| Clearance Request | Persists to `clearance_requests` + status checker |
 | Report Concern | Persists to `reports` + live tracking via ref number |
 | Citizens' Voice | Persists to `suggestions` |
 | Community Vote | Persists to `polls.votes` |
@@ -73,7 +76,7 @@ All items complete. 12 public pages fully wired:
 
 ### Admin Portal
 
-All items complete. 14 admin pages built:
+All items complete. 17 admin pages built:
 
 | Page | Status |
 |---|---|
@@ -84,6 +87,11 @@ All items complete. 14 admin pages built:
 | Users, Audit Logs | CRUD + live audit trail view |
 | Reports | Charts + period filter + CSV export |
 | Settings | Profile, fees, templates editor, notifications, security, danger zone |
+| Business Registry | CRUD + status workflow (approve/reject) + CSV |
+| Projects | CRUD + progress/budget + status workflow + CSV |
+| Clearances | CRUD + control #/verification + print-ready certificate + CSV |
+
+Column visibility toggles added to Residents, Requests, Blotter, Business Registry, Projects, and Clearances. Uploaded document previews render in PublicDocumentApplication and AdminRequests.
 
 #### RBAC — Role-Based Access Control
 
@@ -100,12 +108,8 @@ All items complete. 14 admin pages built:
 ### Engineering
 
 - ~~CI pipeline~~ **Done — July 2026** (`.github/workflows/deploy.yml`: build on push to main)
-- **Testing — Jest + React Testing Library** (Medium) — no test files exist yet
-- **Error monitoring — Sentry or equivalent** (Backlog)
-
-### Desktop GUI — Offline Backup Client (Electron)
-
-**Priority: Backlog.** Scope and architecture documented in previous versions of this roadmap. Not started.
+- ~~Testing suite~~ **Done — July 2026** — Vitest + React Testing Library, 15 tests across 4 files
+- **Error monitoring — Sentry or equivalent** (Backlog) — Sentry Vite plugin is wired but inactive without `SENTRY_AUTH_TOKEN`
 
 ---
 
@@ -121,4 +125,15 @@ All items complete. 14 admin pages built:
 8. ~~Certificate preview render~~ **Done — July 2026**
 9. ~~Contact messages admin inbox~~ **Done — July 2026**
 10. ~~Testing suite (Vitest + RTL)~~ **Done — July 2026** — 15 tests across 4 test files (utility, auth, dashboard, not-found)
-11. Desktop GUI (Electron) — **Backlog**
+11. ~~Mobile responsiveness & accessibility pass~~ **Done — July 2026**
+12. ~~Debounced search (13 inputs)~~ **Done — July 2026**
+13. ~~ConfirmDialog on all destructive actions~~ **Done — July 2026**
+14. ~~Column sorting + pagination (6 tables)~~ **Done — July 2026**
+15. ~~Bulk operations (Residents, Requests, Blotter)~~ **Done — July 2026**
+16. ~~Zod form validation (Residents, Officials, Blotter, Users)~~ **Done — July 2026**
+17. ~~CSV export to Blotter + Officials~~ **Done — July 2026**
+18. ~~Keyboard shortcuts (Ctrl+K search)~~ **Done — July 2026**
+19. ~~Business/Projects/Clearances admin GUIs~~ **Done — July 2026**
+20. ~~Public business registry, projects, clearance request pages~~ **Done — July 2026**
+21. ~~Upload preview + column visibility toggles~~ **Done — July 2026**
+22. ~~Audit-logging gaps closed (settings, fees, residents, new tables; public submissions logged)~~ **Done — July 2026**

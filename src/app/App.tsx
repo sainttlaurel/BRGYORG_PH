@@ -24,6 +24,9 @@ import PublicCommunityVote from "./components/PublicCommunityVote";
 import PublicVolunteer from "./components/PublicVolunteer";
 import PublicReportConcern from "./components/PublicReportConcern";
 import PublicContact from "./components/PublicContact";
+import PublicBusinessRegistry from "./components/PublicBusinessRegistry";
+import PublicProjects from "./components/PublicProjects";
+import PublicClearanceRequest from "./components/PublicClearanceRequest";
 
 const AdminLogin = lazy(() => import("./components/AdminLogin"));
 const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
@@ -40,6 +43,9 @@ const AdminVolunteers = lazy(() => import("./components/AdminVolunteers"));
 const AdminUsers = lazy(() => import("./components/AdminUsers"));
 const AdminContactMessages = lazy(() => import("./components/AdminContactMessages"));
 const AdminAuditLogs = lazy(() => import("./components/AdminAuditLogs"));
+const AdminBusinessRegistry = lazy(() => import("./components/AdminBusinessRegistry"));
+const AdminProjects = lazy(() => import("./components/AdminProjects"));
+const AdminClearanceRequests = lazy(() => import("./components/AdminClearanceRequests"));
 
 const AdminSettings = lazy(() => import("./components/AdminSettings"));
 import { getVisiblePaths } from "./components/AdminLayout";
@@ -93,6 +99,9 @@ const AppRoutes: React.FC = () => {
           <Route path="volunteer" element={<PublicVolunteer />} />
           <Route path="report-concern" element={<PublicReportConcern />} />
           <Route path="contact" element={<PublicContact />} />
+          <Route path="business-registry" element={<PublicBusinessRegistry />} />
+          <Route path="projects" element={<PublicProjects />} />
+          <Route path="clearance-request" element={<PublicClearanceRequest />} />
         </Route>
 
         {/* Admin login (standalone, no layout) */}
@@ -126,6 +135,9 @@ const AppRoutes: React.FC = () => {
           <Route path="contact-messages" element={<RoleRoute path="/admin/contact-messages"><Suspense fallback={<AdminFallback />}><AdminContactMessages /></Suspense></RoleRoute>} />
           <Route path="users" element={<RoleRoute path="/admin/users"><Suspense fallback={<AdminFallback />}><AdminUsers /></Suspense></RoleRoute>} />
           <Route path="audit-logs" element={<RoleRoute path="/admin/audit-logs"><Suspense fallback={<AdminFallback />}><AdminAuditLogs /></Suspense></RoleRoute>} />
+          <Route path="business-registry" element={<RoleRoute path="/admin/business-registry"><Suspense fallback={<AdminFallback />}><AdminBusinessRegistry /></Suspense></RoleRoute>} />
+          <Route path="projects" element={<RoleRoute path="/admin/projects"><Suspense fallback={<AdminFallback />}><AdminProjects /></Suspense></RoleRoute>} />
+          <Route path="clearance-requests" element={<RoleRoute path="/admin/clearance-requests"><Suspense fallback={<AdminFallback />}><AdminClearanceRequests /></Suspense></RoleRoute>} />
 
           <Route path="settings" element={<RoleRoute path="/admin/settings"><Suspense fallback={<AdminFallback />}><AdminSettings /></Suspense></RoleRoute>} />
           <Route path="*" element={
