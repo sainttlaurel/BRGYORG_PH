@@ -133,9 +133,11 @@ export default defineConfig({
           ],
           'admin-vendor': [
             '@tanstack/react-query',
-            'recharts',
             'sonner',
             'date-fns',
+          ],
+          'charts': [
+            'recharts',
           ],
           'ui-components': [
             '@radix-ui/react-dialog',

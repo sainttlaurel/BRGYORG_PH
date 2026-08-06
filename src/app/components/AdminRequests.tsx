@@ -184,10 +184,10 @@ const AdminRequests: React.FC = () => {
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800">
           <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">{selectedIds.size} selected</span>
-          <button onClick={async () => { for (const id of selectedIds) { try { await updateStatus(id, "approved"); } catch {} } toast.success(`${selectedIds.size} requests approved`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-medium transition-colors">
+          <button onClick={async () => { for (const id of selectedIds) { try { await updateStatus(id, "approved"); } catch (err) { console.error(err); } } toast.success(`${selectedIds.size} requests approved`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-medium transition-colors">
             Approve Selected
           </button>
-          <button onClick={async () => { for (const id of selectedIds) { try { await updateStatus(id, "rejected"); } catch {} } toast.success(`${selectedIds.size} requests rejected`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors">
+          <button onClick={async () => { for (const id of selectedIds) { try { await updateStatus(id, "rejected"); } catch (err) { console.error(err); } } toast.success(`${selectedIds.size} requests rejected`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors">
             Reject Selected
           </button>
           <button onClick={() => csvExport(filtered.filter(r => selectedIds.has(r.id)).map(r => ({ ID: r.id, Resident: r.resident, Type: r.type, Purpose: r.purpose, Status: r.status, Date: r.date, Contact: r.contact || "", Fee: r.fee })), `selected-requests.csv`)} className="px-3 py-1 rounded-lg bg-white dark:bg-card border border-border text-xs text-muted-foreground hover:bg-muted transition-colors">

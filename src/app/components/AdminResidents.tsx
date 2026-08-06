@@ -268,7 +268,7 @@ const AdminResidents: React.FC = () => {
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800">
           <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">{selectedIds.size} selected</span>
-          <button onClick={async () => { if (!confirm(`Delete ${selectedIds.size} residents?`)) return; for (const id of selectedIds) { try { await deleteResident(id, user?.name || "System"); } catch {} } toast.success(`${selectedIds.size} residents deleted`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors">
+          <button onClick={async () => { if (!confirm(`Delete ${selectedIds.size} residents?`)) return; for (const id of selectedIds) { try { await deleteResident(id, user?.name || "System"); } catch (err) { console.error(err); } } toast.success(`${selectedIds.size} residents deleted`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium transition-colors">
             Delete Selected
           </button>
           <button onClick={() => csvExport(filtered.filter(r => selectedIds.has(r.id)).map(r => ({ ID: r.id, Name: r.name, Age: String(r.age), Gender: r.gender, Status: r.status, Address: r.address, Purok: r.purok, Contact: r.contact })), `selected-residents.csv`)} className="px-3 py-1 rounded-lg bg-white dark:bg-card border border-border text-xs text-muted-foreground hover:bg-muted transition-colors">

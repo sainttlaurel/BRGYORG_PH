@@ -167,7 +167,7 @@ const AdminBlotter: React.FC = () => {
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800">
           <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">{selectedIds.size} selected</span>
-          <button onClick={async () => { for (const id of selectedIds) { try { await updateStatus(id, "settled"); } catch {} } toast.success(`${selectedIds.size} cases marked settled`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-medium transition-colors">
+            <button onClick={async () => { for (const id of selectedIds) { try { await updateStatus(id, "settled"); } catch (err) { console.error(err); } } toast.success(`${selectedIds.size} cases marked settled`); setSelectedIds(new Set()); }} className="px-3 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-medium transition-colors">
             Mark Settled
           </button>
           <button onClick={() => csvExport(filtered.filter(c => selectedIds.has(c.id)).map(c => ({ ID: c.id, Status: c.status, Incident: c.incident, Complainant: c.complainant, Respondent: c.respondent, Date: c.date, Location: c.location, Handler: c.handler })), `selected-cases.csv`)} className="px-3 py-1 rounded-lg bg-white dark:bg-card border border-border text-xs text-muted-foreground hover:bg-muted transition-colors">
