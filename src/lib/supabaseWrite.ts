@@ -206,7 +206,6 @@ export async function insertAuditLog(data: {
   if (error) throw new Error(error.message);
 }
 
-// Client-side audit helper (session-gated, so not callable by anonymous users)
 export async function logAdminAction(action: string, module: string = "", details: string = "", loggedInUser: string = "System") {
   if (!supabase) return;
   const { error } = await supabase.rpc('admin_log_action', {
@@ -228,7 +227,6 @@ export async function insertSuggestion(data: { name: string; content: string }) 
   if (error) throw new Error(error.message);
 }
 
-// Public form submissions (no session token needed — use anon INSERT policies)
 export async function insertVolunteer(data: {
   full_name: string; email: string; contact: string; body_conditions: string;
 }) {
@@ -291,18 +289,15 @@ export async function getReportByRef(ref: string): Promise<Record<string, unknow
   const trimmed = ref.trim();
   if (!trimmed) return null;
 
-  // 1. Exact match
   const { data: exact, error: err1 } = await supabase.from('reports').select('*').eq('id', trimmed).maybeSingle();
   if (err1) throw new Error(err1.message);
   if (exact) return exact;
 
-  // 2. ILIKE with wildcards (case-insensitive partial match)
   const { data: partial, error: err2 } = await supabase
     .from('reports').select('*').ilike('id', `%${trimmed}%`).limit(1).maybeSingle();
   if (err2) throw new Error(err2.message);
   if (partial) return partial;
 
-  // 3. Strip all non-alphanumeric and try again
   const stripped = trimmed.replace(/[^A-Z0-9]/gi, '');
   if (stripped !== trimmed) {
     const { data: s, error: e } = await supabase.from('reports').select('*').ilike('id', `%${stripped}%`).limit(1).maybeSingle();
@@ -310,21 +305,20 @@ export async function getReportByRef(ref: string): Promise<Record<string, unknow
     if (s) return s;
   }
 
-  // 4. Extract numeric portion (e.g., "123" from "RPT-123" or "ABC-00123")
   const nums = trimmed.match(/\d+/g);
   if (nums) {
     for (const n of nums) {
       const { data: dn, error: en } = await supabase.from('reports').select('*').ilike('id', `%${n}%`).limit(1).maybeSingle();
       if (en) throw new Error(en.message);
       if (dn) return dn;
-      // Try stripped leading zeros (e.g., "00123" → "123")
+
       const noPad = parseInt(n, 10).toString();
       if (noPad !== n) {
         const { data: dnp, error: enp } = await supabase.from('reports').select('*').ilike('id', `%${noPad}%`).limit(1).maybeSingle();
         if (enp) throw new Error(enp.message);
         if (dnp) return dnp;
       }
-      // Try zero-padded (e.g., "123" → "00123")
+
       const padded = n.padStart(5, '0');
       if (padded !== n) {
         const { data: dp, error: ep } = await supabase.from('reports').select('*').ilike('id', `%${padded}%`).limit(1).maybeSingle();
@@ -334,7 +328,6 @@ export async function getReportByRef(ref: string): Promise<Record<string, unknow
     }
   }
 
-  // 5. Try last 4 characters as numeric reference
   const last4 = trimmed.slice(-4);
   if (/^\d{4}$/.test(last4)) {
     const { data: d4, error: e4 } = await supabase.from('reports').select('*').ilike('id', `%${last4}%`).limit(1).maybeSingle();
@@ -385,10 +378,6 @@ export async function submitVote(pollId: string, optionIndex: string) {
   if (error) throw new Error(error.message);
 }
 
-// ============================================================
-// business_registry CRUD
-// ============================================================
-
 export async function insertBusiness(data: {
   name: string; owner: string; category: string;
   contact?: string; address?: string; description?: string;
@@ -430,10 +419,6 @@ export async function deleteBusiness(id: string, loggedInUser: string = "System"
   if (error) throw new Error(error.message);
 }
 
-// ============================================================
-// projects CRUD
-// ============================================================
-
 export async function insertProject(data: {
   id: string; title: string; category: string;
   budget?: number; progress?: number; description?: string;
@@ -466,10 +451,6 @@ export async function deleteProject(id: string, loggedInUser: string = "System")
   if (error) throw new Error(error.message);
 }
 
-// ============================================================
-// clearance_requests CRUD
-// ============================================================
-
 export async function insertClearanceRequest(data: {
   resident_id?: string; full_name: string; address: string;
   purpose: string; doc_type?: string; contact?: string;
@@ -493,8 +474,6 @@ export async function updateClearanceRequest(id: string, data: Record<string, un
   });
   if (error) throw new Error(error.message);
 }
-
-// ============================================================
 
 export async function uploadLogo(file: File): Promise<string> {
   if (!supabase) throw new Error('offline');

@@ -89,7 +89,6 @@ const AdminDashboard: React.FC = () => {
       })
     : [];
 
-  // Compute chart data from live records
   const docTypeCounts: Record<string, number> = {};
   docRequests.forEach(d => {
     const t = d.type || "Unknown";
@@ -126,7 +125,6 @@ const AdminDashboard: React.FC = () => {
   });
   const requestsTimeline = months.map(month => ({ month, ...monthCounts[month] }));
 
-  // Live KPI values derived from real data
   const pendingCount  = docRequests.filter(d => d.status === "pending").length;
   const blotterActive = blotter.filter(b => b.status === "ongoing").length;
 
@@ -142,7 +140,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
 
-      {/* Offline banner */}
+      { }
       {offline && (
         <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-sm">
           <WifiOff size={14} className="shrink-0" />
@@ -151,7 +149,7 @@ const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Welcome */}
+      { }
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="font-bold text-foreground text-[1.4rem]">
@@ -175,7 +173,7 @@ const AdminDashboard: React.FC = () => {
         </Link>
       </div>
 
-      {/* KPI cards */}
+      { }
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, i) => (
           <motion.div key={kpi.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
@@ -194,9 +192,9 @@ const AdminDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Charts row */}
+      { }
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Area chart — monthly trend (uses mock timeline until reports table is added) */}
+        { }
         <div className="lg:col-span-2 bg-white dark:bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground text-sm">Document Requests – 2026</h2>
@@ -224,7 +222,7 @@ const AdminDashboard: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Pie chart */}
+        { }
         <div className="bg-white dark:bg-card border border-border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground text-sm mb-4">Resident Demographics</h2>
           {residentDemographics.some(d => d.value > 0) ? (
@@ -255,7 +253,7 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Bar chart */}
+      { }
       <div className="bg-white dark:bg-card border border-border rounded-2xl p-5">
         <h2 className="font-semibold text-foreground text-sm mb-4">Document Types Requested – 2026</h2>
         <ResponsiveContainer width="100%" height={180}>
@@ -271,9 +269,9 @@ const AdminDashboard: React.FC = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* Bottom row */}
+      { }
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Recent requests — live */}
+        { }
         <div className="lg:col-span-3 bg-white dark:bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground text-sm">Recent Requests</h2>
@@ -302,7 +300,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Activity feed — live from audit_logs via RPC */}
+        { }
         <div className="lg:col-span-2 bg-white dark:bg-card border border-border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground text-sm mb-4">Activity Feed</h2>
           <div className="space-y-3">

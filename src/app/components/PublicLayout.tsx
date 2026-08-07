@@ -61,7 +61,7 @@ const PublicLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      {/* Top bar */}
+      { }
       <div className="bg-emerald-800 dark:bg-emerald-950 text-emerald-100 text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -72,7 +72,7 @@ const PublicLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* Disclaimer banner */}
+      { }
       <AnimatePresence>
         {showDisclaimer && (
           <motion.div
@@ -92,7 +92,7 @@ const PublicLayout: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Navbar */}
+      { }
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${
           scrolled
@@ -101,7 +101,7 @@ const PublicLayout: React.FC = () => {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Logo */}
+          { }
           <Link to="/" className="flex items-center gap-2.5 group">
             <img src="/img/logo-payatas.png" alt="Payatas Logo" className="w-9 h-9 rounded-xl object-contain shadow-sm group-hover:shadow-emerald-300 transition-shadow" />
             <div className="leading-tight">
@@ -110,7 +110,7 @@ const PublicLayout: React.FC = () => {
             </div>
           </Link>
 
-          {/* Desktop Nav */}
+          { }
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map(link => (
               <NavLink
@@ -129,7 +129,7 @@ const PublicLayout: React.FC = () => {
               </NavLink>
             ))}
 
-            {/* More dropdown */}
+            { }
             <div className="relative">
               <button
                 onClick={() => setMoreOpen(!moreOpen)}
@@ -168,7 +168,7 @@ const PublicLayout: React.FC = () => {
             </div>
           </nav>
 
-          {/* Right actions */}
+          { }
           <div className="flex items-center gap-2">
             <button
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -194,7 +194,7 @@ const PublicLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        { }
         <AnimatePresence>
           {mobileOpen && (
             <motion.div
@@ -234,16 +234,16 @@ const PublicLayout: React.FC = () => {
         </AnimatePresence>
       </header>
 
-      {/* Page content */}
+      { }
       <main className="flex-1">
         <Outlet />
       </main>
 
-      {/* Footer */}
+      { }
       <footer className="bg-emerald-900 dark:bg-emerald-950 text-emerald-100">
         <div className="max-w-7xl mx-auto px-4 pt-12 pb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-            {/* Brand */}
+            { }
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
@@ -261,7 +261,7 @@ const PublicLayout: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Links */}
+            { }
             <div>
               <h4 className="font-semibold text-white mb-3 text-sm">Services</h4>
               <ul className="space-y-2 text-sm text-emerald-200/70">
@@ -279,7 +279,7 @@ const PublicLayout: React.FC = () => {
               </ul>
             </div>
 
-            {/* Barangay */}
+            { }
             <div>
               <h4 className="font-semibold text-white mb-3 text-sm">Barangay</h4>
               <ul className="space-y-2 text-sm text-emerald-200/70">
@@ -297,7 +297,7 @@ const PublicLayout: React.FC = () => {
               </ul>
             </div>
 
-            {/* Contact */}
+            { }
             <div>
               <h4 className="font-semibold text-white mb-3 text-sm">Contact</h4>
               <ul className="space-y-2 text-sm text-emerald-200/70">

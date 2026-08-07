@@ -73,7 +73,7 @@ const AdminLayout: React.FC = () => {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
+      { }
       <div className={`flex items-center gap-2.5 p-4 border-b border-sidebar-border ${collapsed ? "justify-center" : ""}`}>
         <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0">
           <Leaf size={16} className="text-emerald-300" />
@@ -86,7 +86,7 @@ const AdminLayout: React.FC = () => {
         )}
       </div>
 
-      {/* Nav items */}
+      { }
       <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {navItems.filter(n => !n.roles || n.roles.includes(user?.role ?? "")).map(item => (
           <NavLink
@@ -108,7 +108,7 @@ const AdminLayout: React.FC = () => {
         ))}
       </nav>
 
-      {/* User info */}
+      { }
       <div className="p-3 border-t border-sidebar-border">
         {!collapsed ? (
           <div className="flex items-center gap-2.5">
@@ -141,7 +141,7 @@ const AdminLayout: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Desktop sidebar */}
+      { }
       <motion.aside
         animate={{ width: collapsed ? 64 : 224 }}
         transition={{ duration: 0.2 }}
@@ -156,7 +156,7 @@ const AdminLayout: React.FC = () => {
         </button>
       </motion.aside>
 
-      {/* Mobile sidebar */}
+      { }
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -180,9 +180,9 @@ const AdminLayout: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Main content */}
+      { }
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top header */}
+        { }
         <header className="h-14 bg-white dark:bg-card border-b border-border flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -216,7 +216,7 @@ const AdminLayout: React.FC = () => {
           </div>
         </header>
 
-        {/* Page content */}
+        { }
         <main className="flex-1 overflow-y-auto bg-background">
           <Outlet />
         </main>

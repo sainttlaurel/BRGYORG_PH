@@ -104,7 +104,7 @@ const PublicReportConcern: React.FC = () => {
     <>
       <SeoHead title="Report a Concern" description="Report a concern, issue, or incident to Barangay Payatas authorities." path="/report-concern" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-orange-700 to-red-900 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-xs font-medium mb-4">
           <AlertTriangle size={11} /> Community Safety
@@ -114,7 +114,7 @@ const PublicReportConcern: React.FC = () => {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-10">
-        {/* Tabs */}
+        { }
         <div className="flex bg-muted rounded-xl p-1 mb-6">
           {[
             { key: "form", label: "Submit Report", icon: AlertTriangle },
@@ -138,7 +138,7 @@ const PublicReportConcern: React.FC = () => {
               <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <div className="bg-white dark:bg-card border border-border rounded-2xl p-6 shadow-sm">
                   <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Category */}
+                    { }
                     <div>
                       <label htmlFor="category" className="block text-sm text-muted-foreground mb-1.5">Concern Type <span className="text-red-500">*</span></label>
                       <select id="category" name="category" value={form.category} onChange={e => set("category", e.target.value)} className={inputCls("category")}>
@@ -148,7 +148,7 @@ const PublicReportConcern: React.FC = () => {
                       {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                     </div>
 
-                    {/* Urgency */}
+                    { }
                     <div>
                       <label className="block text-sm text-muted-foreground mb-2">Urgency Level <span className="text-red-500">*</span></label>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -169,14 +169,14 @@ const PublicReportConcern: React.FC = () => {
                       {errors.urgency && <p className="text-red-500 text-xs mt-1">{errors.urgency}</p>}
                     </div>
 
-                    {/* Location */}
+                    { }
                     <div>
                       <label htmlFor="location" className="block text-sm text-muted-foreground mb-1.5">Location / Address <span className="text-red-500">*</span></label>
                       <input id="location" name="location" type="text" value={form.location} onChange={e => set("location", e.target.value)} className={inputCls("location")} placeholder="Exact address or landmark" />
                       {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
                     </div>
 
-                    {/* Description */}
+                    { }
                     <div>
                       <label htmlFor="description" className="block text-sm text-muted-foreground mb-1.5">Description <span className="text-red-500">*</span></label>
                       <textarea
@@ -191,7 +191,7 @@ const PublicReportConcern: React.FC = () => {
                       {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                     </div>
 
-                    {/* Optional reporter info */}
+                    { }
                     <div className="bg-muted/50 rounded-xl p-4">
                       <p className="text-xs text-muted-foreground mb-3 font-medium">Contact Information (Optional – for follow-up only)</p>
                       <div className="grid grid-cols-2 gap-3">

@@ -85,7 +85,7 @@ const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
+        { }
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<PublicHome />} />
           <Route path="about" element={<PublicAbout />} />
@@ -104,14 +104,14 @@ const AppRoutes: React.FC = () => {
           <Route path="clearance-request" element={<PublicClearanceRequest />} />
         </Route>
 
-        {/* Admin login (standalone, no layout) */}
+        { }
         <Route path="/admin/login" element={
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">Loading…</div>}>
             <AdminLogin />
           </Suspense>
         } />
 
-        {/* Admin protected routes */}
+        { }
         <Route
           path="/admin"
           element={
@@ -147,7 +147,7 @@ const AppRoutes: React.FC = () => {
           } />
         </Route>
 
-        {/* Catch-all — public */}
+        { }
         <Route path="*" element={
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">Loading…</div>}>
             <NotFoundPage />

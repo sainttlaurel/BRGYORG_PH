@@ -1,14 +1,5 @@
 import { useState, useCallback } from "react";
 
-/**
- * useColumnVisibility — track which table columns are visible.
- *
- * Usage:
- *   const vis = useColumnVisibility(["id", "name", "status"]);
- *   // column header/cell:
- *   className={`... ${vis.isHidden("name") ? "hidden" : ""}`}
- *   // toggle: <ColumnToggle columns={vis.columns} hidden={vis.hidden} onToggle={vis.toggle} />
- */
 export interface ColumnDef {
   key: string;
   label: string;

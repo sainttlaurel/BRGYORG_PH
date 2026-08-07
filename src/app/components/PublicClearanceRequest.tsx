@@ -28,7 +28,6 @@ interface StatusResult {
 const PublicClearanceRequest: React.FC = () => {
   const [tab, setTab] = useState<Tab>("apply");
 
-  // Form state
   const [step, setStep] = useState<"form" | "success">("form");
   const [form, setForm] = useState({ full_name: "", address: "", purpose: "", doc_type: "Barangay Clearance", contact: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -36,7 +35,6 @@ const PublicClearanceRequest: React.FC = () => {
   const [result, setResult] = useState<{ control_number: string; verification_code: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Check status state
   const [checkForm, setCheckForm] = useState({ control_number: "", verification_code: "" });
   const [checkLoading, setCheckLoading] = useState(false);
   const [checkResult, setCheckResult] = useState<StatusResult | null>(null);

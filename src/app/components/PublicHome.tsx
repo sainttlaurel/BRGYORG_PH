@@ -35,18 +35,18 @@ const PublicHome: React.FC = () => {
     <>
       <SeoHead title="Home" description="Welcome to Barangay Payatas — digital portal for document requests, community services, and resident management in Quezon City." path="/" />
     <div className="overflow-x-hidden">
-      {/* Hero */}
+      { }
       <section className="relative min-h-[88vh] flex items-center overflow-hidden">
-        {/* Background image */}
+        { }
         <div className="absolute inset-0">
           <img src="/img/bg.png" alt="Background" className="w-full h-full object-cover" />
         </div>
-        {/* Overlay gradient */}
+        { }
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-900/60 to-transparent" />
 
         <div className="relative max-w-7xl mx-auto px-4 py-20 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}>
-            {/* Badge */}
+            { }
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 mb-6 text-xs font-medium backdrop-blur-sm">
               <Leaf size={12} />
               Official Barangay Platform · Quezon City
@@ -73,7 +73,7 @@ const PublicHome: React.FC = () => {
               </Link>
             </div>
 
-            {/* Hotline */}
+            { }
             <div className="mt-8 flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 w-fit">
               <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-400/30 flex items-center justify-center">
                 <Phone size={14} className="text-red-300" />
@@ -97,7 +97,7 @@ const PublicHome: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Scroll indicator */}
+        { }
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
           <motion.div
             animate={{ y: [0, 8, 0] }}
@@ -109,7 +109,7 @@ const PublicHome: React.FC = () => {
         </div>
       </section>
 
-      {/* Stats */}
+      { }
       <section className="bg-white dark:bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -130,7 +130,7 @@ const PublicHome: React.FC = () => {
         </div>
       </section>
 
-      {/* Quick Actions */}
+      { }
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
@@ -164,7 +164,7 @@ const PublicHome: React.FC = () => {
         </div>
       </section>
 
-      {/* Announcements preview */}
+      { }
       <section className="py-16 bg-emerald-50 dark:bg-emerald-950/30">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
@@ -202,7 +202,7 @@ const PublicHome: React.FC = () => {
         </div>
       </section>
 
-      {/* Services preview */}
+      { }
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
@@ -234,7 +234,7 @@ const PublicHome: React.FC = () => {
         </div>
       </section>
 
-      {/* Emergency Banner */}
+      { }
       <section className="bg-gradient-to-r from-red-600 to-rose-600 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">

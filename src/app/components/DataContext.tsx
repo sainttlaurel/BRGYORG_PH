@@ -1,8 +1,3 @@
-/**
- * DataContext — provides live Supabase data to the entire app.
- * Wrap the app once; any component can call useData() to get
- * the current state without triggering a new fetch.
- */
 import React, { createContext, useContext } from "react";
 import { useSupabaseData, type AppData } from "@/lib/useSupabaseData";
 

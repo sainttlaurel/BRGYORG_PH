@@ -165,7 +165,7 @@ const AdminRequests: React.FC = () => {
         </button>
       </div>
 
-      {/* Filters */}
+      { }
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative flex-1 min-w-48">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -199,7 +199,7 @@ const AdminRequests: React.FC = () => {
         </div>
       )}
 
-      {/* Table */}
+      { }
       <div className="bg-white dark:bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -251,7 +251,7 @@ const AdminRequests: React.FC = () => {
         </div>
       </div>
 
-      {/* Pagination */}
+      { }
       <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page:</span>
@@ -275,7 +275,7 @@ const AdminRequests: React.FC = () => {
         </div>
       </div>
 
-      {/* Detail panel */}
+      { }
       <AnimatePresence>
         {selected && (
           <>
@@ -311,7 +311,7 @@ const AdminRequests: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Certificate preview */}
+                { }
                 <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 mb-5">
                   <h3 className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-2">Certificate Preview</h3>
                   <div className="bg-white dark:bg-card rounded-lg border border-border p-3 text-center">
@@ -325,7 +325,7 @@ const AdminRequests: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Uploaded ID */}
+                { }
                 <div className="mb-5">
                   <h3 className="text-xs font-semibold text-muted-foreground mb-2">Uploaded Valid ID</h3>
                   {selected.id_upload ? (
@@ -335,7 +335,7 @@ const AdminRequests: React.FC = () => {
                   )}
                 </div>
 
-                {/* Workflow actions */}
+                { }
                 <div className="space-y-2">
                   {getWorkflowActions(selected.status).map(action => (
                     <button key={action.next} onClick={() => updateStatus(selected.id, action.next)} className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${action.color}`}>

@@ -30,7 +30,7 @@ const PublicServices: React.FC = () => {
     <>
       <SeoHead title="Services" description="View all barangay services including clearance, certificates, and document requests." path="/services" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-medium mb-4">
           <Leaf size={11} /> Barangay Services
@@ -40,7 +40,7 @@ const PublicServices: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* Services grid */}
+        { }
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-16">
           {services.map((svc, i) => {
             const Icon = iconMap[svc.icon] || FileCheck;
@@ -89,7 +89,7 @@ const PublicServices: React.FC = () => {
           })}
         </div>
 
-        {/* How it works */}
+        { }
         <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-3xl border border-emerald-200 dark:border-emerald-800 p-8">
           <h2 className="font-bold text-foreground text-center mb-8" style={{ fontSize: "1.5rem" }}>How It Works</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -117,7 +117,7 @@ const PublicServices: React.FC = () => {
           </div>
         </div>
 
-        {/* Policies note */}
+        { }
         <div className="mt-8 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-xs text-amber-700 dark:text-amber-300">
           <strong>Pricing &amp; Cancellation:</strong> Services are priced per document — no bundled plans.
           All fees are non-refundable once document processing begins.

@@ -14,11 +14,6 @@ function isPdf(src: string, name?: string): boolean {
   return n.endsWith(".pdf");
 }
 
-/**
- * FilePreview — renders a preview for an uploaded file.
- * - Images → <img> thumbnail
- * - PDFs → styled card with "Open PDF" link (data URLs open via a blob URL)
- */
 const FilePreview: React.FC<FilePreviewProps> = ({ src, name, className, maxHeight = "h-48" }) => {
   const pdf = isPdf(src, name);
 

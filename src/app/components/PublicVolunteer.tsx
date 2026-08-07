@@ -83,7 +83,7 @@ const PublicVolunteer: React.FC = () => {
     <>
       <SeoHead title="Volunteer" description="Sign up to volunteer for community programs and events in Barangay Payatas." path="/volunteer" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-teal-700 to-emerald-900 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-medium mb-4">
           <Heart size={11} /> Community Service
@@ -93,7 +93,7 @@ const PublicVolunteer: React.FC = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Programs */}
+        { }
         <div className="mb-10">
           <h2 className="font-bold text-foreground mb-5 text-center" style={{ fontSize: "1.3rem" }}>Volunteer Programs</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

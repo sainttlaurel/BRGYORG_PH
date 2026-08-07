@@ -4,6 +4,32 @@ All notable changes to this project are documented here.
 
 ---
 
+## [6.1.0] — August 6, 2026
+
+### Removed
+
+- **Desktop GUI (Tauri) removed entirely** — `src-tauri/`, release CI, desktop installer artifacts, icon generation script, and `@tauri-apps/cli` dependency all gone. The web app is now the only client.
+
+### Added
+
+- **Session-gated admin read RPCs** — migration `20260731_0006_admin_read_rpcs.sql` adds `admin_get_clearance_requests(p_token, p_limit, p_offset)` and `admin_get_business_registry(p_token, p_limit, p_offset)`, plus the public-safe `get_document_status(p_query)` lookup for document tracking
+- **Token-aware data layer** — `useSupabaseData.ts` now reads the session token on every load and routes locked-table reads through the session-gated RPCs when a session exists, with safe anon fallbacks otherwise
+- **Login/logout refetch** — `AdminLogin` and `AdminLayout` trigger `refetch()` so admin pages populate immediately after login and clear on logout
+- **Public home population stat** — "Registered Residents" now uses the official `barangay_info.population` instead of a resident row count (which is RLS-blocked for anon)
+- **Sentry env vars documented** — `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` added to `.env.example`
+
+### Changed
+
+- Recharts moved out of `admin-vendor` into its own `charts` chunk — `admin-vendor` dropped from 621 kB to 199 kB, clearing the >500 kB build warning
+- Lint cleanup — four `no-empty` catch-block errors in bulk operations (AdminBlotter, AdminRequests, AdminResidents) fixed
+
+### Fixed
+
+- **Admin pages blank after anon SELECT lockdown** — migration `0003` dropped anon SELECT on residents/documents/complaints/clearance_requests, silently returning empty lists to the admin UI. Admin reads now go through session-gated RPCs; the public registry document tab uses `get_document_status` instead of the locked `documents` table.
+- Public document submission `400` — `id_upload` column added (migration `20260731_0005_documents_id_upload.sql`) and upload size capped at 1.5 MB
+
+---
+
 ## [6.0.0] — July 31, 2026
 
 ### Added

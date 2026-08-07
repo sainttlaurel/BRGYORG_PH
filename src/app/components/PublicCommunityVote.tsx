@@ -37,7 +37,7 @@ const PublicCommunityVote: React.FC = () => {
     <>
       <SeoHead title="Community Vote" description="Participate in community polls and vote on barangay matters." path="/community-vote" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-purple-800 to-purple-950 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs font-medium mb-4">
           <BarChart2 size={11} /> Participatory Governance
@@ -47,7 +47,7 @@ const PublicCommunityVote: React.FC = () => {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-12">
-        {/* Privacy notice */}
+        { }
         <div className="flex items-start gap-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl p-4 mb-8">
           <Lock size={16} className="text-purple-600 dark:text-purple-400 mt-0.5 shrink-0" />
           <div className="text-sm text-purple-700 dark:text-purple-300">
@@ -55,7 +55,7 @@ const PublicCommunityVote: React.FC = () => {
           </div>
         </div>
 
-        {/* Active polls */}
+        { }
         {activePolls.length > 0 && (
           <>
             <h2 className="font-bold text-foreground mb-4" style={{ fontSize: "1.2rem" }}>
@@ -156,7 +156,7 @@ const PublicCommunityVote: React.FC = () => {
           </>
         )}
 
-        {/* Closed polls */}
+        { }
         {closedPolls.length > 0 && (
           <>
             <h2 className="font-bold text-foreground mb-4" style={{ fontSize: "1.2rem" }}>

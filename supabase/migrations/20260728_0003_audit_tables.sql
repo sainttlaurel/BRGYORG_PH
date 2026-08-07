@@ -1,12 +1,3 @@
--- ============================================================
--- Phase 7: Audit trail, remaining anon SELECT lockdown,
---          server-side IP rate limiting, missing columns
--- ============================================================
-
--- ============================================================
--- 1. CREATE audit_logs TABLE (referenced by 20 admin RPCs,
---    never created — those RPCs silently fail today)
--- ============================================================
 CREATE TABLE IF NOT EXISTS audit_logs (
     id           SERIAL PRIMARY KEY,
     user_name    TEXT NOT NULL DEFAULT 'unknown',
@@ -19,27 +10,15 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_module  ON audit_logs(module);
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
--- (No anon policies = default-deny; written only by SECURITY DEFINER RPCs)
 
--- ============================================================
--- 2. ADD MISSING COLUMNS referenced by existing RPCs
--- ============================================================
-
--- complaints: admin_insert_blotter inserts into these columns
 ALTER TABLE complaints ADD COLUMN IF NOT EXISTS respondent VARCHAR(100) DEFAULT '';
 ALTER TABLE complaints ADD COLUMN IF NOT EXISTS time       VARCHAR(20)  DEFAULT '';
 ALTER TABLE complaints ADD COLUMN IF NOT EXISTS location   TEXT         DEFAULT '';
 ALTER TABLE complaints ADD COLUMN IF NOT EXISTS handler    VARCHAR(100) DEFAULT '';
 
--- announcements: admin_insert_announcement inserts priority,
--- admin_update_announcement references visible/priority
 ALTER TABLE announcements ADD COLUMN IF NOT EXISTS priority VARCHAR(20) DEFAULT 'normal';
 ALTER TABLE announcements ADD COLUMN IF NOT EXISTS visible  BOOLEAN     DEFAULT TRUE;
 
--- ============================================================
--- 3. SERVER-SIDE CLIENT IP HELPER
---    Reads PostgREST request headers — not spoofable by client.
--- ============================================================
 CREATE OR REPLACE FUNCTION current_client_ip()
 RETURNS TEXT
 LANGUAGE sql STABLE
@@ -56,9 +35,6 @@ AS $$
     );
 $$;
 
--- ============================================================
--- 4. require_admin() — role check on top of require_session
--- ============================================================
 CREATE OR REPLACE FUNCTION require_admin(p_token TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -72,9 +48,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 5. GATE USER MANAGEMENT RPCS WITH require_admin
--- ============================================================
 CREATE OR REPLACE FUNCTION get_users(p_token TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -164,36 +137,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 6. DROP REMAINING ANON READ ON PII TABLES + MIS-WIDENED POLICIES
--- ============================================================
-
--- Drop anon SELECT on residents (still kept from 0000 base schema)
 DROP POLICY IF EXISTS "residents_anon_read" ON residents;
 
--- Drop anon SELECT on documents (lets anyone read all document requests)
 DROP POLICY IF EXISTS "documents_anon_read" ON documents;
 
--- Drop anon SELECT on complaints (lets anyone read all blotter cases)
 DROP POLICY IF EXISTS "complaints_anon_read" ON complaints;
 
--- Revert suggestions_anon_read back to published-only
--- (migrate-security.sql widened it to USING(true) — restore intended behavior)
 DROP POLICY IF EXISTS "suggestions_anon_read" ON suggestions;
 CREATE POLICY "suggestions_anon_read" ON suggestions FOR SELECT USING (status = 'published');
 
--- Drop anon SELECT on clearance_requests (exposes verification_code)
 DROP POLICY IF EXISTS "clearance_anon_read" ON clearance_requests;
 
--- ============================================================
--- 7. REWRITE authenticate_user WITH SERVER-SIDE IP RATE LIMITING
---    (Drop old overloads, create single 2-param version)
--- ============================================================
-
--- Drop the old 3-param overload from Phase 2.5
 DROP FUNCTION IF EXISTS authenticate_user(TEXT, TEXT, TEXT);
 
--- Rewrite the 2-param version with server-side IP rate limiting
 CREATE OR REPLACE FUNCTION authenticate_user(p_login TEXT, p_password TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -253,9 +209,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 8. REWRITE cast_vote WITH SERVER-SIDE IP HASH
--- ============================================================
 DROP FUNCTION IF EXISTS cast_vote(TEXT, TEXT, INT);
 
 CREATE OR REPLACE FUNCTION cast_vote(p_poll_id UUID, p_option_index INT)
@@ -284,7 +237,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Rewrite get_poll_results to use UUID
 CREATE OR REPLACE FUNCTION get_poll_results(p_poll_id UUID)
 RETURNS JSON AS $$
 DECLARE
@@ -301,9 +253,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 9. PUBLIC CLEARANCE STATUS CHECK (no token needed)
--- ============================================================
 CREATE OR REPLACE FUNCTION check_clearance_status(
     p_control_number TEXT,
     p_verification_code TEXT
@@ -336,12 +285,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 10. ADMIN RPCS FOR MISSING TABLES (officials, settings, etc.)
---     These tables exist in the DB but had no session-gated RPCs.
--- ============================================================
-
--- Officials
 CREATE OR REPLACE FUNCTION admin_get_officials(p_token TEXT)
 RETURNS JSON AS $$
 BEGIN
@@ -350,7 +293,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Settings (read)
 CREATE OR REPLACE FUNCTION admin_get_settings(p_token TEXT)
 RETURNS JSON AS $$
 BEGIN
@@ -359,7 +301,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Barangay info
 CREATE OR REPLACE FUNCTION admin_get_barangay_info(p_token TEXT)
 RETURNS JSON AS $$
 BEGIN
@@ -368,7 +309,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Contact messages (read)
 CREATE OR REPLACE FUNCTION admin_get_contact_messages(p_token TEXT, p_limit INT DEFAULT 100, p_offset INT DEFAULT 0)
 RETURNS JSON AS $$
 BEGIN
@@ -388,7 +328,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Reports (read)
 CREATE OR REPLACE FUNCTION admin_get_reports(p_token TEXT, p_limit INT DEFAULT 100, p_offset INT DEFAULT 0)
 RETURNS JSON AS $$
 BEGIN
@@ -407,7 +346,3 @@ BEGIN
     RETURN json_build_object('count', v_count);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================================
--- END OF PHASE 7
--- ============================================================

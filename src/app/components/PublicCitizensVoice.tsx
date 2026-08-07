@@ -53,7 +53,7 @@ const PublicCitizensVoice: React.FC = () => {
     <>
       <SeoHead title="Citizens' Voice" description="Share your suggestions and feedback with Barangay Payatas leadership." path="/citizens-voice" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-medium mb-4">
           <MessageSquare size={11} /> Anonymous Feedback
@@ -63,7 +63,7 @@ const PublicCitizensVoice: React.FC = () => {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-12">
-        {/* Privacy notice */}
+        { }
         <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 mb-6">
           <Lock size={16} className="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
           <div className="text-sm text-emerald-700 dark:text-emerald-300">
@@ -77,7 +77,7 @@ const PublicCitizensVoice: React.FC = () => {
               <div className="bg-white dark:bg-card border border-border rounded-2xl p-6 shadow-sm">
                 <h2 className="font-bold text-foreground mb-5" style={{ fontSize: "1.1rem" }}>Share Your Feedback</h2>
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Category */}
+                  { }
                   <div>
                     <label className="block text-sm text-muted-foreground mb-2">Feedback Type <span className="text-red-500">*</span></label>
                     <div className="grid grid-cols-2 gap-2">
@@ -99,7 +99,7 @@ const PublicCitizensVoice: React.FC = () => {
                     {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                   </div>
 
-                  {/* Department */}
+                  { }
                   <div>
                     <label htmlFor="department" className="block text-sm text-muted-foreground mb-1.5">Addressed To (Optional)</label>
                     <select
@@ -120,7 +120,7 @@ const PublicCitizensVoice: React.FC = () => {
                     </select>
                   </div>
 
-                  {/* Message */}
+                  { }
                   <div>
                     <label htmlFor="message" className="block text-sm text-muted-foreground mb-1.5">Your Message <span className="text-red-500">*</span></label>
                     <textarea
@@ -171,7 +171,7 @@ const PublicCitizensVoice: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Info */}
+        { }
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { icon: Lock, title: "Fully Anonymous", desc: "No name, no email, no tracking." },

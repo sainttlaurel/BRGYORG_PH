@@ -31,9 +31,9 @@ const AdminLogin: React.FC = () => {
 
   return (
     <div className="min-h-screen flex overflow-hidden">
-      {/* Left - nature illustration */}
+      { }
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-emerald-800 via-emerald-700 to-sky-800 text-white p-12 flex-col justify-between relative overflow-hidden">
-        {/* Background SVG */}
+        { }
         <div className="absolute inset-0 opacity-20">
           <svg viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
             <defs>
@@ -92,7 +92,7 @@ const AdminLogin: React.FC = () => {
         </div>
       </div>
 
-      {/* Right - login form */}
+      { }
       <div className="flex-1 lg:max-w-md flex items-center justify-center p-8 bg-background">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -179,7 +179,7 @@ const AdminLogin: React.FC = () => {
             </button>
           </form>
 
-          {/* Credentials hint */}
+          { }
           <div className="mt-6 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
             <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-1">Sign in with your username or email</p>
             <p className="text-xs text-emerald-600/70 dark:text-emerald-400/60">Contact the system administrator if you have not been given credentials.</p>

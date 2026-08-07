@@ -35,7 +35,6 @@ function prerenderPlugin(): import('vite').Plugin {
         return
       }
 
-      // Skip if NO_PRERENDER is set or running on Vercel (no Chrome libs)
       if (process.env.NO_PRERENDER === '1' || process.env.VERCEL === '1') {
         console.log('[prerender] skipped — SPA fallback will be used for public routes')
         return

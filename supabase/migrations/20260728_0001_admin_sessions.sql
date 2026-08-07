@@ -1,12 +1,3 @@
--- ============================================================
--- Phase 2: Admin Sessions + RPC Auth Layer
--- Phase 3: Lock down anon write policies
--- Phase 4: Spam protection on public forms
--- ============================================================
-
--- ============================================================
--- 1. ADMIN SESSIONS TABLE
--- ============================================================
 CREATE TABLE IF NOT EXISTS admin_sessions (
     id          SERIAL PRIMARY KEY,
     token       TEXT UNIQUE NOT NULL,
@@ -21,11 +12,7 @@ CREATE INDEX IF NOT EXISTS idx_admin_sessions_user  ON admin_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
 
 ALTER TABLE admin_sessions ENABLE ROW LEVEL SECURITY;
--- No anon policies = default-deny; only SECURITY DEFINER RPCs touch this table.
 
--- ============================================================
--- 2. POLL_VOTES JUNCTION TABLE (Phase 3)
--- ============================================================
 CREATE TABLE IF NOT EXISTS poll_votes (
     id        SERIAL PRIMARY KEY,
     poll_id   UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
@@ -37,11 +24,7 @@ CREATE TABLE IF NOT EXISTS poll_votes (
 
 CREATE INDEX IF NOT EXISTS idx_poll_votes_poll ON poll_votes(poll_id);
 ALTER TABLE poll_votes ENABLE ROW LEVEL SECURITY;
--- (No anon policies = default-deny; accessed only via RPCs)
 
--- ============================================================
--- 3. UPDATE AUTHENTICATE_USER TO CREATE SESSION
--- ============================================================
 CREATE OR REPLACE FUNCTION authenticate_user(p_login TEXT, p_password TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -81,9 +64,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 4. SESSION VALIDATION RPC
--- ============================================================
 CREATE OR REPLACE FUNCTION validate_session(p_token TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -111,9 +91,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 5. END SESSION (LOGOUT)
--- ============================================================
 CREATE OR REPLACE FUNCTION end_session(p_token TEXT)
 RETURNS JSON AS $$
 BEGIN
@@ -122,11 +99,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 6. ADMIN WRITE RPCS (session-gated)
--- ============================================================
-
--- Helper: validate session and return user info, or raise exception
 CREATE OR REPLACE FUNCTION require_session(p_token TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -140,7 +112,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update document status
 CREATE OR REPLACE FUNCTION admin_update_document_status(
     p_token TEXT, p_id TEXT, p_status TEXT, p_logged_in_user TEXT
 )
@@ -156,7 +127,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update blotter status
 CREATE OR REPLACE FUNCTION admin_update_blotter_status(
     p_token TEXT, p_id TEXT, p_status TEXT, p_logged_in_user TEXT
 )
@@ -172,7 +142,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update resident
 CREATE OR REPLACE FUNCTION admin_update_resident(
     p_token TEXT, p_id TEXT, p_data JSONB
 )
@@ -198,7 +167,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Delete resident
 CREATE OR REPLACE FUNCTION admin_delete_resident(
     p_token TEXT, p_id TEXT, p_logged_in_user TEXT
 )
@@ -214,7 +182,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Insert announcement
 CREATE OR REPLACE FUNCTION admin_insert_announcement(
     p_token TEXT, p_id TEXT, p_title TEXT, p_category TEXT,
     p_content TEXT, p_date TEXT, p_priority TEXT, p_logged_in_user TEXT
@@ -232,7 +199,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update announcement
 CREATE OR REPLACE FUNCTION admin_update_announcement(
     p_token TEXT, p_id TEXT, p_data JSONB, p_logged_in_user TEXT
 )
@@ -255,7 +221,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Delete announcement
 CREATE OR REPLACE FUNCTION admin_delete_announcement(
     p_token TEXT, p_id TEXT, p_logged_in_user TEXT
 )
@@ -271,7 +236,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Insert blotter case
 CREATE OR REPLACE FUNCTION admin_insert_blotter(
     p_token TEXT, p_id TEXT, p_complainant TEXT, p_respondent TEXT,
     p_incident TEXT, p_date TEXT, p_time TEXT, p_location TEXT,
@@ -293,7 +257,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Upsert settings
 CREATE OR REPLACE FUNCTION admin_upsert_setting(
     p_token TEXT, p_key TEXT, p_value TEXT
 )
@@ -308,7 +271,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update poll
 CREATE OR REPLACE FUNCTION admin_update_poll(
     p_token TEXT, p_id TEXT, p_data JSONB, p_logged_in_user TEXT
 )
@@ -330,7 +292,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Insert poll
 CREATE OR REPLACE FUNCTION admin_insert_poll(
     p_token TEXT, p_question TEXT, p_options TEXT[],
     p_expires_at TIMESTAMPTZ, p_logged_in_user TEXT
@@ -348,7 +309,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Delete poll
 CREATE OR REPLACE FUNCTION admin_delete_poll(
     p_token TEXT, p_id TEXT, p_logged_in_user TEXT
 )
@@ -364,7 +324,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update suggestion with admin reply
 CREATE OR REPLACE FUNCTION admin_reply_suggestion(
     p_token TEXT, p_id TEXT, p_admin_reply TEXT, p_logged_in_user TEXT
 )
@@ -380,7 +339,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update suggestion status
 CREATE OR REPLACE FUNCTION admin_update_suggestion_status(
     p_token TEXT, p_id TEXT, p_status TEXT, p_logged_in_user TEXT
 )
@@ -396,7 +354,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Insert official
 CREATE OR REPLACE FUNCTION admin_insert_official(
     p_token TEXT, p_data JSONB, p_logged_in_user TEXT
 )
@@ -417,7 +374,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update official
 CREATE OR REPLACE FUNCTION admin_update_official(
     p_token TEXT, p_id INT, p_data JSONB, p_logged_in_user TEXT
 )
@@ -442,7 +398,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Delete official
 CREATE OR REPLACE FUNCTION admin_delete_official(
     p_token TEXT, p_id INT, p_logged_in_user TEXT
 )
@@ -458,7 +413,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update volunteer status
 CREATE OR REPLACE FUNCTION admin_update_volunteer_status(
     p_token TEXT, p_id TEXT, p_status TEXT, p_logged_in_user TEXT
 )
@@ -474,7 +428,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update report status
 CREATE OR REPLACE FUNCTION admin_update_report_status(
     p_token TEXT, p_id TEXT, p_status TEXT, p_logged_in_user TEXT
 )
@@ -490,7 +443,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update contact message status
 CREATE OR REPLACE FUNCTION admin_update_contact_status(
     p_token TEXT, p_id TEXT, p_status TEXT, p_logged_in_user TEXT
 )
@@ -506,7 +458,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update barangay info
 CREATE OR REPLACE FUNCTION admin_update_barangay_info(
     p_token TEXT, p_data JSONB
 )
@@ -531,7 +482,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update service fee
 CREATE OR REPLACE FUNCTION admin_update_service_fee(
     p_token TEXT, p_id INT, p_fee INT
 )
@@ -545,7 +495,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Delete all documents (danger zone)
 CREATE OR REPLACE FUNCTION admin_clear_documents(p_token TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -557,7 +506,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Delete all residents (danger zone)
 CREATE OR REPLACE FUNCTION admin_clear_residents(p_token TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -569,7 +517,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Delete contact message
 CREATE OR REPLACE FUNCTION admin_delete_contact_message(
     p_token TEXT, p_id TEXT, p_logged_in_user TEXT
 )
@@ -585,7 +532,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update contact message status
 CREATE OR REPLACE FUNCTION admin_update_contact_message_status(
     p_token TEXT, p_id TEXT, p_status TEXT, p_logged_in_user TEXT
 )
@@ -601,7 +547,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Clean expired sessions
 CREATE OR REPLACE FUNCTION clean_expired_sessions()
 RETURNS INT AS $$
 DECLARE
@@ -613,9 +558,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 7. POLL VOTING RPC (Phase 3)
--- ============================================================
 CREATE OR REPLACE FUNCTION cast_vote(
     p_poll_id TEXT, p_voter_ip TEXT, p_option_index INT
 )
@@ -661,9 +603,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 8. RESIDENT SAFE-COLUMNS VIEW (Phase 3)
--- ============================================================
 CREATE OR REPLACE VIEW v_resident_public AS
 SELECT
     id,
@@ -675,11 +614,6 @@ SELECT
 FROM residents
 WHERE status = 'Active';
 
--- ============================================================
--- 9. LOCK DOWN ANON POLICIES (Phase 3)
--- ============================================================
-
--- Drop all anon write policies
 DROP POLICY IF EXISTS "residents_anon_write" ON residents;
 DROP POLICY IF EXISTS "documents_anon_write" ON documents;
 DROP POLICY IF EXISTS "complaints_anon_write" ON complaints;
@@ -692,23 +626,9 @@ DROP POLICY IF EXISTS "volunteers_anon_write" ON volunteer_signups;
 DROP POLICY IF EXISTS "business_anon_write" ON business_registry;
 DROP POLICY IF EXISTS "polls_anon_vote" ON polls;
 
--- Keep anon SELECT on public tables
--- residents: anon can still SELECT (but only via v_resident_public if we redirect)
--- documents: anon can SELECT (needed for status tracking)
--- complaints: anon can INSERT (public filing) and SELECT own
--- announcements: anon SELECT
--- polls: anon SELECT active only
--- suggestions: anon SELECT published only
--- Keep existing INSERT policies for public submission forms
-
--- ----------------------------------------------------------------
--- 10. SPAM PROTECTION EXTENSION (Phase 4)
--- ----------------------------------------------------------------
-
--- Generalized rate_limits table
 CREATE TABLE IF NOT EXISTS rate_limits (
     identifier  TEXT NOT NULL,
-    form_type   TEXT NOT NULL,  -- 'suggestion', 'contact', 'volunteer', 'report', 'business', 'clearance'
+    form_type   TEXT NOT NULL,
     count       INT NOT NULL DEFAULT 1,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -716,9 +636,7 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 );
 
 ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
--- (No anon policies = default-deny; accessed via RPCs only)
 
--- Rate-limited insert for public forms
 CREATE OR REPLACE FUNCTION rate_limited_insert(
     p_identifier TEXT,
     p_form_type TEXT,
@@ -756,7 +674,3 @@ BEGIN
     RETURN json_build_object('success', true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================================
--- END OF PHASE 2+3+4 MIGRATION
--- ============================================================

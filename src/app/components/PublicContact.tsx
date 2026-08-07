@@ -70,7 +70,7 @@ const PublicContact: React.FC = () => {
     <>
       <SeoHead title="Contact Us" description="Get in touch with Barangay Payatas — contact information and office hours." path="/contact" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
         <h1 className="text-white mb-2" style={{ fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 2.6rem)" }}>Contact Us</h1>
         <p className="text-emerald-200/60 text-sm max-w-lg mx-auto">Get in touch with the Barangay Office. We're here to serve you.</p>
@@ -78,9 +78,9 @@ const PublicContact: React.FC = () => {
 
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: contact info */}
+          { }
           <div className="space-y-5">
-            {/* Contact cards */}
+            { }
             {contacts.map((c, i) => (
               <motion.div key={c.label} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
                 <div className="flex items-start gap-3 bg-white dark:bg-card border border-border rounded-xl p-4">
@@ -96,7 +96,7 @@ const PublicContact: React.FC = () => {
               </motion.div>
             ))}
 
-            {/* Office hours */}
+            { }
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.35 }}>
               <div className="bg-white dark:bg-card border border-border rounded-xl p-4">
                 <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
@@ -113,7 +113,7 @@ const PublicContact: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Social media */}
+            { }
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.42 }}>
               <div className="bg-white dark:bg-card border border-border rounded-xl p-4">
                 <h3 className="font-semibold text-foreground mb-3 text-sm">Follow Us</h3>
@@ -132,9 +132,9 @@ const PublicContact: React.FC = () => {
             </motion.div>
           </div>
 
-          {/* Right: form + map */}
+          { }
           <div className="lg:col-span-2 space-y-5">
-            {/* Map placeholder */}
+            { }
             <div className="bg-white dark:bg-card border border-border rounded-2xl overflow-hidden">
               <div className="bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center" style={{ height: 200 }}>
                 <div className="text-center text-muted-foreground">
@@ -145,7 +145,7 @@ const PublicContact: React.FC = () => {
               </div>
             </div>
 
-            {/* Contact form */}
+            { }
             <div className="bg-white dark:bg-card border border-border rounded-2xl p-6 shadow-sm">
               <h2 className="font-bold text-foreground mb-5" style={{ fontSize: "1.1rem" }}>Send Us a Message</h2>
               <AnimatePresence mode="wait">

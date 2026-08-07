@@ -9,7 +9,6 @@ import { insertPoll, updatePollStatus, updatePoll, deletePoll as deletePollDb } 
 import { TableLoading, TableEmpty } from "./ui/table-state";
 import { ConfirmDialog } from "./ui/confirm-dialog";
 
-
 const AdminPolls: React.FC = () => {
   const { polls: livePolls, loading } = useData();
   const { user } = useAuth();
@@ -94,7 +93,7 @@ const AdminPolls: React.FC = () => {
         </button>
       </div>
 
-      {/* Create form */}
+      { }
       {showForm && (
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">New Poll</h2>
@@ -129,7 +128,7 @@ const AdminPolls: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Edit form */}
+      { }
       {showEditId && (() => {
         const poll = pollsList.find(p => p.id === showEditId);
         if (!poll) return null;
@@ -205,7 +204,7 @@ const AdminPolls: React.FC = () => {
                 </div>
               </div>
 
-              {/* Results */}
+              { }
               <div className="space-y-2">
                 {poll.options.map(opt => {
                   const pct = getPercent(opt.votes, poll.totalVotes);

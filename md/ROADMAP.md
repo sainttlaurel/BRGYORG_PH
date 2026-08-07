@@ -1,7 +1,7 @@
 # ROADMAP — Payatas Ledger
 
-Last Updated: July 31, 2026
-Status: **Feature-complete web app with test suite.** All public forms persist to Supabase. All 17 admin pages exist with live data. RBAC, certificate editor, CSV export, CI pipeline, testing suite done. File upload previews, column visibility toggles, and full audit coverage added.
+Last Updated: August 6, 2026
+Status: **Feature-complete web app with test suite.** All public forms persist to Supabase. All 18 admin pages exist with live data. RBAC, certificate editor, CSV export, CI pipeline, testing suite done. File upload previews, column visibility toggles, and full audit coverage added. Desktop GUI removed — web app is the only client. Admin reads restored after the anon-SELECT lockdown via session-gated RPCs (migration `20260731_0006`).
 
 Priority levels: Critical / High / Medium / Backlog
 
@@ -21,6 +21,7 @@ Priority levels: Critical / High / Medium / Backlog
 
 ### Known issues (not yet fixed)
 
+- ~~**Admin pages blank after anon SELECT lockdown** — migration `0003` dropped anon SELECT on residents/documents/complaints/clearance_requests, so admin lists silently rendered empty. Fixed via session-gated read RPCs (`admin_get_clearance_requests`, `admin_get_business_registry`) + token-aware data layer; public document tracking moved to the safe `get_document_status` RPC.~~ **Fixed — Aug 2026**
 - ~~**Audit logs not wired** — admin RPCs now INSERT into audit_logs server-side on every mutation.~~ **Fixed**
 - ~~**No contact messages admin UI** — full inbox view exists with list/detail layout, search, and delete.~~ **Done**
 - ~~**No certificate preview** — preview dialog renders styled certificate with template values.~~ **Done**
@@ -76,7 +77,7 @@ All items complete. 12 public pages fully wired:
 
 ### Admin Portal
 
-All items complete. 17 admin pages built:
+All items complete. 18 admin pages built:
 
 | Page | Status |
 |---|---|
@@ -84,6 +85,7 @@ All items complete. 17 admin pages built:
 | Residents, Requests, Blotter | CRUD + search/filter |
 | Officials, Announcements, Polls | CRUD + status workflows |
 | Concerns, Suggestions, Volunteers | Status workflows (Start Review, Dismiss, Resolve, Accept, Archive) |
+| Contact Messages | Inbox with list/detail layout, search, delete |
 | Users, Audit Logs | CRUD + live audit trail view |
 | Reports | Charts + period filter + CSV export |
 | Settings | Profile, fees, templates editor, notifications, security, danger zone |
@@ -109,7 +111,7 @@ Column visibility toggles added to Residents, Requests, Blotter, Business Regist
 
 - ~~CI pipeline~~ **Done — July 2026** (`.github/workflows/deploy.yml`: build on push to main)
 - ~~Testing suite~~ **Done — July 2026** — Vitest + React Testing Library, 15 tests across 4 files
-- **Error monitoring — Sentry or equivalent** (Backlog) — Sentry Vite plugin is wired but inactive without `SENTRY_AUTH_TOKEN`
+- **Error monitoring — Sentry or equivalent** (Backlog) — fully wired (client init + source-map upload + PII scrubbing); env vars documented in `.env.example`, but inactive until real `SENTRY_AUTH_TOKEN` / `VITE_SENTRY_DSN` values are added
 
 ---
 
@@ -137,3 +139,6 @@ Column visibility toggles added to Residents, Requests, Blotter, Business Regist
 20. ~~Public business registry, projects, clearance request pages~~ **Done — July 2026**
 21. ~~Upload preview + column visibility toggles~~ **Done — July 2026**
 22. ~~Audit-logging gaps closed (settings, fees, residents, new tables; public submissions logged)~~ **Done — July 2026**
+23. ~~Remove desktop GUI (Tauri) — web app is the only client~~ **Done — Aug 2026**
+24. ~~Restore admin reads after anon SELECT lockdown — session-gated read RPCs + token-aware data layer (migration `0006`)~~ **Done — Aug 2026**
+25. ~~Bundle cleanup — recharts split into its own chunk; lint errors eliminated~~ **Done — Aug 2026**

@@ -1,13 +1,3 @@
-/**
- * Standalone prerender script — fallback for environments where the
- * vite-plugin-prerender plugin cannot run (e.g. CI without Chrome).
- *
- * Spins up `vite preview`, hits every public route with Puppeteer,
- * and overwrites dist/<route>/index.html with the rendered HTML.
- *
- * Usage:  node scripts/prerender.mjs
- * Called by:  npm run prerender:preview
- */
 import { spawn } from "child_process";
 import { connect } from "net";
 import puppeteer from "puppeteer";

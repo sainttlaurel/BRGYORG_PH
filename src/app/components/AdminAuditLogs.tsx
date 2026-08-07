@@ -114,7 +114,7 @@ const AdminAuditLogs: React.FC = () => {
         </div>
       )}
 
-      {/* Pagination */}
+      { }
       <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page:</span>

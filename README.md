@@ -1,8 +1,8 @@
 # BRGYORG_PH — Barangay Management SaaS
 
-A barangay management system that digitizes resident records, complaint tracking, and document requests into a single dashboard for local government staff.
+A barangay management system that digitizes resident records, complaint tracking, document requests, clearances, and business registry into a single web portal for local government staff.
 
-**Live demo:** [brgyorg-ph.vercel.app](https://brgyorg-ph.vercel.app/)
+**Live:** [brgyorg-ph.vercel.app](https://brgyorg-ph.vercel.app/)
 
 ## Problem
 
@@ -10,21 +10,25 @@ Local government units in the Philippines still track resident records, complain
 
 ## What it does
 
-- Residents submit requests and get a tracking number (submitted → under review → approved → ready to claim)
-- Admin dashboard for barangay staff to review, approve/reject, and manage all records
+- **Public portal (15 pages)** — document/clearance/business submissions with tracking numbers and status checkers, resident directory search, community vote, volunteer sign-ups, citizen feedback, report-concern with reference tracking
+- **Admin portal (18 pages)** — residents, requests, blotter, officials, announcements, polls, reports, concerns, suggestions, volunteers, contact messages, users, audit logs, settings, business registry, projects, clearances; RBAC, certificate editor, CSV export
 - Replaces manual logbooks with a single system
 
 ## Tech Stack
 
-React · Node.js · PostgreSQL · Prisma · Tailwind CSS
+React 18 · TypeScript · Vite 6 · Tailwind CSS 4 · Supabase (PostgreSQL + REST/RPC) · TanStack Query · Radix UI · Recharts · Vitest
 
 ## Key Decisions
 
-Used Prisma over raw SQL to keep schema migrations type-safe as the data model changed during development — barangay record structures kept shifting as requirements came in. The resident flow was kept to four steps as a deliberate constraint to keep the UX simple for non-tech-comfortable users.
+- **Supabase over Prisma/self-hosted** — direct browser-to-Postgres with SECURITY DEFINER RPCs for auth and admin operations; all writes are session-gated and audit-logged server-side
+- **Custom bcrypt auth** — `authenticate_user` RPC (pgcrypto), 8-hour session tokens, login rate limiting, no Supabase Auth dependency
+- **RLS lockdown** — anon SELECT dropped on sensitive tables; admin reads go through session-gated RPCs, public reads through safe RPCs (`search_residents`, `get_document_status`, `check_clearance_status`)
+- **Desktop GUI removed (Aug 2026)** — the web app is the only client
+- Public pages are prerendered to static HTML (Puppeteer) for SEO; Sentry is wired and optional
 
 ## Project Status
 
-Concept project, built solo from schema to deployment. Not yet deployed to a real barangay.
+Feature-complete and deployed to Vercel + Supabase. Live demo at the link above. Not yet rolled out to a real barangay.
 
 ## Setup
 
@@ -39,12 +43,30 @@ npm install
 # set up environment variables
 cp .env.example .env.local
 
-# run database migrations
-npx prisma migrate dev
-
-# start development server
+# run the dev server
 npm run dev
 ```
+
+### Database
+
+Migrations live in `supabase/migrations/` and are applied manually in the Supabase SQL Editor (in order: `20260728_0000` → `20260731_0006`). No Prisma/ORM — plain SQL.
+
+## Scripts
+
+| Script | Purpose |
+|---|---|
+| `npm run dev` | Vite dev server |
+| `npm run build` | Production build (+ prerender of public routes) |
+| `npm run typecheck` | TypeScript type checking |
+| `npm run lint` / `lint:fix` | ESLint |
+| `npm run format` / `format:check` | Prettier |
+| `npm test` / `test:watch` | Vitest |
+
+## Docs
+
+- `md/ARCHITECTURE.md` — structure, routes, data flow, SQL functions, tables
+- `md/ROADMAP.md` — status and history
+- `md/CHANGELOG.md` — release notes
 
 ## Screenshots
 <img width="1904" height="935" alt="1" src="https://github.com/user-attachments/assets/5344330a-97a3-493a-b002-ff087fa4c277" />
@@ -62,5 +84,3 @@ npm run dev
 <img width="1904" height="937" alt="6" src="https://github.com/user-attachments/assets/a51217dc-f6e4-40fa-b1a9-a2a432dfd442" />
 <img width="1907" height="932" alt="5" src="https://github.com/user-attachments/assets/4f551b3d-f74d-426b-b72c-0c709edf82c2" />
 <img width="1903" height="933" alt="2" src="https://github.com/user-attachments/assets/0b69835c-a027-4e79-bf19-cbd4594bf289" />
-
-

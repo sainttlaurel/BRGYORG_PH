@@ -30,7 +30,7 @@ const PublicAnnouncements: React.FC = () => {
     <>
       <SeoHead title="Announcements" description="Stay informed with the latest announcements and updates from Barangay Payatas." path="/announcements" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-medium mb-4">
           <Megaphone size={11} /> Official Updates
@@ -40,7 +40,7 @@ const PublicAnnouncements: React.FC = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-10">
-        {/* Search and filter */}
+        { }
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="flex-1 relative">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -56,7 +56,7 @@ const PublicAnnouncements: React.FC = () => {
           </div>
         </div>
 
-        {/* Category filter */}
+        { }
         <div className="flex gap-2 flex-wrap mb-8">
           {categories.map(c => (
             <button
@@ -73,7 +73,7 @@ const PublicAnnouncements: React.FC = () => {
           ))}
         </div>
 
-        {/* Announcements list */}
+        { }
         {filtered.length > 0 ? (
           <div className="space-y-4">
             {filtered.map((ann, i) => (

@@ -164,7 +164,7 @@ const PublicDocumentApplication: React.FC = () => {
     <>
       <SeoHead title="Request Document" description="Submit a document request online — Barangay Clearance, Certificate, and more." path="/document-application" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-medium mb-4">
           <FileText size={11} /> Online Application
@@ -180,7 +180,7 @@ const PublicDocumentApplication: React.FC = () => {
               <div className="bg-white dark:bg-card border border-border rounded-2xl p-6 shadow-sm">
                 <h2 className="font-bold text-foreground mb-6" style={{ fontSize: "1.15rem" }}>Application Form</h2>
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Service type */}
+                  { }
                   <div>
                     <label htmlFor="serviceType" className="block text-sm text-muted-foreground mb-1.5">Document / Service Type <span className="text-red-500">*</span></label>
                     <select
@@ -196,7 +196,7 @@ const PublicDocumentApplication: React.FC = () => {
                     {errors.serviceType && <p className="text-red-500 text-xs mt-1">{errors.serviceType}</p>}
                   </div>
 
-                  {/* Name */}
+                  { }
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label htmlFor="firstName" className="block text-xs text-muted-foreground mb-1.5">First Name <span className="text-red-500">*</span></label>
@@ -214,14 +214,14 @@ const PublicDocumentApplication: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Address */}
+                  { }
                   <div>
                     <label htmlFor="address" className="block text-sm text-muted-foreground mb-1.5">Complete Address <span className="text-red-500">*</span></label>
                     <input id="address" name="address" type="text" placeholder="House/Unit No., Street, Purok" value={form.address} onChange={e => set("address", e.target.value)} className={inputCls("address")} />
                     {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                   </div>
 
-                  {/* Contact */}
+                  { }
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="contact" className="block text-xs text-muted-foreground mb-1.5">Contact No. <span className="text-red-500">*</span></label>
@@ -234,20 +234,20 @@ const PublicDocumentApplication: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Purpose */}
+                  { }
                   <div>
                     <label htmlFor="purpose" className="block text-sm text-muted-foreground mb-1.5">Purpose <span className="text-red-500">*</span></label>
                     <input id="purpose" name="purpose" type="text" placeholder="e.g., Employment, School Enrollment, Bank Account Opening…" value={form.purpose} onChange={e => set("purpose", e.target.value)} className={inputCls("purpose")} />
                     {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
                   </div>
 
-                  {/* Notes */}
+                  { }
                   <div>
                     <label htmlFor="notes" className="block text-sm text-muted-foreground mb-1.5">Additional Notes</label>
                     <textarea id="notes" name="notes" rows={3} placeholder="Any special instructions or notes…" value={form.notes} onChange={e => set("notes", e.target.value)} className={`${inputCls("notes")} resize-none`} />
                   </div>
 
-                  {/* Valid ID upload */}
+                  { }
                   <div>
                     <label className="block text-sm text-muted-foreground mb-1.5">Upload Valid ID <span className="text-red-500">*</span></label>
                     <div className="flex items-center gap-3">
@@ -267,7 +267,7 @@ const PublicDocumentApplication: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Fee notice */}
+                  { }
                   {form.serviceType && (
                     <div className="bg-sky-50 dark:bg-sky-950 border border-sky-200 dark:border-sky-800 rounded-xl p-3 flex items-start gap-2">
                       <AlertCircle size={15} className="text-sky-500 mt-0.5 shrink-0" />
@@ -278,7 +278,7 @@ const PublicDocumentApplication: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Terms */}
+                  { }
                   <div>
                     <label className="flex items-start gap-2.5 cursor-pointer">
                       <input

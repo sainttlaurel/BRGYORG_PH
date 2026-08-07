@@ -116,7 +116,7 @@ const AdminOfficials: React.FC = () => {
         </div>
       </div>
 
-      {/* Add/Edit form */}
+      { }
       {(showForm || showEditId !== null) && (
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">{showEditId !== null ? "Edit Official" : "Add Official"}</h2>
@@ -147,7 +147,7 @@ const AdminOfficials: React.FC = () => {
         <input id="search-officials" name="search" type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search officials…" className="w-full max-w-xs pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
       </div>
 
-      {/* Sort */}
+      { }
       <div className="flex gap-2 mb-4">
         <span className="text-xs text-muted-foreground self-center">Sort by:</span>
         {["name", "position", "committee", "since"].map(key => (
@@ -199,7 +199,7 @@ const AdminOfficials: React.FC = () => {
           </motion.div>
         )))}
       </div>
-      {/* Pagination */}
+      { }
       <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page:</span>

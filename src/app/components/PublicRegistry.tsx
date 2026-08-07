@@ -64,7 +64,7 @@ const PublicRegistry: React.FC = () => {
     <>
       <SeoHead title="Public Registry" description="Search the public resident registry of Barangay Payatas, Quezon City." path="/registry" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-sky-800 to-sky-950 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-300 text-xs font-medium mb-4">
           <Shield size={11} /> Public Records
@@ -74,7 +74,7 @@ const PublicRegistry: React.FC = () => {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-12">
-        {/* Tabs */}
+        { }
         <div className="flex bg-muted rounded-xl p-1 mb-6">
           {[
             { key: "documents" as Tab, label: "Documents", icon: FileText },
@@ -92,7 +92,7 @@ const PublicRegistry: React.FC = () => {
           ))}
         </div>
 
-        {/* Search */}
+        { }
         <form onSubmit={handleSearch} className="flex gap-2 mb-8">
           <div className="flex-1 relative">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -111,7 +111,7 @@ const PublicRegistry: React.FC = () => {
           </button>
         </form>
 
-        {/* Loading state */}
+        { }
         {((docLoading && tab === "documents") || (residentLoading && tab === "residents")) && searched && (
           <div className="flex items-center justify-center py-12 text-muted-foreground">
             <svg className="animate-spin w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none">
@@ -122,7 +122,7 @@ const PublicRegistry: React.FC = () => {
           </div>
         )}
 
-        {/* Results */}
+        { }
         {!docLoading && !residentLoading && searched && query && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             {tab === "documents" ? (
@@ -207,7 +207,7 @@ const PublicRegistry: React.FC = () => {
           </div>
         )}
 
-        {/* Note */}
+        { }
         <div className="mt-8 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-xs text-amber-700 dark:text-amber-300">
           <strong>Privacy Notice:</strong> This registry only shows publicly verifiable information. Full personal data is protected under the Data Privacy Act of 2012 (RA 10173). For complete records, please visit the Barangay Hall with valid identification.
         </div>

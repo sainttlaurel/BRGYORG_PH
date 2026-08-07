@@ -1,17 +1,3 @@
--- ============================================================
--- Phase 2.5: Lockdown audit — resident PII, auth rate limits,
---            role-scoped RLS, paginated fetches
--- ============================================================
-
--- ============================================================
--- 1. REPLACE WIDE-OPEN residents SELECT WITH SAFE RPC
--- ============================================================
-
--- (Retain residents_anon_read for now — admin pages depend on dbFetch.
---  A future migration will drop it once all admin pages switch to
---  session-gated RPCs.)
-
--- Safe public registry search: returns only non-PII columns
 CREATE OR REPLACE FUNCTION search_residents(p_query TEXT, p_limit INT DEFAULT 20, p_offset INT DEFAULT 0)
 RETURNS JSON AS $$
 DECLARE
@@ -38,7 +24,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Admin can still read full residents (session-gated)
 CREATE OR REPLACE FUNCTION admin_get_residents(
     p_token TEXT, p_limit INT DEFAULT 100, p_offset INT DEFAULT 0
 )
@@ -64,7 +49,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Paginated documents fetch for admin
 CREATE OR REPLACE FUNCTION admin_get_documents(
     p_token TEXT, p_limit INT DEFAULT 100, p_offset INT DEFAULT 0
 )
@@ -90,7 +74,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Paginated complaints fetch for admin
 CREATE OR REPLACE FUNCTION admin_get_complaints(
     p_token TEXT, p_limit INT DEFAULT 100, p_offset INT DEFAULT 0
 )
@@ -115,10 +98,6 @@ BEGIN
     RETURN json_build_object('count', v_count);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================================
--- 2. RATE-LIMITED AUTHENTICATION
--- ============================================================
 
 CREATE TABLE IF NOT EXISTS login_attempts (
     ip_hash     TEXT NOT NULL,
@@ -149,10 +128,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Drop the old 2-param authenticate_user (no rate limiting) to avoid overload ambiguity
 DROP FUNCTION IF EXISTS authenticate_user(TEXT, TEXT);
 
--- Replace authenticate_user with rate-limited version (3 params)
 CREATE OR REPLACE FUNCTION authenticate_user(p_login TEXT, p_password TEXT, p_ip_hash TEXT DEFAULT '')
 RETURNS JSON AS $$
 DECLARE
@@ -200,22 +177,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 3. ROLE-SCOPED RLS ON ADMIN TABLES
--- ============================================================
-
--- Add a role column to admin_sessions for policy reference
--- (role is already stored, these policies use it)
-
--- Settings: only admin role can write
 DROP POLICY IF EXISTS "settings_anon_read" ON settings;
 CREATE POLICY "settings_anon_read" ON settings FOR SELECT USING (true);
--- Writes go through admin_upsert_setting which validates session role
--- (No anon write policy = default-deny for anon)
 
--- Users table: already default-deny, accessed only via RPCs
-
--- Ensure no stray anon write policies remain
 DO $$
 DECLARE
     rec RECORD;
@@ -233,22 +197,3 @@ BEGIN
     END LOOP;
 END;
 $$;
-
--- ============================================================
--- 4. STRIP SENSITIVE FIELDS FROM mapResident (code-side)
--- ============================================================
--- The admin_get_residents RPC now returns raw rows including
--- all columns. The client-side mapResident function will strip
--- fields before rendering. The public search_residents RPC
--- only returns safe columns server-side.
-
--- ============================================================
--- 5. REDUCE REAL-TIME SUBSCOPE
--- ============================================================
--- Only tables that need live updates should have subscriptions.
--- This is enforced in useSupabaseData.ts (code change).
--- The DB side is already clean.
-
--- ============================================================
--- END OF PHASE 2.5
--- ============================================================

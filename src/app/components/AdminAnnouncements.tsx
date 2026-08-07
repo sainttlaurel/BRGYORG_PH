@@ -123,7 +123,7 @@ const AdminAnnouncements: React.FC = () => {
         </button>
       </div>
 
-      {/* Create form */}
+      { }
       {showForm && (
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">Create New Announcement</h2>
@@ -147,7 +147,7 @@ const AdminAnnouncements: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Edit form */}
+      { }
       {showEditId && (() => {
         const ann = announcements.find(a => a.id === showEditId);
         if (!ann) return null;
@@ -175,13 +175,13 @@ const AdminAnnouncements: React.FC = () => {
         );
       })()}
 
-      {/* Search */}
+      { }
       <div className="relative mb-5">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input id="search-announcements-admin" name="search" type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search announcements…" className="w-full sm:max-w-xs pl-9 pr-4 py-2.5 rounded-xl border border-border bg-white dark:bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-all" />
       </div>
 
-      {/* Sort */}
+      { }
       <div className="flex gap-2 mb-3">
         <span className="text-xs text-muted-foreground self-center">Sort by:</span>
         {["title", "date", "category", "priority"].map(key => (
@@ -191,7 +191,7 @@ const AdminAnnouncements: React.FC = () => {
         ))}
       </div>
 
-      {/* List */}
+      { }
       <div className="space-y-3">
         {loading ? (
           <TableLoading />
@@ -231,7 +231,7 @@ const AdminAnnouncements: React.FC = () => {
         )))}
       </div>
 
-      {/* Pagination */}
+      { }
       <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page:</span>

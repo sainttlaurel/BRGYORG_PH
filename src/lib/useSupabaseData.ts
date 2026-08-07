@@ -1,19 +1,9 @@
-/**
- * useSupabaseData — central data hook for Payatas Ledger
- *
- * Fetches live data from Supabase on mount. Shows empty state when
- * Supabase is unreachable. No mock data — only real records.
- */
 import { useState, useEffect, useCallback } from "react";
 import {
   supabase, dbFetch, getUsers, getSessionToken,
   adminGetResidents, adminGetDocuments, adminGetComplaints,
   adminGetClearanceRequests, adminGetBusinessRegistry,
 } from "./supabase";
-
-// ============================================================
-// Types
-// ============================================================
 
 export interface Resident {
   id: string; name: string; age: number; dob: string; gender: string; address: string;
@@ -147,10 +137,6 @@ export interface AppData {
   refetch:       () => void;
 }
 
-// ============================================================
-// Helpers — map DB row shapes to the shape the UI expects
-// ============================================================
-
 function calcAge(dob: string): number {
   if (!dob || dob === 'N/A') return 0;
   const b = new Date(dob);
@@ -246,10 +232,6 @@ function mapPoll(p: Record<string, unknown>): Poll {
     winner:      String(p.winner ?? ""),
   };
 }
-
-// ============================================================
-// Hook
-// ============================================================
 
 const defaultBarangayInfo: BarangayInfo = {
   name: "Barangay Payatas", municipality: "Quezon City", province: "Metro Manila",
@@ -525,7 +507,6 @@ export function useSupabaseData(): AppData {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  // Realtime — reload relevant slices on live changes
   useEffect(() => {
     if (!supabase) return;
 

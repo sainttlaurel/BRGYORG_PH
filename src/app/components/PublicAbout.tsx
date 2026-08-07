@@ -15,7 +15,7 @@ const PublicAbout: React.FC = () => {
     <>
       <SeoHead title="About" description="Learn about Barangay Payatas — history, vision, mission, and community information." path="/about" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-medium mb-4">
@@ -29,7 +29,7 @@ const PublicAbout: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* Info cards */}
+        { }
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {[
             { icon: Calendar, label: "Established", value: barangayInfo.established },
@@ -50,7 +50,7 @@ const PublicAbout: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* History */}
+          { }
           <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
             <div className="bg-white dark:bg-card border border-border rounded-2xl p-6 h-full">
               <h2 className="font-bold text-foreground mb-4 flex items-center gap-2" style={{ fontSize: "1.25rem" }}>
@@ -63,7 +63,7 @@ const PublicAbout: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Vision & Mission */}
+          { }
           <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
             <div className="space-y-4 h-full">
               <div className="bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-6">
@@ -82,7 +82,7 @@ const PublicAbout: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Map Section */}
+        { }
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="mb-12">
           <div className="bg-white dark:bg-card border border-border rounded-2xl p-6">
             <h2 className="font-bold text-foreground mb-4 flex items-center gap-2" style={{ fontSize: "1.25rem" }}>
@@ -98,7 +98,7 @@ const PublicAbout: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Core Values */}
+        { }
         <div>
           <h2 className="font-bold text-foreground mb-6 text-center" style={{ fontSize: "1.5rem" }}>Core Values</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

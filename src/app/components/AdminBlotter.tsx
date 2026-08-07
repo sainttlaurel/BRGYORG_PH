@@ -51,9 +51,9 @@ const AdminBlotter: React.FC = () => {
 
   const filtered = cases.filter(c =>
     (statusFilter === "All" || c.status === statusFilter) &&
-    (debouncedQuery === "" || 
-      c.id.toLowerCase().includes(debouncedQuery.toLowerCase()) || 
-      c.complainant.toLowerCase().includes(debouncedQuery.toLowerCase()) || 
+    (debouncedQuery === "" ||
+      c.id.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+      c.complainant.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
       c.respondent.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
       c.incident.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
       c.location.toLowerCase().includes(debouncedQuery.toLowerCase()))
@@ -120,7 +120,7 @@ const AdminBlotter: React.FC = () => {
         </div>
       </div>
 
-      {/* Create form */}
+      { }
       {showForm && (
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">New Blotter Case</h2>
@@ -142,7 +142,7 @@ const AdminBlotter: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Filters */}
+      { }
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative flex-1 min-w-48">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -179,7 +179,7 @@ const AdminBlotter: React.FC = () => {
         </div>
       )}
 
-      {/* Sort */}
+      { }
       <div className="flex gap-2 mb-3">
         <span className="text-xs text-muted-foreground self-center">Sort by:</span>
         {["date", "complainant", "incident", "status"].map(key => (
@@ -189,7 +189,7 @@ const AdminBlotter: React.FC = () => {
         ))}
       </div>
 
-      {/* Cases */}
+      { }
       <div className="space-y-3">
         {loading ? (
           <TableLoading />
@@ -240,7 +240,7 @@ const AdminBlotter: React.FC = () => {
         )))}
       </div>
 
-      {/* Pagination */}
+      { }
       <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page:</span>
@@ -264,7 +264,7 @@ const AdminBlotter: React.FC = () => {
         </div>
       </div>
 
-      {/* Detail panel */}
+      { }
       <AnimatePresence>
         {selected && (
           <>

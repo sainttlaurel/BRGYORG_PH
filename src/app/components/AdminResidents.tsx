@@ -125,8 +125,8 @@ const AdminResidents: React.FC = () => {
   const filtered = residents.filter(r =>
     (purokFilter === "All" || r.purok === purokFilter) &&
     (statusFilter === "All" || r.status === statusFilter) &&
-    (debouncedQuery === "" || 
-      r.name.toLowerCase().includes(debouncedQuery.toLowerCase()) || 
+    (debouncedQuery === "" ||
+      r.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
       r.id.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
       r.address.toLowerCase().includes(debouncedQuery.toLowerCase()))
   );
@@ -182,7 +182,7 @@ const AdminResidents: React.FC = () => {
         </div>
       </div>
 
-      {/* Add form */}
+      { }
       {showAddForm && (
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-card border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 text-sm">New Resident</h2>
@@ -210,7 +210,7 @@ const AdminResidents: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Edit form */}
+      { }
       {showEditId && (() => {
         const res = residents.find(r => r.id === showEditId);
         if (!res) return null;
@@ -242,7 +242,7 @@ const AdminResidents: React.FC = () => {
         );
       })()}
 
-      {/* Filters */}
+      { }
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative flex-1 min-w-48">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -280,7 +280,7 @@ const AdminResidents: React.FC = () => {
         </div>
       )}
 
-      {/* Table */}
+      { }
       <div className="bg-white dark:bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -346,7 +346,7 @@ const AdminResidents: React.FC = () => {
         </div>
       </div>
 
-      {/* Pagination */}
+      { }
       <div className="flex items-center justify-between flex-wrap gap-3 mt-4 px-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page:</span>
@@ -370,7 +370,7 @@ const AdminResidents: React.FC = () => {
         </div>
       </div>
 
-      {/* Profile drawer */}
+      { }
       <AnimatePresence>
         {selected && (
           <>

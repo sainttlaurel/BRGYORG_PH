@@ -28,7 +28,7 @@ const PublicOfficials: React.FC = () => {
     <>
       <SeoHead title="Officials" description="Meet the elected officials and staff of Barangay Payatas, Quezon City." path="/officials" />
     <div>
-      {/* Header */}
+      { }
       <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white py-16 px-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-medium mb-4">
           <Users size={11} /> Elected & Appointed Officials
@@ -38,7 +38,7 @@ const PublicOfficials: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* Captain */}
+        { }
         {captain && (
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-10">
             <h2 className="font-bold text-foreground mb-4 text-center" style={{ fontSize: "1.1rem" }}>
@@ -65,7 +65,7 @@ const PublicOfficials: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Kagawads */}
+        { }
         <h2 className="font-bold text-foreground mb-4" style={{ fontSize: "1.1rem" }}>
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-sm">
             Sangguniang Barangay Members
@@ -100,7 +100,7 @@ const PublicOfficials: React.FC = () => {
           ))}
         </div>
 
-        {/* Other officials */}
+        { }
         <h2 className="font-bold text-foreground mb-4" style={{ fontSize: "1.1rem" }}>
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 text-sm">
             Administrative & SK

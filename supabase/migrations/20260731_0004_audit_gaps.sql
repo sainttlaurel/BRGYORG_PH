@@ -1,17 +1,3 @@
--- ============================================================
--- Phase 8: Close audit-logging gaps + RPCs for new tables
---
--- - Generic admin_log_action() audit helper (client callable)
--- - Audit logging added to settings/barangay-info/service-fee/
---   clear-documents/clear-residents/update-resident RPCs
--- - New SECURITY DEFINER RPCs for resident insert, document
---   insert, business_registry, projects, clearance_requests
--- - Public document/clearance submissions now audited as 'Public'
--- ============================================================
-
--- ============================================================
--- 1. GENERIC AUDIT HELPER
--- ============================================================
 CREATE OR REPLACE FUNCTION admin_log_action(
     p_token TEXT,
     p_user_name TEXT,
@@ -30,11 +16,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 2. RESIDENT RPCs
--- ============================================================
-
--- Update resident (adds audit logging)
 CREATE OR REPLACE FUNCTION admin_update_resident(
     p_token TEXT, p_id TEXT, p_data JSONB, p_logged_in_user TEXT
 )
@@ -63,7 +44,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Insert resident (was a direct anon insert — now session-gated + audited)
 CREATE OR REPLACE FUNCTION admin_insert_resident(
     p_token TEXT, p_id TEXT, p_fname TEXT, p_lname TEXT, p_purok TEXT,
     p_contact TEXT, p_address TEXT, p_gender TEXT, p_dob TEXT,
@@ -95,9 +75,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 3. DOCUMENT INSERT RPC (admin-created requests)
--- ============================================================
 CREATE OR REPLACE FUNCTION admin_insert_document(
     p_token TEXT, p_id TEXT, p_resident TEXT, p_type TEXT, p_purpose TEXT,
     p_date TEXT, p_contact TEXT, p_status TEXT, p_id_upload TEXT,
@@ -119,10 +96,6 @@ BEGIN
     RETURN json_build_object('success', true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================================
--- 4. SETTINGS / PROFILE / FEES (add audit logging)
--- ============================================================
 
 CREATE OR REPLACE FUNCTION admin_upsert_setting(
     p_token TEXT, p_key TEXT, p_value TEXT, p_logged_in_user TEXT
@@ -188,7 +161,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Danger zone actions (add audit logging)
 CREATE OR REPLACE FUNCTION admin_clear_documents(p_token TEXT, p_logged_in_user TEXT)
 RETURNS JSON AS $$
 DECLARE
@@ -216,10 +188,6 @@ BEGIN
     RETURN json_build_object('success', true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================================
--- 5. BUSINESS REGISTRY RPCs
--- ============================================================
 
 CREATE OR REPLACE FUNCTION admin_insert_business(
     p_token TEXT, p_name TEXT, p_owner TEXT, p_category TEXT,
@@ -282,10 +250,6 @@ BEGIN
     RETURN json_build_object('success', true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================================
--- 6. PROJECTS RPCs
--- ============================================================
 
 CREATE OR REPLACE FUNCTION admin_insert_project(
     p_token TEXT, p_id TEXT, p_title TEXT, p_category TEXT,
@@ -350,9 +314,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 7. CLEARANCE REQUESTS RPC
--- ============================================================
 CREATE OR REPLACE FUNCTION admin_update_clearance_request(
     p_token TEXT, p_id UUID, p_data JSONB, p_logged_in_user TEXT
 )
@@ -382,9 +343,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================================
--- 8. RATE_LIMITED_INSERT — audit public document/clearance creates
--- ============================================================
 CREATE OR REPLACE FUNCTION rate_limited_insert(
     p_identifier TEXT,
     p_form_type TEXT,
@@ -431,7 +389,3 @@ BEGIN
     RETURN json_build_object('success', true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ============================================================
--- END OF PHASE 8 MIGRATION
--- ============================================================
