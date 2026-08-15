@@ -1,9 +1,12 @@
--- Fix rate_limited_insert: add ORDER BY key to both string_agg calls so
--- the columns list and values list are always in the same deterministic order.
--- Without ORDER BY, string_agg returns results in an unspecified order which
--- can cause values to be inserted into the wrong columns, silently corrupting
--- rows or raising a type-mismatch error that the RPC returns as a success=false
--- JSON (swallowed by the frontend) instead of a Postgres error.
+-- Fix rate_limited_insert:
+-- 1. Add ORDER BY key to both string_agg calls so cols and vals lists are
+--    always in the same deterministic alphabetical order.
+-- 2. Use RAISE EXCEPTION instead of returning {success:false} JSON so that
+--    errors (rate limit, insert failure) propagate as actual Postgres errors
+--    that Supabase surfaces as the `error` field in the RPC response — which
+--    the frontend already checks with `if (error) throw new Error(...)`.
+-- 3. Wrap the EXECUTE in a BEGIN/EXCEPTION block to surface insert errors
+--    with the actual Postgres message.
 
 CREATE OR REPLACE FUNCTION rate_limited_insert(
     p_identifier TEXT,
@@ -26,10 +29,10 @@ BEGIN
     v_max := CASE WHEN v_verified THEN 10 ELSE 3 END;
 
     IF v_count >= v_max THEN
-        RETURN json_build_object('success', false, 'error', 'Rate limit reached. Please try again later.');
+        RAISE EXCEPTION 'Rate limit reached. Please try again later.';
     END IF;
 
-    -- ORDER BY key guarantees cols and vals are built in the same order
+    -- ORDER BY key guarantees cols and vals are built in the same alphabetical order
     SELECT
         string_agg(format('%I', key)  , ', ' ORDER BY key),
         string_agg(format('%L', value), ', ' ORDER BY key)
@@ -57,3 +60,7 @@ BEGIN
     RETURN json_build_object('success', true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Also clear stale rate_limit rows so test submissions aren't blocked.
+-- Remove rows older than 1 day to reset limits for testing.
+DELETE FROM rate_limits WHERE created_at < NOW() - INTERVAL '1 day';

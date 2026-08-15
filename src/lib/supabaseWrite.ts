@@ -129,11 +129,15 @@ export async function insertDocument(data: {
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  const { error } = await supabase.rpc('rate_limited_insert', {
+  const { data: result, error } = await supabase.rpc('rate_limited_insert', {
     p_identifier: hash, p_form_type: 'document', p_table: 'documents',
     p_data: { ...data, status: data.status ?? 'Pending' },
   });
   if (error) throw new Error(error.message);
+  // Also check if the RPC returned a success:false JSON body (legacy path)
+  if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false) {
+    throw new Error(String((result as Record<string, unknown>).error ?? 'Insert failed'));
+  }
 }
 
 export async function insertResident(data: {
@@ -220,11 +224,13 @@ export async function insertSuggestion(data: { name: string; content: string }) 
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  const { error } = await supabase.rpc('rate_limited_insert', {
+  const { data: result, error } = await supabase.rpc('rate_limited_insert', {
     p_identifier: hash, p_form_type: 'suggestion', p_table: 'suggestions',
     p_data: { name: data.name || 'Anonymous', content: data.content, status: 'pending' },
   });
   if (error) throw new Error(error.message);
+  if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false)
+    throw new Error(String((result as Record<string, unknown>).error ?? 'Insert failed'));
 }
 
 export async function insertVolunteer(data: {
@@ -234,11 +240,13 @@ export async function insertVolunteer(data: {
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  const { error } = await supabase.rpc('rate_limited_insert', {
+  const { data: result, error } = await supabase.rpc('rate_limited_insert', {
     p_identifier: hash, p_form_type: 'volunteer', p_table: 'volunteer_signups',
     p_data: data,
   });
   if (error) throw new Error(error.message);
+  if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false)
+    throw new Error(String((result as Record<string, unknown>).error ?? 'Insert failed'));
 }
 
 export async function deleteContactMessage(id: string, loggedInUser: string = "System") {
@@ -262,11 +270,13 @@ export async function insertContactMessage(data: { name: string; email: string; 
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  const { error } = await supabase.rpc('rate_limited_insert', {
+  const { data: result, error } = await supabase.rpc('rate_limited_insert', {
     p_identifier: hash, p_form_type: 'contact', p_table: 'contact_messages',
     p_data: data,
   });
   if (error) throw new Error(error.message);
+  if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false)
+    throw new Error(String((result as Record<string, unknown>).error ?? 'Insert failed'));
 }
 
 export async function insertReport(data: {
@@ -277,11 +287,13 @@ export async function insertReport(data: {
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  const { error } = await supabase.rpc('rate_limited_insert', {
+  const { data: result, error } = await supabase.rpc('rate_limited_insert', {
     p_identifier: hash, p_form_type: 'report', p_table: 'reports',
     p_data: { ...data, status: 'pending' },
   });
   if (error) throw new Error(error.message);
+  if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false)
+    throw new Error(String((result as Record<string, unknown>).error ?? 'Insert failed'));
 }
 
 export async function getReportByRef(ref: string): Promise<Record<string, unknown> | null> {
@@ -396,11 +408,13 @@ export async function insertBusiness(data: {
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  const { error } = await supabase.rpc('rate_limited_insert', {
+  const { data: result, error } = await supabase.rpc('rate_limited_insert', {
     p_identifier: hash, p_form_type: 'business', p_table: 'business_registry',
     p_data: { ...data, status: 'pending' },
   });
   if (error) throw new Error(error.message);
+  if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false)
+    throw new Error(String((result as Record<string, unknown>).error ?? 'Insert failed'));
 }
 
 export async function updateBusiness(id: string, data: Record<string, unknown>, loggedInUser: string = "System") {
@@ -460,11 +474,13 @@ export async function insertClearanceRequest(data: {
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  const { error } = await supabase.rpc('rate_limited_insert', {
+  const { data: result, error } = await supabase.rpc('rate_limited_insert', {
     p_identifier: hash, p_form_type: 'clearance', p_table: 'clearance_requests',
     p_data: data,
   });
   if (error) throw new Error(error.message);
+  if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false)
+    throw new Error(String((result as Record<string, unknown>).error ?? 'Insert failed'));
 }
 
 export async function updateClearanceRequest(id: string, data: Record<string, unknown>, loggedInUser: string = "System") {
