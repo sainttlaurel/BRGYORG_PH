@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, CheckCircle, Clock, X, XCircle, Eye, Printer, Download } from "lucide-react";
+import { Search, CheckCircle, Clock, X, XCircle, Eye, Printer, Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "./DataContext";
 import { useAuth } from "./AuthContext";
@@ -34,8 +34,9 @@ function csvExport(data: Record<string, string>[], filename: string) {
 }
 
 const AdminRequests: React.FC = () => {
-  const { docRequests, loading } = useData();
+  const { docRequests, loading, refetch } = useData();
   const { user } = useAuth();
+  const [refreshing, setRefreshing] = useState(false);
   const [statusOverrides, setStatusOverrides] = useState<Record<string, string>>({});
   const requests = React.useMemo(() =>
     docRequests.map(r => {
@@ -66,8 +67,14 @@ const AdminRequests: React.FC = () => {
     { key: "actions", label: "Actions" },
   ]);
 
-  const updateStatus = async (id: string, newStatus: string) => {
-    setStatusOverrides(o => ({ ...o, [id]: newStatus }));
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try { await refetch(); toast.success("Requests refreshed"); }
+    catch { toast.error("Failed to refresh"); }
+    finally { setRefreshing(false); }
+  };
+
+  const updateStatus = async (id: string, newStatus: string) => {    setStatusOverrides(o => ({ ...o, [id]: newStatus }));
     if (selected?.id === id) setSelected(s => s ? { ...s, status: newStatus } : null);
     try {
       await updateDocumentStatus(id, newStatus, user?.name || "System");
@@ -160,9 +167,14 @@ const AdminRequests: React.FC = () => {
           <h1 className="font-bold text-foreground text-[1.3rem]">Document Requests</h1>
           <p className="text-muted-foreground text-sm mt-0.5">{requests.length} total · {total} showing</p>
         </div>
-        <button onClick={() => csvExport(requests.map(r => ({ ID: r.id, Resident: r.resident, Type: r.type, Purpose: r.purpose, Status: r.status, Date: r.date, Contact: r.contact || "", Fee: r.fee })), "document-requests.csv")} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
-          <Download size={14} /> Export
-        </button>
+        <div className="flex gap-2">
+          <button onClick={handleRefresh} disabled={refreshing} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50">
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
+          </button>
+          <button onClick={() => csvExport(requests.map(r => ({ ID: r.id, Resident: r.resident, Type: r.type, Purpose: r.purpose, Status: r.status, Date: r.date, Contact: r.contact || "", Fee: r.fee })), "document-requests.csv")} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
+            <Download size={14} /> Export
+          </button>
+        </div>
       </div>
 
       { }

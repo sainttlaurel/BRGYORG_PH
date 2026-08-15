@@ -3,6 +3,7 @@ import {
   supabase, dbFetch, getUsers, getSessionToken,
   adminGetResidents, adminGetDocuments, adminGetComplaints,
   adminGetClearanceRequests, adminGetBusinessRegistry,
+  adminGetSuggestions, adminGetVolunteers,
 } from "./supabase";
 
 export interface Resident {
@@ -304,6 +305,12 @@ export function useSupabaseData(): AppData {
       const bizSrc = token
         ? adminGetBusinessRegistry(token, 500)
         : dbFetch<Record<string, unknown>>("business_registry", {}, 500);
+      const sugSrc = token
+        ? adminGetSuggestions(token, 500)
+        : dbFetch<Record<string, unknown>>("suggestions", {}, 500);
+      const volSrc = token
+        ? adminGetVolunteers(token, 500)
+        : dbFetch<Record<string, unknown>>("volunteer_signups", {}, 500);
 
       const [
         resRows, docRows, cmpRows, annRows, pollRows, userRows,
@@ -321,8 +328,8 @@ export function useSupabaseData(): AppData {
         dbFetch<Record<string, unknown>>("barangay_info"),
         dbFetch<Record<string, unknown>>("services"),
         dbFetch<Record<string, unknown>>("reports"),
-        dbFetch<Record<string, unknown>>("suggestions"),
-        dbFetch<Record<string, unknown>>("volunteer_signups"),
+        sugSrc,
+        volSrc,
         bizSrc,
         dbFetch<Record<string, unknown>>("projects"),
         clearSrc,
@@ -510,7 +517,12 @@ export function useSupabaseData(): AppData {
   useEffect(() => {
     if (!supabase) return;
 
-    const tables = ["announcements", "polls", "officials", "barangay_info", "services", "reports", "suggestions", "volunteer_signups"] as const;
+    const tables = [
+      "announcements", "polls", "officials", "barangay_info", "services",
+      "reports", "suggestions", "volunteer_signups",
+      "documents", "complaints", "clearance_requests", "business_registry",
+      "contact_messages",
+    ] as const;
     const channels = tables.map(table =>
       supabase!
         .channel(`rt:${table}`)

@@ -142,3 +142,4 @@ Column visibility toggles added to Residents, Requests, Blotter, Business Regist
 23. ~~Remove desktop GUI (Tauri) — web app is the only client~~ **Done — Aug 2026**
 24. ~~Restore admin reads after anon SELECT lockdown — session-gated read RPCs + token-aware data layer (migration `0006`)~~ **Done — Aug 2026**
 25. ~~Bundle cleanup — recharts split into its own chunk; lint errors eliminated~~ **Done — Aug 2026**
+26. ~~Realtime subscriptions extended to all public-submission tables (documents, complaints, clearance_requests, business_registry, contact_messages); rate_limited_insert dynamic INSERT fixed; session-gated RPCs for suggestions/volunteers added~~ **Done — Aug 2026**

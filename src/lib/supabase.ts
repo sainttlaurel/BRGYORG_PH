@@ -163,6 +163,32 @@ export async function adminGetBusinessRegistry(
   return (data ?? []) as Record<string, unknown>[];
 }
 
+export async function adminGetSuggestions(
+  token: string,
+  limit = 500,
+  offset = 0,
+): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_get_suggestions', {
+    p_token: token, p_limit: limit, p_offset: offset,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Record<string, unknown>[];
+}
+
+export async function adminGetVolunteers(
+  token: string,
+  limit = 500,
+  offset = 0,
+): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_get_volunteers', {
+    p_token: token, p_limit: limit, p_offset: offset,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Record<string, unknown>[];
+}
+
 export async function getDocumentStatus(
   query: string,
 ): Promise<{ id: string; resident: string; type: string; purpose: string; status: string; date: string }[]> {

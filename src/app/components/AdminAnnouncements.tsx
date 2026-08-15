@@ -115,7 +115,7 @@ const AdminAnnouncements: React.FC = () => {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h1 className="font-bold text-foreground text-[1.3rem]">Announcements CMS</h1>
+          <h1 className="font-bold text-foreground text-[1.3rem]">Announcements</h1>
           <p className="text-muted-foreground text-sm mt-0.5">{announcements.length} announcements</p>
         </div>
         <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all shadow-sm">

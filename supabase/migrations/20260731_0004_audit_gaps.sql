@@ -1,3 +1,7 @@
+ALTER TABLE residents ADD COLUMN IF NOT EXISTS household TEXT DEFAULT '';
+ALTER TABLE residents ADD COLUMN IF NOT EXISTS occupation TEXT DEFAULT '';
+ALTER TABLE residents ADD COLUMN IF NOT EXISTS civil_status TEXT DEFAULT '';
+
 CREATE OR REPLACE FUNCTION admin_log_action(
     p_token TEXT,
     p_user_name TEXT,
@@ -354,6 +358,8 @@ DECLARE
     v_count INTEGER := 0;
     v_verified BOOLEAN := FALSE;
     v_max INTEGER := 3;
+    v_cols TEXT;
+    v_vals TEXT;
     v_sql TEXT;
 BEGIN
     SELECT count, is_verified INTO v_count, v_verified
@@ -366,10 +372,15 @@ BEGIN
         RETURN json_build_object('success', false, 'error', 'Rate limit reached. Please try again later.');
     END IF;
 
-    -- Dynamic insert into the target table
+    -- Build INSERT from the provided JSON keys so column defaults (e.g. id) still apply
+    SELECT string_agg(format('%I', key), ', '),
+           string_agg(format('%L', value), ', ')
+    INTO v_cols, v_vals
+    FROM jsonb_each_text(p_data);
+
     EXECUTE format(
-        'INSERT INTO %I SELECT * FROM jsonb_populate_record(null::%I, %L)',
-        p_table, p_table, p_data
+        'INSERT INTO %I (%s) VALUES (%s)',
+        p_table, v_cols, v_vals
     );
 
     INSERT INTO rate_limits (identifier, form_type, count)
@@ -387,5 +398,33 @@ BEGIN
     END IF;
 
     RETURN json_build_object('success', true);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION admin_get_suggestions(
+    p_token TEXT, p_limit INT DEFAULT 500, p_offset INT DEFAULT 0
+)
+RETURNS JSON AS $$
+DECLARE
+    v_session JSON;
+BEGIN
+    v_session := require_session(p_token);
+    RETURN json_agg(r ORDER BY r.created_at DESC)
+    FROM (SELECT * FROM suggestions
+          ORDER BY created_at DESC LIMIT p_limit OFFSET p_offset) r;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION admin_get_volunteers(
+    p_token TEXT, p_limit INT DEFAULT 500, p_offset INT DEFAULT 0
+)
+RETURNS JSON AS $$
+DECLARE
+    v_session JSON;
+BEGIN
+    v_session := require_session(p_token);
+    RETURN json_agg(r ORDER BY r.created_at DESC)
+    FROM (SELECT * FROM volunteer_signups
+          ORDER BY created_at DESC LIMIT p_limit OFFSET p_offset) r;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
