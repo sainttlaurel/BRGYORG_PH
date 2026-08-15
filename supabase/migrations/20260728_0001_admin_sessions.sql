@@ -645,11 +645,11 @@ CREATE OR REPLACE FUNCTION rate_limited_insert(
 )
 RETURNS JSON AS $$
 DECLARE
-    v_count INTEGER := 0;
+    v_count    INTEGER := 0;
     v_verified BOOLEAN := FALSE;
-    v_max INTEGER := 3;
-    v_cols TEXT;
-    v_vals TEXT;
+    v_max      INTEGER := 3;
+    v_cols     TEXT;
+    v_vals     TEXT;
     v_sql TEXT;
 BEGIN
     SELECT count, is_verified INTO v_count, v_verified
@@ -662,16 +662,14 @@ BEGIN
         RETURN json_build_object('success', false, 'error', 'Rate limit reached. Please try again later.');
     END IF;
 
-    -- Build INSERT from the provided JSON keys so column defaults (e.g. id) still apply
-    SELECT string_agg(format('%I', key), ', '),
-           string_agg(format('%L', value), ', ')
+    -- Sort by key so cols and vals lists are always in the same order
+    SELECT
+        string_agg(format('%I', key)   , ', ' ORDER BY key),
+        string_agg(format('%L', value) , ', ' ORDER BY key)
     INTO v_cols, v_vals
     FROM jsonb_each_text(p_data);
 
-    EXECUTE format(
-        'INSERT INTO %I (%s) VALUES (%s)',
-        p_table, v_cols, v_vals
-    );
+    EXECUTE format('INSERT INTO %I (%s) VALUES (%s)', p_table, v_cols, v_vals);
 
     INSERT INTO rate_limits (identifier, form_type, count)
     VALUES (p_identifier, p_form_type, 1)

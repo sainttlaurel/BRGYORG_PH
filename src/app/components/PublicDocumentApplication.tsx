@@ -66,7 +66,7 @@ const PublicDocumentApplication: React.FC = () => {
       });
       setRefNumber(ref);
       setStep("success");
-    } catch { toast.error("Failed to submit — try again"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to submit — try again"); }
     finally { setLoading(false); }
   };
 

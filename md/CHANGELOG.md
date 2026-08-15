@@ -9,9 +9,10 @@ All notable changes to this project are documented here.
 ### Fixed
 
 - **Public submissions not appearing in admin pages** — realtime subscriptions in `useSupabaseData.ts` were only watching 8 tables (`announcements`, `polls`, `officials`, `barangay_info`, `services`, `reports`, `suggestions`, `volunteer_signups`). Added `documents`, `complaints`, `clearance_requests`, `business_registry`, and `contact_messages` so admin panels auto-refresh when any public form is submitted.
-- **`rate_limited_insert` dynamic INSERT failure** — replaced `jsonb_populate_record` approach with an explicit column/value build from `jsonb_each_text`, fixing silent insert failures when the JSON keys didn't exactly match the table's column order. Applied to both `20260728_0001_admin_sessions.sql` and `20260731_0004_audit_gaps.sql`.
+- **`rate_limited_insert` column/value order mismatch** — `string_agg` without `ORDER BY` returns results in non-deterministic order, causing the columns list and values list to be built in different orders and values to land in wrong columns (type errors or silent data corruption). Fixed by adding `ORDER BY key` to both `string_agg` calls. Applied to migrations `0001`, `0004`, and new dedicated migration `0007`. A new migration `20260816_0007_fix_rate_limited_insert.sql` is provided for immediate re-application to the live database.
 - **Suggestions and volunteers not session-gated** — added `admin_get_suggestions` and `admin_get_volunteers` SECURITY DEFINER RPCs; `useSupabaseData.ts` and `supabase.ts` updated to route these reads through session-gated RPCs when an admin session exists.
 - **Missing resident columns** — `household`, `occupation`, `civil_status` columns added to `residents` table via `ALTER TABLE … ADD COLUMN IF NOT EXISTS` in migration `0004`.
+- **Silent error swallowing on document submit** — `catch` block in `PublicDocumentApplication` now surfaces the actual error message in the toast instead of a generic string.
 
 ### Added
 
