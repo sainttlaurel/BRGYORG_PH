@@ -4,6 +4,28 @@ All notable changes to this project are documented here.
 
 ---
 
+## [6.5.0] — August 16, 2026
+
+### Added
+
+- **`supabase/migrations/20260816_0010_master_fix.sql`** — single definitive migration that consolidates all fixes. Run this once to make the entire project work end-to-end. Covers:
+  - Creates `reports`, `contact_messages`, `officials`, `settings`, `barangay_info`, `services`, `service_fees` tables (all were missing from tracked migrations)
+  - Adds all missing columns: `residents.(household, occupation, civil_status)`, `documents.id_upload`, `complaints.(respondent, time, location, handler)`, `announcements.(priority, visible)`, `volunteer_signups.status`
+  - Drops all stale RLS policies and recreates a clean, minimal set: anon SELECT on public read tables, anon INSERT on public submission tables, no anon SELECT on sensitive tables (residents, documents, complaints, clearances, audit_logs)
+  - Final `rate_limited_insert` with `ORDER BY key`, `RAISE EXCEPTION`, and limit raised from 3 to 10 (unverified) / 50 (verified)
+  - `public_insert_volunteer` dedicated RPC with `GRANT EXECUTE TO anon`
+  - All admin read RPCs: `admin_get_suggestions`, `admin_get_volunteers`, `admin_get_reports`, `admin_get_contact_messages`, `admin_get_clearance_requests`, `admin_get_business_registry`, `admin_get_documents`, `admin_get_residents`, `admin_get_complaints`
+  - All admin write RPCs cleaned up with consistent `p_logged_in_user` signatures and audit logging
+  - `cast_vote` final version (UUID poll_id, IP-based dedup)
+  - All user management RPCs token-gated with `require_admin`
+  - `check_clearance_status`, `search_residents`, `get_document_status` public RPCs
+  - `updated_at` trigger on `reports`
+  - Realtime publication for all 12 public-submission tables
+  - Seed data for `barangay_info` and `services` if empty
+  - `DELETE FROM rate_limits` to unblock all previously rate-limited forms
+
+---
+
 ## [6.4.0] — August 16, 2026
 
 ### Fixed
