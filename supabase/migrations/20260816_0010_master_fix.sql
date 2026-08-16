@@ -91,6 +91,10 @@ ALTER TABLE complaints        ADD COLUMN IF NOT EXISTS handler      VARCHAR(100)
 ALTER TABLE announcements     ADD COLUMN IF NOT EXISTS priority     VARCHAR(20) DEFAULT 'normal';
 ALTER TABLE announcements     ADD COLUMN IF NOT EXISTS visible      BOOLEAN     DEFAULT TRUE;
 ALTER TABLE volunteer_signups ADD COLUMN IF NOT EXISTS status       TEXT        DEFAULT 'pending';
+ALTER TABLE polls              ADD COLUMN IF NOT EXISTS status       TEXT        DEFAULT 'active';
+ALTER TABLE suggestions        ADD COLUMN IF NOT EXISTS status       TEXT        DEFAULT 'pending';
+ALTER TABLE business_registry  ADD COLUMN IF NOT EXISTS status       TEXT        DEFAULT 'pending';
+ALTER TABLE clearance_requests ADD COLUMN IF NOT EXISTS status       TEXT        DEFAULT 'pending';
 
 ALTER TABLE reports           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_messages  ENABLE ROW LEVEL SECURITY;
