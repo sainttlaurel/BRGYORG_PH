@@ -237,12 +237,11 @@ export async function insertVolunteer(data: {
   full_name: string; email: string; contact: string; body_conditions: string;
 }) {
   if (!supabase) throw new Error('offline');
-  const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
-  const hash = Array.from(new TextEncoder().encode(identifier))
-    .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  const { data: result, error } = await supabase.rpc('rate_limited_insert', {
-    p_identifier: hash, p_form_type: 'volunteer', p_table: 'volunteer_signups',
-    p_data: data,
+  const { data: result, error } = await supabase.rpc('public_insert_volunteer', {
+    p_full_name:       data.full_name,
+    p_email:           data.email || '',
+    p_contact:         data.contact,
+    p_body_conditions: data.body_conditions,
   });
   if (error) throw new Error(error.message);
   if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false)

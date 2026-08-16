@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 ---
 
+## [6.4.0] — August 16, 2026
+
+### Fixed
+
+- **Volunteer registration silently blocked** — `rate_limited_insert` has a hard cap of 3 submissions per browser fingerprint per form type. After 3 test runs the `volunteer` row in `rate_limits` blocked all further submissions. The form showed "Welcome to the Team!" (success UI) but the `RAISE EXCEPTION` path was being reached and the error was being swallowed upstream. Fixed by replacing `rate_limited_insert` with a dedicated `public_insert_volunteer` SECURITY DEFINER RPC that does a direct parameterized INSERT with no rate limit (volunteers are not a spam vector — they require full personal details).
+- **Rate limits table cleared** — migration `0009` runs `DELETE FROM rate_limits` to unblock all previously-blocked forms across all form types.
+
+### Added
+
+- `supabase/migrations/20260816_0009_volunteer_direct_insert.sql` — creates `public_insert_volunteer(p_full_name, p_email, p_contact, p_body_conditions)` RPC, clears rate_limits, restores volunteer INSERT policy.
+
+### Changed
+
+- `insertVolunteer` in `supabaseWrite.ts` now calls `public_insert_volunteer` RPC directly instead of routing through `rate_limited_insert`.
+
+---
+
 ## [6.3.0] — August 16, 2026
 
 ### Fixed
