@@ -24,7 +24,7 @@ const PublicCommunityVote: React.FC = () => {
     try {
       await submitVote(pollId, optionId);
       setSubmitted(s => new Set([...s, pollId]));
-    } catch { toast.error("Failed to submit vote"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to submit vote"); }
     finally { setLoading(l => ({ ...l, [pollId]: false })); }
   };
 

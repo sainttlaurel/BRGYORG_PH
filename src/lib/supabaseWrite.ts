@@ -287,9 +287,16 @@ export async function insertReport(data: {
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+  // Strip undefined optional fields so they are omitted from JSONB entirely
+  const payload: Record<string, string> = {
+    id: data.id, category: data.category, description: data.description,
+    location: data.location, urgency: data.urgency, status: 'pending',
+  };
+  if (data.reporter_name)    payload.reporter_name    = data.reporter_name;
+  if (data.reporter_contact) payload.reporter_contact = data.reporter_contact;
   const { data: result, error } = await supabase.rpc('rate_limited_insert', {
     p_identifier: hash, p_form_type: 'report', p_table: 'reports',
-    p_data: { ...data, status: 'pending' },
+    p_data: payload,
   });
   if (error) throw new Error(error.message);
   if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false)

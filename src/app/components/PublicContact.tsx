@@ -55,9 +55,9 @@ const PublicContact: React.FC = () => {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setLoading(true);
     try {
-      await insertContactMessage({ name: form.name, email: form.email, subject: form.department || "General Inquiry", message: form.message });
+      await insertContactMessage({ name: form.name, email: form.email, subject: form.department || "General Inquiry", message: form.contact ? `${form.message}\n\nContact: ${form.contact}` : form.message });
       setSubmitted(true);
-    } catch { toast.error("Failed to send message"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to send message"); }
     finally { setLoading(false); }
   };
 

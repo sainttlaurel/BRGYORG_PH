@@ -59,7 +59,7 @@ const PublicClearanceRequest: React.FC = () => {
       await insertClearanceRequest({ ...form, control_number, verification_code });
       setResult({ control_number, verification_code });
       setStep("success");
-    } catch { toast.error("Failed to submit — try again"); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to submit — try again"); }
     finally { setLoading(false); }
   };
 

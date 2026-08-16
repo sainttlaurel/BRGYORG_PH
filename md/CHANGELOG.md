@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 
 ---
 
+## [6.3.0] — August 16, 2026
+
+### Fixed
+
+- **`reports` and `contact_messages` tables missing** — neither table had a `CREATE TABLE` DDL in any migration file. Migration `0008` creates both tables with correct columns, RLS policies, and an `updated_at` trigger on `reports`.
+- **Missing RLS INSERT policies** — `volunteer_signups`, `suggestions`, `business_registry`, `clearance_requests` had their anon-write policies dropped in migration `0001`/`0002` and never re-added as INSERT-only policies. Migration `0008` adds `_anon_insert` policies for all of them.
+- **`officials`, `settings`, `barangay_info`, `services` tables** — ensured with `CREATE TABLE IF NOT EXISTS` and correct anon SELECT policies in migration `0008`.
+- **`insertReport` passing `undefined` as string** — optional fields `reporter_name`/`reporter_contact` were spread into the JSONB payload as `undefined`, which serialized to the string `"null"`. Fixed to only include those keys when they have a value.
+- **All public form `catch` blocks** — `PublicBusinessRegistry`, `PublicClearanceRequest`, `PublicCommunityVote`, `PublicContact` all had silent `catch {}` blocks. Now surface the actual error message in the toast.
+- **`PublicContact` contact number dropped** — the contact number field was collected but never sent to Supabase. Now appended to the message body as `Contact: 09XXXXXXXXX`.
+- **`admin_update_report_status`, `admin_delete_contact_message`, `admin_update_contact_message_status`** — ensured these RPCs exist with correct logic in migration `0008`.
+
+### Added
+
+- Migration `20260816_0008_missing_tables_and_rls.sql` — comprehensive fix covering all missing tables, RLS policies, and final `rate_limited_insert` with `ORDER BY key` + `RAISE EXCEPTION`.
+
+---
+
 ## [6.2.0] — August 16, 2026
 
 ### Fixed
