@@ -134,7 +134,6 @@ export async function insertDocument(data: {
     p_data: { ...data, status: data.status ?? 'Pending' },
   });
   if (error) throw new Error(error.message);
-  // Also check if the RPC returned a success:false JSON body (legacy path)
   if (result && typeof result === 'object' && (result as Record<string, unknown>).success === false) {
     throw new Error(String((result as Record<string, unknown>).error ?? 'Insert failed'));
   }
@@ -286,7 +285,6 @@ export async function insertReport(data: {
   const identifier = `${navigator.userAgent}-${screen.width}x${screen.height}`;
   const hash = Array.from(new TextEncoder().encode(identifier))
     .map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  // Strip undefined optional fields so they are omitted from JSONB entirely
   const payload: Record<string, string> = {
     id: data.id, category: data.category, description: data.description,
     location: data.location, urgency: data.urgency, status: 'pending',
